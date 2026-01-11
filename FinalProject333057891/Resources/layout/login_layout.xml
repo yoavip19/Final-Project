@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimary">
+
+	<ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:layout_above="@id/flLoginMenuContainer">
+
+	    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center_horizontal">
+
+		    <!-- Title -->
+		    <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Log In"
+                android:textColor="@color/textPrimary"
+                android:textSize="34sp"
+                android:textStyle="bold"
+                android:layout_marginTop="40dp"
+                android:padding="12dp" />
+
+		    <!-- Username -->
+		    <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Username"
+                android:textSize="16sp"
+                android:textColor="@color/textPrimary"/>
+
+		    <EditText
+                android:id="@+id/etLoginUsername"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:padding="12dp"
+                android:textSize="16sp"
+                android:background="@drawable/edittext_bg"
+                android:hint="Enter username"
+                android:textColor="@color/textPrimary"
+                android:textColorHint="@color/hintText"
+                android:inputType="textPersonName"/>
+
+		    <TextView
+                android:id="@+id/tvLoginUsernameError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/errorColor"
+                android:text="* User not recognized"
+                android:visibility="gone"
+                android:textSize="14sp"
+                android:paddingTop="4dp"/>
+
+		    <!-- Password -->
+		    <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Password"
+                android:textSize="16sp"
+                android:textColor="@color/textPrimary"/>
+
+		    <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
+
+			    <EditText
+                    android:id="@+id/etLoginPassword"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:textSize="16sp"
+                    android:background="@drawable/edittext_bg"
+                    android:hint="Enter password"
+                    android:textColor="@color/textPrimary"
+                    android:textColorHint="@color/hintText"
+                    android:inputType="textPassword"/>
+
+			    <Button
+                    android:id="@+id/btnLoginHidePassword"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/design_password_eye"/>
+		    </LinearLayout>
+
+		    <TextView
+                android:id="@+id/tvLoginPasswordError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="* User not recognized"
+                android:textColor="@color/errorColor"
+                android:visibility="gone"
+                android:textSize="14sp"
+                android:paddingTop="4dp"/>
+
+		    <!-- Forgot Password -->
+		    <TextView
+                android:id="@+id/tvLoginForgotPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Forgot Password?"
+                android:textColor="@color/textSecondary"
+                android:textSize="16sp"
+                android:paddingLeft="4dp"/>
+
+		    <!-- Log In Button -->
+		    <Button
+                android:id="@+id/btnLoginSubmit"
+                android:layout_width="200dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="32dp"
+                android:text="Log In"
+                android:textSize="18sp"
+                android:textColor="@color/buttonText"
+                android:background="@color/colorPrimaryDark"
+                android:textAllCaps="false"/>
+
+	    </LinearLayout>
+    </ScrollView>
+
+	<!-- Fixed bottom menu fragment -->
+	<FrameLayout
+        android:id="@+id/flLoginMenuContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+
+</RelativeLayout>

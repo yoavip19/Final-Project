@@ -1,0 +1,61 @@
+﻿using FinalProject333057891;
+using SQLite;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleFunctionsCheck
+{
+    [Table("Passwords")]
+    internal class Password
+    {
+        [PrimaryKey, Column("Username")]
+        public string Username { get; set; }
+
+        [PrimaryKey, Column("AppPackageID")]
+        public string AppPackageID { get; set; }
+
+        [Column("AppUsername")]
+        public string AppUsername { get; set; }
+
+        [Column("Salt")]
+        public string Salt { get; set; }
+
+        [Column("InitializationVector")]
+        public string InitializationVector { get; set; }
+
+        [Column("PasswordEncrypted")]
+        public string PasswordEncrypted { get; set; }
+
+        [Column("CreatedAtUtc")]
+        public DateTime CreatedAtUtc { get; set; }
+
+        public Password()
+        {
+        }
+
+        public Password(string username, string appPackageID, string appUsername, string plainPassword)
+        {
+            Username = username;
+            AppPackageID = appPackageID;
+            AppUsername = appUsername;
+            PasswordEncrypted = SecurityHelper.EncryptAES(plainPassword, "Insert master", out string salt, out string initializationVector); //Insert master => master password from shared preference
+            Salt = salt;
+            InitializationVector = initializationVector;
+            CreatedAtUtc = DateTime.Now;
+        }
+
+        public Password(string username, string appPackageID, string appUsername, string salt, string initializationVector, string passwordEncrypted)
+        {
+            Username = username;
+            AppPackageID = appPackageID;
+            AppUsername = appUsername;
+            Salt = salt;
+            InitializationVector = initializationVector;
+            PasswordEncrypted = passwordEncrypted;
+            CreatedAtUtc = DateTime.Now;
+        }
+    }
+}

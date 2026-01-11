@@ -1,0 +1,24 @@
+<resources>
+	<!-- Backgrounds -->
+	<color name="colorPrimary">#81C784</color>
+	<!-- Chill, light green for main UI elements -->
+	<color name="colorPrimaryDark">#66BB6A</color>
+	<!-- Slightly darker for header or status bar -->
+	<color name="colorAccent">#A5D6A7</color>
+	<!-- Very light green accent -->
+
+	<!-- Text colors -->
+	<color name="textPrimary">#212121</color>
+	<!-- Dark gray for readability -->
+	<color name="textSecondary">#FFFFFF</color>
+	<!-- White for text on green tabs/buttons -->
+	<color name="hintText">#757575</color>
+	<!-- Gray for hints -->
+
+	<!-- Buttons -->
+	<color name="buttonText">#FFFFFF</color>
+	<!-- White text on buttons -->
+
+	<!-- Errors -->
+	<color name="errorColor">#FF5252</color>
+</resources>
