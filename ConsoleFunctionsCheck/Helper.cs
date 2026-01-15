@@ -40,9 +40,23 @@ namespace ConsoleFunctionsCheck
                 string path = Path();
                 if (path == "Error") return;
                 var dbCommand = new SQLiteConnection(path);
+                // Enable foreign key constraints
+                dbCommand.Execute("PRAGMA foreign_keys = ON;");
+                // Create Application table first (parent)
                 dbCommand.CreateTable<Application>();
-
-                dbCommand.CreateTable<Password>();
+                // Then create Password table (child)
+                dbCommand.Execute(@"
+                    CREATE TABLE IF NOT EXISTS Passwords (
+                        Username TEXT NOT NULL,
+                        AppPackageID TEXT NOT NULL,
+                        AppUsername TEXT,
+                        Salt TEXT,
+                        InitVector TEXT,
+                        PasswordEncrypted TEXT,
+                        PRIMARY KEY (Username, AppPackageID),
+                        FOREIGN KEY (AppPackageID) REFERENCES Applications(PackageID) ON DELETE CASCADE ON UPDATE CASCADE
+                    );
+                ");
             }
             catch
             {

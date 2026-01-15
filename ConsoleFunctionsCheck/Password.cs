@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace ConsoleFunctionsCheck
 {
     [Table("Passwords")]
-    internal class Password
+    public class Password
     {
         [PrimaryKey, Column("Username")]
         public string Username { get; set; }
@@ -23,14 +23,13 @@ namespace ConsoleFunctionsCheck
         [Column("Salt")]
         public string Salt { get; set; }
 
-        [Column("InitializationVector")]
-        public string InitializationVector { get; set; }
+        [Column("InitVector")]
+        public string InitVector { get; set; }
 
         [Column("PasswordEncrypted")]
         public string PasswordEncrypted { get; set; }
 
-        [Column("CreatedAtUtc")]
-        public DateTime CreatedAtUtc { get; set; }
+        //Future - created at
 
         public Password()
         {
@@ -41,21 +40,19 @@ namespace ConsoleFunctionsCheck
             Username = username;
             AppPackageID = appPackageID;
             AppUsername = appUsername;
-            PasswordEncrypted = SecurityHelper.EncryptAES(plainPassword, "Insert master", out string salt, out string initializationVector); //Insert master => master password from shared preference
+            PasswordEncrypted = SecurityHelper.EncryptAES(plainPassword, "Insert master", out string salt, out string initVector); //Insert master => master password from shared preference
             Salt = salt;
-            InitializationVector = initializationVector;
-            CreatedAtUtc = DateTime.Now;
+            InitVector = initVector;
         }
 
-        public Password(string username, string appPackageID, string appUsername, string salt, string initializationVector, string passwordEncrypted)
+        public Password(string username, string appPackageID, string appUsername, string salt, string initVector, string passwordEncrypted)
         {
             Username = username;
             AppPackageID = appPackageID;
             AppUsername = appUsername;
             Salt = salt;
-            InitializationVector = initializationVector;
+            InitVector = initVector;
             PasswordEncrypted = passwordEncrypted;
-            CreatedAtUtc = DateTime.Now;
         }
     }
 }

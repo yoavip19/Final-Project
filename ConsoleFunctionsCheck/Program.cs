@@ -5,6 +5,7 @@ using ConsoleFunctionsCheck;
 using MailKit.Net.Smtp;
 using MimeKit;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Security;
 using SQLite;
 internal class Program
@@ -21,8 +22,17 @@ internal class Program
 
         Password pass = new Password("Loser", app.PackageID, "WhatsLoser", "Loser123");
         SQLiteConnection dbCommand = Helper.GetDBCommand();
-        dbCommand.Insert(app);
-        dbCommand.Insert(pass);
+        if(dbCommand.Find<Application>(app.PackageID) == null)
+        {
+            dbCommand.Insert(app);
+        }
+
+        var existingPassword = dbCommand.Table<Password>().FirstOrDefault(p => p.Username == pass.Username && p.AppPackageID == pass.AppPackageID);
+        if (existingPassword == null)
+        {
+            dbCommand.Insert(pass);
+        }
+
         string q = "SELECT * FROM Applications";
         List<Application> apps = dbCommand.Query<Application>(q);
         Console.WriteLine($"Name {apps[0].AppName} -> PackID {apps[0].PackageID} -> IconBase64 {apps[0].IconBase64} -> Cat {apps[0].Category}");
@@ -30,7 +40,7 @@ internal class Program
 
         q = "SELECT * FROM Passwords";
         List<Password> passes = dbCommand.Query<Password>(q);
-        Console.WriteLine($"Uname {passes[0].Username} -> PackID {passes[0].AppPackageID} -> Appuname {passes[0].AppUsername} -> PassEnc {passes[0].PasswordEncrypted} -> Salt {passes[0].Salt} -> IV {passes[0].InitializationVector} -> Time {passes[0].CreatedAtUtc}");
+        Console.WriteLine($"Uname {passes[0].Username} -> PackID {passes[0].AppPackageID} -> Appuname {passes[0].AppUsername} -> PassEnc {passes[0].PasswordEncrypted} -> Salt {passes[0].Salt} -> IV {passes[0].InitVector}");
     }
     public static async Task Lbozo()
     {
