@@ -46,7 +46,24 @@ namespace FinalProject333057891
                 string path = Path(context);
                 if (path == "Error") return;
                 var dbCommand = new SQLiteConnection(path);
+                // Enable foreign key constraints
+                dbCommand.Execute("PRAGMA foreign_keys = ON;");
                 dbCommand.CreateTable<User>();
+                dbCommand.CreateTable<Application>();
+                dbCommand.Execute(@"
+                    CREATE TABLE IF NOT EXISTS Passwords (
+                        Username TEXT NOT NULL,
+                        AppPackageID TEXT NOT NULL,
+                        AppUsername TEXT,
+                        Salt TEXT,
+                        InitVector TEXT,
+                        PasswordEncrypted TEXT,
+                        IsFavorite BOOL,
+                        PRIMARY KEY (Username, AppPackageID),
+                        FOREIGN KEY (AppPackageID) REFERENCES Applications(PackageID) ON DELETE CASCADE ON UPDATE CASCADE
+                    );
+                ");
+                //                        FOREIGN KEY (Username) REFERENCES Users(Username) ON DELETE CASCADE ON UPDATE CASCADE,
             }
             catch
             {

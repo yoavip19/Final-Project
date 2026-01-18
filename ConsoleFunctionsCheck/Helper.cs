@@ -53,10 +53,13 @@ namespace ConsoleFunctionsCheck
                         Salt TEXT,
                         InitVector TEXT,
                         PasswordEncrypted TEXT,
+                        IsFavorite INTEGER DEFAULT 0,
                         PRIMARY KEY (Username, AppPackageID),
                         FOREIGN KEY (AppPackageID) REFERENCES Applications(PackageID) ON DELETE CASCADE ON UPDATE CASCADE
                     );
                 ");
+                //FOREIGN KEY (Username) REFERENCES Users(Username) ON DELETE CASCADE ON UPDATE CASCADE,
+
             }
             catch
             {
