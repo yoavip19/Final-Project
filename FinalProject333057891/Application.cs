@@ -4,8 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SQLite;
+using System.Net.Http;
+using Android.Graphics;
+using System.IO;
 
-namespace ConsoleFunctionsCheck
+namespace FinalProject333057891
 {
     [Table("Applications")]
     public class Application
@@ -41,18 +44,18 @@ namespace ConsoleFunctionsCheck
                 return Convert.ToBase64String(imageBytes);
             }
         }
-        //public static Bitmap Base64ToBitmap(string base64)
-        //{
-        //    byte[] bytes = Convert.FromBase64String(base64);
-        //    return BitmapFactory.DecodeByteArray(bytes, 0, bytes.Length);
-        //}
-        //public static string BitmapToBase64(Bitmap bitmap)
-        //{
-        //    using (var stream = new MemoryStream())
-        //    {
-        //        bitmap.Compress(Bitmap.CompressFormat.Png, 100, stream);
-        //        return Convert.ToBase64String(stream.ToArray());
-        //    }
-        //}
+        public static Bitmap Base64ToBitmap(string base64)
+        {
+            byte[] bytes = Convert.FromBase64String(base64);
+            return BitmapFactory.DecodeByteArray(bytes, 0, bytes.Length);
+        }
+        public static string BitmapToBase64(Bitmap bitmap)
+        {
+            using (var stream = new MemoryStream())
+            {
+                bitmap.Compress(Bitmap.CompressFormat.Png, 100, stream);
+                return Convert.ToBase64String(stream.ToArray());
+            }
+        }
     }
 }

@@ -60,10 +60,10 @@ namespace FinalProject333057891
                         PasswordEncrypted TEXT,
                         IsFavorite BOOL,
                         PRIMARY KEY (Username, AppPackageID),
+                        FOREIGN KEY (Username) REFERENCES Users(Username) ON DELETE CASCADE ON UPDATE CASCADE,
                         FOREIGN KEY (AppPackageID) REFERENCES Applications(PackageID) ON DELETE CASCADE ON UPDATE CASCADE
                     );
                 ");
-                //                        FOREIGN KEY (Username) REFERENCES Users(Username) ON DELETE CASCADE ON UPDATE CASCADE,
             }
             catch
             {

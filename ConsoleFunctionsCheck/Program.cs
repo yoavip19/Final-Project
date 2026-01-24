@@ -19,11 +19,11 @@ internal class Program
         //Application whatsapp = new Application("WhatsApp Messenger", "com.whatsapp", "https://play-lh.googleusercontent.com/bYtqbOcTYOlgc6gqZ2rwb8lptHuwlNE75zYJu6Bn076-hTmvd96HH-6v7S0YUAAJXoJN=s64", "Communication");
 
 
-        Helper.Initialize(); //error - password has 2 PKs
+        Helper.Initialize(); //error - password has 2 PKs //patched
         Application? app = await GooglePlayAPI.GetAppMetadataAsync("com.whatsapp");
         if (app == null) { return; }
 
-        Password pass = new Password("Loser", app.PackageID, "WhatsLoser", "Loser123", true);
+        Password pass = new Password("Loser1", app.PackageID, "WhatsLoser", "Loser123", true);
         SQLiteConnection dbCommand = Helper.GetDBCommand();
         if (dbCommand.Find<Application>(app.PackageID) == null)
         {
@@ -41,12 +41,11 @@ internal class Program
         //Console.WriteLine($"Name {apps[0].AppName} -> PackID {apps[0].PackageID} -> IconBase64 {apps[0].IconBase64} -> Cat {apps[0].Category}");
         Console.WriteLine();
 
-        q = "SELECT * FROM Passwords";
+        q = "SELECT * FROM Passwords WHERE Username = 'Loser1';";
         List<Password> passes = dbCommand.Query<Password>(q);
-        Console.WriteLine(pass.PasswordEncrypted.Length);
-        Console.WriteLine(passes[0].AppUsername);
+        Console.WriteLine(passes[0].PasswordEncrypted.Length);
         Console.WriteLine($"Uname {passes[0].Username} -> PackID {passes[0].AppPackageID} -> Appuname {passes[0].AppUsername} -> PassEnc {passes[0].PasswordEncrypted} -> Salt {passes[0].Salt} -> IV {passes[0].InitVector} -> Favorite {passes[0].IsFavorite}");
-        Console.WriteLine(SecurityHelper.DecryptAES(pass.PasswordEncrypted, "Insert master", pass.Salt, pass.InitVector));
+        Console.WriteLine(SecurityHelper.DecryptAES(passes[0].PasswordEncrypted, "Insert master", passes[0].Salt, passes[0].InitVector));
     }
     public static async Task Lbozo()
     {

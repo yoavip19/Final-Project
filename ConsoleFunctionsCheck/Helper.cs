@@ -37,6 +37,7 @@ namespace ConsoleFunctionsCheck
             //initializes the database
             try
             {
+
                 string path = Path();
                 if (path == "Error") return;
                 var dbCommand = new SQLiteConnection(path);

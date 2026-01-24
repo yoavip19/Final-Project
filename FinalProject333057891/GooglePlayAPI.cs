@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net.Http;
 
-namespace ConsoleFunctionsCheck
+namespace FinalProject333057891
 {
     public static class GooglePlayAPI
     {
@@ -63,7 +64,7 @@ namespace ConsoleFunctionsCheck
             return results;
         }
 
-        public static async Task<Application?> GetAppMetadataAsync(string packageId)
+        public static async Task<Application> GetAppMetadataAsync(string packageId)
         {
             try
             {
