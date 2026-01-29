@@ -38,6 +38,7 @@ namespace FinalProject333057891
 
         public static async Task<string> DownloadImageAsBase64Async(string imageUrl)
         {
+            if (imageUrl == "") { throw new Exception(); }
             using (var httpClient = new HttpClient())
             {
                 byte[] imageBytes = await httpClient.GetByteArrayAsync(imageUrl);

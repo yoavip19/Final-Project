@@ -87,7 +87,7 @@ namespace FinalProject333057891
                     {
                         Toast.MakeText(this, "User logged in successfully", ToastLength.Short).Show();
 
-                        UpdateSharedPreference(loginUser);
+                        InsertSharedPreference(loginUser);
 
                         StartActivity(new Intent(this, typeof(HomepageActivity)));
                     }
@@ -107,7 +107,7 @@ namespace FinalProject333057891
             }
         }
 
-        private void UpdateSharedPreference(User user)
+        private void InsertSharedPreference(User user)
         {
             var editor = sp.Edit();
             editor.PutString("Username", user.Username);

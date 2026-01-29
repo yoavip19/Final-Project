@@ -36,8 +36,12 @@ namespace FinalProject333057891
         }
 
         // Encrypts data and outputs Base64 cipher, salt, and IV
-        public static string EncryptAES(string dataToEncrypt, string masterPassword, out string saltBase64, out string ivBase64)
+        public static string EncryptAES(string dataToEncrypt, string? masterPassword, out string saltBase64, out string ivBase64)
         {
+            if(masterPassword == null)
+            {
+                throw new ArgumentNullException(nameof(masterPassword), "Master password cannot be null.");
+            }
             byte[] salt = new byte[SaltLength];
             using (var rng = RandomNumberGenerator.Create())
             {
@@ -54,12 +58,15 @@ namespace FinalProject333057891
             aes.GenerateIV();
             iv = aes.IV;
 
-            using var encryptor = aes.CreateEncryptor();
             using var ms = new MemoryStream();
-            using var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write);
-            using var sw = new StreamWriter(cs);
 
-            sw.Write(dataToEncrypt);
+            // IMPORTANT: close writer before reading MemoryStream
+            using (var encryptor = aes.CreateEncryptor())
+            using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+            using (var sw = new StreamWriter(cs))
+            {
+                sw.Write(dataToEncrypt);
+            } // ← FINAL BLOCK IS WRITTEN HERE
 
             byte[] cipherBytes = ms.ToArray();
 
@@ -70,8 +77,12 @@ namespace FinalProject333057891
         }
 
         // Decrypts Base64 ciphertext using the given salt and IV (also Base64)
-        public static string DecryptAES(string encryptedBase64, string masterPassword, string saltBase64, string ivBase64)
+        public static string DecryptAES(string encryptedBase64, string? masterPassword, string saltBase64, string ivBase64)
         {
+            if (masterPassword == null)
+            {
+                throw new ArgumentNullException(nameof(masterPassword), "Master password cannot be null.");
+            }
             byte[] cipherBytes = Convert.FromBase64String(encryptedBase64);
             byte[] salt = Convert.FromBase64String(saltBase64);
             byte[] iv = Convert.FromBase64String(ivBase64);

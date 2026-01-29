@@ -29,4 +29,15 @@
         android:textAllCaps="false"
         android:layout_marginHorizontal="10dp"/>
 
+	<Button
+        android:id="@+id/btnMenuLogout"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="56dp"
+        android:text="Log Out"
+        android:textColor="@color/buttonText"
+        android:background="?android:attr/selectableItemBackground"
+        android:textAllCaps="false"
+        android:layout_marginHorizontal="10dp"/>
+
 </LinearLayout>

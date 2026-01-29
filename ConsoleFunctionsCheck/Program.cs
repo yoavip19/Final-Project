@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Security;
 using SQLite;
+using System.Data.Common;
 internal class Program
 {
     public static async Task Main(string[] args)
@@ -20,50 +21,83 @@ internal class Program
 
 
         Helper.Initialize(); //error - password has 2 PKs //patched
-        Application? app = await GooglePlayAPI.GetAppMetadataAsync("com.whatsapp");
-        if (app == null) { return; }
 
-        Password pass = new Password("Loser1", app.PackageID, "WhatsLoser", "Loser123", true);
+        var popularApps = new List<string>
+        {
+            "com.whatsapp",                // WhatsApp
+            "com.instagram.android",       // Instagram
+            "com.facebook.katana",         // Facebook
+            "com.zhiliaoapp.musically",    // TikTok
+            "com.snapchat.android",        // Snapchat
+            "org.telegram.messenger",      // Telegram
+            "com.spotify.music",           // Spotify
+            "com.netflix.mediaclient",     // Netflix
+            "com.google.android.youtube",  // YouTube
+            "com.twitter.android",         // Twitter / X
+            "com.waze",                    // Waze
+            "com.google.android.gm",       // Gmail
+            "com.amazon.mShop.android.shopping", // Amazon Shopping
+            "com.discord",                 // Discord
+            "com.pinterest",               // Pinterest
+            "com.linkedin.android",        // LinkedIn
+            "com.ubercab",                 // Uber
+            "com.paypal.android.p2pmobile",// PayPal
+            "com.microsoft.teams",         // Microsoft Teams
+            "zoom.us.google"               // Zoom
+        };
+
+        // Loop through the list and add them one by one
+        foreach (var packageId in popularApps)
+        {
+            await AddAppSafeAsync(packageId);
+        }
         SQLiteConnection dbCommand = Helper.GetDBCommand();
-        if (dbCommand.Find<Application>(app.PackageID) == null)
-        {
-            dbCommand.Insert(app);
-        }
-
-        var existingPassword = dbCommand.Table<Password>().FirstOrDefault(p => p.Username == pass.Username && p.AppPackageID == pass.AppPackageID);
-        if (existingPassword == null)
-        {
-            dbCommand.Insert(pass);
-        }
 
         string q = "SELECT * FROM Applications";
         List<Application> apps = dbCommand.Query<Application>(q);
-        //Console.WriteLine($"Name {apps[0].AppName} -> PackID {apps[0].PackageID} -> IconBase64 {apps[0].IconBase64} -> Cat {apps[0].Category}");
+        Console.WriteLine($"Name {apps[2].AppName} -> PackID {apps[2].PackageID} -> IconBase64 {apps[2].IconBase64} -> Cat {apps[2].Category}");
         Console.WriteLine();
-
-        q = "SELECT * FROM Passwords WHERE Username = 'Loser1';";
-        List<Password> passes = dbCommand.Query<Password>(q);
-        Console.WriteLine(passes[0].PasswordEncrypted.Length);
-        Console.WriteLine($"Uname {passes[0].Username} -> PackID {passes[0].AppPackageID} -> Appuname {passes[0].AppUsername} -> PassEnc {passes[0].PasswordEncrypted} -> Salt {passes[0].Salt} -> IV {passes[0].InitVector} -> Favorite {passes[0].IsFavorite}");
-        Console.WriteLine(SecurityHelper.DecryptAES(passes[0].PasswordEncrypted, "Insert master", passes[0].Salt, passes[0].InitVector));
     }
-    public static async Task Lbozo()
+    private static async Task AddAppSafeAsync(string packageId)
     {
-        Console.WriteLine("Type app name fragment:");
-        string input = Console.ReadLine() ?? "";
-
-        var apps = await GooglePlayAPI.SearchAppsAsync(input);
-
-        if (apps.Count == 0)
+        try
         {
-            Console.WriteLine("No matches found.");
-            return;
+            SQLiteConnection dbCommand = Helper.GetDBCommand();
+            // 1. Fetch from API
+            var app = await GooglePlayAPI.GetAppMetadataAsync(packageId);
+
+            // 2. Validate
+            if (app == null) return;
+
+            // 3. Insert if not exists
+            if (dbCommand.Find<Application>(app.PackageID) == null)
+            {
+                dbCommand.Insert(app);
+                Console.WriteLine($"[Seed] Added: {app.AppName}");
+            }
         }
-
-        Console.WriteLine("Suggestions:");
-        foreach (var app in apps)
+        catch (Exception ex)
         {
-            //Console.WriteLine($"{app.AppName} -> {app.PackageId} -> {app.IconUrl}");
+            Console.WriteLine($"[Seed] Failed to add {packageId}: {ex.Message}");
         }
     }
+    //public static async Task Lbozo()
+    //{
+    //    Console.WriteLine("Type app name fragment:");
+    //    string input = Console.ReadLine() ?? "";
+
+    //    var apps = await GooglePlayAPI.SearchAppsAsync(input);
+
+    //    if (apps.Count == 0)
+    //    {
+    //        Console.WriteLine("No matches found.");
+    //        return;
+    //    }
+
+    //    Console.WriteLine("Suggestions:");
+    //    foreach (var app in apps)
+    //    {
+    //        //Console.WriteLine($"{app.AppName} -> {app.PackageId} -> {app.IconUrl}");
+    //    }
+    //}
 }

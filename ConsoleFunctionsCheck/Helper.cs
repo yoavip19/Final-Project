@@ -8,7 +8,7 @@ namespace ConsoleFunctionsCheck
 {
     public class Helper
     {
-        private const string dbName = "dbTestConsole";
+        private const string dbName = "dbTest0";
         public Helper()
         {
 

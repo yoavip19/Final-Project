@@ -60,7 +60,10 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddPasswordDialog.cs" />
     <Compile Include="Application.cs" />
+    <Compile Include="AppSuggestion.cs" />
+    <Compile Include="AppSuggestionAdapter.cs" />
     <Compile Include="GooglePlayAPI.cs" />
     <Compile Include="HomepageActivity.cs" />
     <Compile Include="LoginActivity.cs" />
@@ -173,6 +176,16 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\password_list_layout.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\add_password_dialog_layout.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\app_suggestion_item.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>

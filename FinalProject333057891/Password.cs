@@ -1,4 +1,7 @@
-﻿using SQLite;
+﻿using Android.App;
+using Android.Content;
+using AndroidX.AppCompat.App;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,17 +36,16 @@ namespace FinalProject333057891
 
 
         //Future - created at
-
         public Password()
         {
         }
 
-        public Password(string username, string appPackageID, string appUsername, string plainPassword, bool isFavorite)
+        public Password(string username, string appPackageID, string masterPassword, string appUsername, string plainPassword, bool isFavorite)
         {
             Username = username;
             AppPackageID = appPackageID;
             AppUsername = appUsername;
-            PasswordEncrypted = SecurityHelper.EncryptAES(plainPassword, "Insert master", out string salt, out string initVector); //Insert master => master password from shared preference
+            PasswordEncrypted = SecurityHelper.EncryptAES(plainPassword, masterPassword, out string salt, out string initVector); //Master password from shared preference
             Salt = salt;
             InitVector = initVector;
             IsFavorite = isFavorite;

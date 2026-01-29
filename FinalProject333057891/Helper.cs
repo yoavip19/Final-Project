@@ -46,6 +46,7 @@ namespace FinalProject333057891
                 string path = Path(context);
                 if (path == "Error") return;
                 var dbCommand = new SQLiteConnection(path);
+
                 // Enable foreign key constraints
                 dbCommand.Execute("PRAGMA foreign_keys = ON;");
                 dbCommand.CreateTable<User>();

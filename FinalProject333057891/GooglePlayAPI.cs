@@ -11,7 +11,7 @@ namespace FinalProject333057891
     public static class GooglePlayAPI
     {
         private static readonly HttpClient client = new HttpClient();
-        private const string SERP_API_KEY = "7607fe5ec0ffb1d79744ef9d6e87b5b372360197030129292e46937a979f4aa2";
+        private const string SERP_API_KEY = MainActivity.Key;
 
         public static async Task<List<AppSuggestion>> SearchAppsAsync(string query)
         {
@@ -30,8 +30,8 @@ namespace FinalProject333057891
                 results.Add(new AppSuggestion
                 {
                     AppName = highlight["title"]?.ToString() ?? "",
-                    PackageId = highlight["product_id"]?.ToString() ?? "",
-                    IconUrl = highlight["thumbnail"]?.ToString() ?? ""
+                    PackageID = highlight["product_id"]?.ToString() ?? "",
+                    IconBase64 = await Application.DownloadImageAsBase64Async(highlight["thumbnail"]?.ToString() ?? "")
                 });
             }
 
@@ -54,8 +54,8 @@ namespace FinalProject333057891
                             results.Add(new AppSuggestion
                             {
                                 AppName = name,
-                                PackageId = packageId,
-                                IconUrl = icon
+                                PackageID = packageId,
+                                IconBase64 = await Application.DownloadImageAsBase64Async(icon)
                             });
                     }
                 }
@@ -86,12 +86,5 @@ namespace FinalProject333057891
             }
         }
 
-    }
-    // Autocomplete suggestion
-    public class AppSuggestion
-    {
-        public string AppName { get; set; } = "";
-        public string PackageId { get; set; } = "";
-        public string IconUrl { get; set; } = "";
     }
 }
