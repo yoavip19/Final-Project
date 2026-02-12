@@ -17,6 +17,9 @@ namespace FinalProject333057891
 
     public class AddPasswordDialog : BottomSheetDialogFragment
     {
+        // Event to notify when password is added
+        public event EventHandler PasswordAdded;
+
         // UI
         AutoCompleteTextView actvAppSearch;
         TextView tvSearchOnline;
@@ -175,11 +178,15 @@ namespace FinalProject333057891
             //Add to DB
             try
             {
-                Password newAppPassword = new Password(sp.GetString("Username",null), selectedPackageId, sp.GetString("MasterPassword", null), etAppUsername.Text, etPassword.Text, cbFavorite.Checked);
+                Password newAppPassword = new Password(sp.GetString("Username", null), selectedPackageId, sp.GetString("MasterPassword", null), etAppUsername.Text, etPassword.Text, cbFavorite.Checked);
                 int rowChange = dbCommand.Insert(newAppPassword);
                 if (rowChange > 0)
                 {
                     Toast.MakeText(Activity, "Password added successfully", ToastLength.Short).Show();
+
+                    // Notify parent activity to refresh the list
+                    PasswordAdded?.Invoke(this, EventArgs.Empty);
+
                     Dismiss();
                 }
                 else

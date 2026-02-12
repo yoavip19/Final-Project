@@ -5,12 +5,14 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
+using AndroidX.RecyclerView.Widget;
 using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Android.Text;
 
 namespace FinalProject333057891
 {
@@ -19,25 +21,298 @@ namespace FinalProject333057891
     {
         #region Properties
         Button btnAddPasswordToList;
+        RecyclerView rvPasswordList;
+        TextView tvEmptyState;
+        PasswordListAdapter adapter;
 
         AndroidX.Fragment.App.Fragment flPasswordListMenuContainer;
         #endregion
-        protected override async void OnCreate(Bundle savedInstanceState) //REMOVE ASYNC LATER
+
+        protected override async void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.password_list_layout);
-            // Create your application here
 
             #region FindViewById
             btnAddPasswordToList = FindViewById<Button>(Resource.Id.btnAddPasswordToList);
+            rvPasswordList = FindViewById<RecyclerView>(Resource.Id.rvPasswordList);
+            tvEmptyState = FindViewById<TextView>(Resource.Id.tvEmptyState);
 
             SignedMenuFragment fragment = new SignedMenuFragment();
-            SupportFragmentManager.BeginTransaction().Replace(Resource.Id.flPasswordListMenuContainer, fragment).Commit();
+            SupportFragmentManager.BeginTransaction()
+                .Replace(Resource.Id.flPasswordListMenuContainer, fragment)
+                .Commit();
             #endregion
 
-            btnAddPasswordToList.Click += BtnAddPasswordToList_Click;
+            #region Setup RecyclerView
+            rvPasswordList.SetLayoutManager(new LinearLayoutManager(this));
+            adapter = new PasswordListAdapter(new List<PasswordItem>());
 
-            //TEMPORARY
+            // Subscribe to adapter events
+            adapter.SendPasswordClicked += Adapter_SendPasswordClicked;
+            adapter.EditPasswordClicked += Adapter_EditPasswordClicked;
+
+            rvPasswordList.SetAdapter(adapter);
+            #endregion
+
+            #region Event Handlers
+            btnAddPasswordToList.Click += BtnAddPasswordToList_Click;
+            #endregion
+
+            //TEMPORARY - Load popular apps for testing
+            await LoadPopularApps();
+
+            // Load passwords from database
+            await LoadPasswordsAsync();
+        }
+
+        protected override async void OnResume()
+        {
+            base.OnResume();
+            // Reload passwords when returning to this activity
+            await LoadPasswordsAsync();
+        }
+
+        /// <summary>
+        /// Load all passwords for the current user from the database
+        /// </summary>
+        private async Task LoadPasswordsAsync()
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    SQLiteConnection db = Helper.GetDBCommand(this);
+
+                    // Get current username from SharedPreferences or session
+                    var prefs = GetSharedPreferences("details", FileCreationMode.Private);
+                    string currentUsername = prefs.GetString("Username", "");
+
+                    if (string.IsNullOrEmpty(currentUsername))
+                    {
+                        RunOnUiThread(() =>
+                        {
+                            Toast.MakeText(this, "User not logged in", ToastLength.Short).Show();
+                        });
+                        return;
+                    }
+
+                    // Query all passwords for this user
+                    var passwords = db.Table<Password>()
+                        .Where(p => p.Username == currentUsername)
+                        .ToList();
+
+                    // Create PasswordItem objects by joining with Application table
+                    List<PasswordItem> passwordItems = new List<PasswordItem>();
+
+                    foreach (var password in passwords)
+                    {
+                        var app = db.Find<Application>(password.AppPackageID);
+                        if (app != null)
+                        {
+                            passwordItems.Add(new PasswordItem(password, app));
+                        }
+                    }
+
+                    // Update UI on main thread
+                    RunOnUiThread(() =>
+                    {
+                        adapter.UpdateData(passwordItems);
+
+                        // Show/hide empty state
+                        if (passwordItems.Count == 0)
+                        {
+                            rvPasswordList.Visibility = ViewStates.Gone;
+                            tvEmptyState.Visibility = ViewStates.Visible;
+                        }
+                        else
+                        {
+                            rvPasswordList.Visibility = ViewStates.Visible;
+                            tvEmptyState.Visibility = ViewStates.Gone;
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    RunOnUiThread(() =>
+                    {
+                        Toast.MakeText(this, "Error loading passwords: " + ex.Message, ToastLength.Long).Show();
+                    });
+                }
+            });
+        }
+
+        /// <summary>
+        /// Handle Send Password button click
+        /// </summary>
+        private void Adapter_SendPasswordClicked(object sender, PasswordItem item)
+        {
+            // Show master password confirmation before sending email
+            ShowMasterPasswordConfirmationForSend(item);
+        }
+
+        /// <summary>
+        /// Show master password confirmation dialog before sending password via email
+        /// </summary>
+        private void ShowMasterPasswordConfirmationForSend(PasswordItem item)
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.SetTitle("Confirm Master Password");
+            builder.SetMessage($"Enter your master password to send the password for {item.AppName} to your email:");
+
+            // Create EditText for master password
+            EditText input = new EditText(this);
+            input.InputType = InputTypes.ClassText | InputTypes.TextVariationPassword;
+            input.Hint = "Master Password";
+
+            // Add some padding to the input
+            var layoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MatchParent,
+                LinearLayout.LayoutParams.WrapContent);
+            layoutParams.SetMargins(50, 20, 50, 20);
+            input.LayoutParameters = layoutParams;
+
+            builder.SetView(input);
+
+            builder.SetPositiveButton("Confirm", (s, e) =>
+            {
+                string masterPassword = input.Text;
+                VerifyMasterPasswordAndSendEmail(masterPassword, item);
+            });
+
+            builder.SetNegativeButton("Cancel", (s, e) => { });
+
+            builder.Show();
+        }
+
+        /// <summary>
+        /// Verify master password and send email if correct
+        /// </summary>
+        private async void VerifyMasterPasswordAndSendEmail(string masterPassword, PasswordItem item)
+        {
+            try
+            {
+                SQLiteConnection db = Helper.GetDBCommand(this);
+
+                // Get current user from database
+                var prefs = GetSharedPreferences("details", FileCreationMode.Private);
+                string username = prefs.GetString("Username", "");
+
+                var user = db.Find<User>(username);
+
+                if (user == null)
+                {
+                    Toast.MakeText(this, "User not found", ToastLength.Short).Show();
+                    return;
+                }
+
+                // Verify master password
+                string hashedInput = SecurityHelper.HashPassword(masterPassword, user.MasterSalt);
+                if (hashedInput != user.MasterPasswordHash)
+                {
+                    Toast.MakeText(this, "Incorrect master password", ToastLength.Long).Show();
+                    return;
+                }
+
+                // Master password verified - decrypt and send email
+                await DecryptAndSendPasswordEmail(masterPassword, item, user.Email);
+            }
+            catch (Exception ex)
+            {
+                Toast.MakeText(this, "Error verifying password: " + ex.Message, ToastLength.Long).Show();
+            }
+        }
+
+        /// <summary>
+        /// Decrypt password and send it via email
+        /// </summary>
+        private async Task DecryptAndSendPasswordEmail(string masterPassword, PasswordItem item, string userEmail)
+        {
+            string decryptedPassword = null;
+
+            try
+            {
+                // Show progress dialog
+                ProgressDialog progressDialog = new ProgressDialog(this);
+                progressDialog.SetMessage("Sending password...");
+                progressDialog.SetCancelable(false);
+                progressDialog.Show();
+
+                // Decrypt the password
+                decryptedPassword = SecurityHelper.DecryptAES(
+                    item.PasswordEncrypted,
+                    masterPassword,
+                    item.Salt,
+                    item.InitVector
+                );
+
+                // Create email message body
+                string messageBody = $@"Hello,
+
+                    You requested your password for {item.AppName}.
+
+                    App: {item.AppName}
+                    Username: {item.AppUsername}
+                    Password: {decryptedPassword}
+
+                    Please keep this information secure and delete this email after saving your password.
+
+                    Best regards,
+                    Your Password Manager";
+
+                // Send email
+                await EmailHelper.SendEmailAsync(userEmail, messageBody);
+
+                // Dismiss progress dialog
+                progressDialog.Dismiss();
+
+                // Show success message
+                Toast.MakeText(this, $"Password sent to {userEmail}", ToastLength.Long).Show();
+            }
+            catch (Exception ex)
+            {
+                Toast.MakeText(this, "Error sending email: " + ex.Message, ToastLength.Long).Show();
+            }
+            finally
+            {
+                // CRITICAL SECURITY: Clear decrypted password from memory immediately
+                if (decryptedPassword != null)
+                {
+                    decryptedPassword = null;
+                    GC.Collect(); // Force garbage collection to clear memory
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handle Edit Password button click
+        /// </summary>
+        private void Adapter_EditPasswordClicked(object sender, PasswordItem item)
+        {
+            var editDialog = new EditPasswordDialog(item);
+
+            // Subscribe to the PasswordUpdated event to refresh the list
+            editDialog.PasswordUpdated += async (s, e) => await LoadPasswordsAsync();
+
+            editDialog.Show(SupportFragmentManager, "edit_password");
+        }
+
+        private void BtnAddPasswordToList_Click(object sender, EventArgs e)
+        {
+            var dialog = new AddPasswordDialog();
+
+            // Subscribe to the PasswordAdded event to refresh the list
+            dialog.PasswordAdded += async (s, args) => await LoadPasswordsAsync();
+
+            dialog.Show(SupportFragmentManager, "add_password");
+        }
+
+        //===========================================================================================================
+        // TEMPORARY CODE FOR TESTING
+        //===========================================================================================================
+
+        private async Task LoadPopularApps()
+        {
             var popularApps = new List<string>
             {
                 "com.whatsapp",                // WhatsApp
@@ -62,33 +337,21 @@ namespace FinalProject333057891
                 "zoom.us.google"               // Zoom
             };
 
-            // Loop through the list and add them one by one
             foreach (var packageId in popularApps)
             {
                 await AddAppSafeAsync(packageId);
             }
         }
 
-        private void BtnAddPasswordToList_Click(object sender, EventArgs e)
-        {
-            var dialog = new AddPasswordDialog();
-            dialog.Show(SupportFragmentManager, "add_password");
-        }
-
-
-        //TEMPORARY
         private async Task AddAppSafeAsync(string packageId)
         {
             try
             {
                 SQLiteConnection dbCommand = Helper.GetDBCommand(this);
-                // 1. Fetch from API
                 var app = await GooglePlayAPI.GetAppMetadataAsync(packageId);
 
-                // 2. Validate
                 if (app == null) return;
 
-                // 3. Insert if not exists
                 if (dbCommand.Find<Application>(app.PackageID) == null)
                 {
                     dbCommand.Insert(app);

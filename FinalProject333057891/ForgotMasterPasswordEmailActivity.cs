@@ -21,10 +21,6 @@ namespace FinalProject333057891
     [Activity(Label = "ForgotMasterPasswordEmailActivity")]
     public class ForgotMasterPasswordEmailActivity : ForgotMasterPasswordActivity
     {
-        #region Constants
-        private const string MAIL_FROM = "yudbet4ironia@gmail.com";
-        private const string APP_PASSWORD = "qhip imme dcek jgus";
-        #endregion
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -50,8 +46,9 @@ namespace FinalProject333057891
             if (userToRecover != null)
             {
                 emailCode = GenerateEmailCode();
+                string messageBody = $"Hello, {userToRecover.Username}! Your 6-digit code is: {emailCode}";
 
-                await SendCodeAsync(userToRecover, emailCode);
+                await EmailHelper.SendEmailAsync(userToRecover.Email, messageBody);
 
                 Intent intent = new Intent(this, typeof(ForgotMasterPasswordCodeActivity));
 
@@ -98,35 +95,6 @@ namespace FinalProject333057891
                 code += randomNumberGenerator.Next(10);
             }
             return code;
-        }
-
-        private static async Task SendCodeAsync(User userToRecover, string forgotMasterPasswordCode)
-        {
-            //Emails the username and 6-digit code to a user
-            if (userToRecover == null)
-            {
-                return;
-            }
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("My App", MAIL_FROM));
-            message.To.Add(new MailboxAddress("", userToRecover.Email));
-            message.Subject = "Password Recovery";
-
-            message.Body = new TextPart("plain")
-            {
-                Text = $"Hello, {userToRecover.Username}! Your 6-digit code is: {forgotMasterPasswordCode}"
-            };
-
-            using var client = new SmtpClient();
-            client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
-            await client.ConnectAsync("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
-
-            // Gmail now requires App Passwords (not your normal Gmail password!)
-            await client.AuthenticateAsync(MAIL_FROM, APP_PASSWORD);
-
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
         }
     }
 }

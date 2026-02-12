@@ -113,7 +113,7 @@ namespace FinalProject333057891
             editor.PutString("Username", user.Username);
             editor.PutString("Email", user.Email);
             editor.PutString("Phone", user.Phone);
-            editor.PutString("MasterPassword", etLoginPassword.Text.Trim());
+            editor.PutString("MasterPassword", etLoginPassword.Text.Trim()); //FIX THIS - storing master password in shared preferences is not secure
             editor.Commit();
         }
     }

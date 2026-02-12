@@ -49,7 +49,7 @@ namespace FinalProject333057891
             editor.Remove("Username");
             editor.Remove("Email");
             editor.Remove("Phone");
-            editor.Remove("MasterPassword");
+            editor.Remove("MasterPassword"); //FIX THIS - storing master password in shared preferences is not secure
             editor.Commit();
         }
     }

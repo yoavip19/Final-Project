@@ -64,11 +64,15 @@
     <Compile Include="Application.cs" />
     <Compile Include="AppSuggestion.cs" />
     <Compile Include="AppSuggestionAdapter.cs" />
+    <Compile Include="EditPasswordDialog.cs" />
+    <Compile Include="EmailHelper.cs" />
     <Compile Include="GooglePlayAPI.cs" />
     <Compile Include="HomepageActivity.cs" />
     <Compile Include="LoginActivity.cs" />
     <Compile Include="Password.cs" />
+    <Compile Include="PasswordItem.cs" />
     <Compile Include="PasswordListActivity.cs" />
+    <Compile Include="PasswordListAdapter.cs" />
     <Compile Include="SignedMenuFragment.cs" />
     <Compile Include="SignupActivity.cs" />
     <Compile Include="UpdateMasterPasswordActivity.cs" />
@@ -186,6 +190,16 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\app_suggestion_item.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\password_list_item.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\edit_password_dialog_layout.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>

@@ -40,12 +40,12 @@ namespace FinalProject333057891
         {
         }
 
-        public Password(string username, string appPackageID, string masterPassword, string appUsername, string plainPassword, bool isFavorite)
+        public Password(string username, string appPackageID, string masterPassword, string appUsername, string plainPassword, bool isFavorite) //FIX THIS - master password should not be passed like this
         {
             Username = username;
             AppPackageID = appPackageID;
             AppUsername = appUsername;
-            PasswordEncrypted = SecurityHelper.EncryptAES(plainPassword, masterPassword, out string salt, out string initVector); //Master password from shared preference
+            PasswordEncrypted = SecurityHelper.EncryptAES(plainPassword, masterPassword, out string salt, out string initVector); //FIX THIS - master password should not be passed like this
             Salt = salt;
             InitVector = initVector;
             IsFavorite = isFavorite;
