@@ -13,22 +13,24 @@ using System.Text;
 
 namespace FinalProject333057891
 {
-    public class AppSuggestionAdapter : BaseAdapter<AppSuggestion>, IFilterable
+    public class ApplicationAdapter : BaseAdapter<Application>, IFilterable
     {
-        private readonly List<AppSuggestion> originalItems;
-        private List<AppSuggestion> filteredItems;
+        private readonly List<Application> originalItems;
+        private List<Application> filteredItems;
         private readonly Context context;
-        private readonly SuggestionFilter filter;
+        private readonly ApplicationFilter filter;
+        private bool enableFiltering;
 
-        public AppSuggestionAdapter(Context context, List<AppSuggestion> items)
+        public ApplicationAdapter(Context context, List<Application> items, bool enableFiltering = true)
         {
             this.context = context;
-            this.originalItems = items ?? new List<AppSuggestion>();
-            this.filteredItems = new List<AppSuggestion>(this.originalItems);
-            this.filter = new SuggestionFilter(this);
+            this.enableFiltering = enableFiltering;
+            this.originalItems = items ?? new List<Application>();
+            this.filteredItems = new List<Application>(this.originalItems);
+            this.filter = new ApplicationFilter(this);
         }
 
-        public override AppSuggestion this[int position] => filteredItems[position];
+        public override Application this[int position] => filteredItems[position];
 
         public override int Count => filteredItems.Count;
 
@@ -36,23 +38,31 @@ namespace FinalProject333057891
 
         public Filter Filter => filter;
 
+        /// <summary>
+        /// Enable or disable filtering dynamically
+        /// </summary>
+        public void SetFilteringEnabled(bool enabled)
+        {
+            enableFiltering = enabled;
+        }
+
         public override View GetView(int position, View convertView, ViewGroup parent)
         {
             var view = LayoutInflater.From(context).Inflate(Resource.Layout.app_suggestion_item, parent, false);
 
-            var suggestion = filteredItems[position];
+            var app = filteredItems[position];
 
             var ivIcon = view.FindViewById<ImageView>(Resource.Id.ivAppIcon);
             var tvName = view.FindViewById<TextView>(Resource.Id.tvAppName);
 
-            tvName.Text = suggestion.AppName ?? "";
+            tvName.Text = app.AppName ?? "";
 
             Bitmap icon = null;
-            if (!string.IsNullOrEmpty(suggestion.IconBase64))
+            if (!string.IsNullOrEmpty(app.IconBase64))
             {
                 try
                 {
-                    icon = Application.Base64ToBitmap(suggestion.IconBase64);
+                    icon = Application.Base64ToBitmap(app.IconBase64);
                 }
                 catch
                 {
@@ -64,11 +74,11 @@ namespace FinalProject333057891
             return view;
         }
 
-        private class SuggestionFilter : Filter
+        private class ApplicationFilter : Filter
         {
-            private readonly AppSuggestionAdapter adapter;
+            private readonly ApplicationAdapter adapter;
 
-            public SuggestionFilter(AppSuggestionAdapter adapter)
+            public ApplicationFilter(ApplicationAdapter adapter)
             {
                 this.adapter = adapter;
             }
@@ -77,10 +87,20 @@ namespace FinalProject333057891
             {
                 var results = new FilterResults();
 
+                // If filtering is disabled, return all items
+                if (!adapter.enableFiltering)
+                {
+                    var allItems = new List<Application>(adapter.originalItems);
+                    results.Values = new JavaList<Application>(allItems);
+                    results.Count = allItems.Count;
+                    return results;
+                }
+
+                // Normal filtering behavior
                 if (constraint == null || constraint.Length() == 0)
                 {
-                    var list = new List<AppSuggestion>(adapter.originalItems);
-                    results.Values = new JavaList<AppSuggestion>(list);
+                    var list = new List<Application>(adapter.originalItems);
+                    results.Values = new JavaList<Application>(list);
                     results.Count = list.Count;
                 }
                 else
@@ -90,7 +110,7 @@ namespace FinalProject333057891
                         .Where(a => !string.IsNullOrEmpty(a.AppName) && a.AppName.ToLowerInvariant().Contains(query))
                         .ToList();
 
-                    results.Values = new JavaList<AppSuggestion>(filtered);
+                    results.Values = new JavaList<Application>(filtered);
                     results.Count = filtered.Count;
                 }
 
@@ -99,7 +119,7 @@ namespace FinalProject333057891
 
             protected override void PublishResults(ICharSequence constraint, FilterResults results)
             {
-                var values = results?.Values.JavaCast<JavaList<AppSuggestion>>();
+                var values = results?.Values.JavaCast<JavaList<Application>>();
 
                 if (values != null && values.Count > 0)
                 {
@@ -109,7 +129,7 @@ namespace FinalProject333057891
                 else
                 {
                     // If no results, clear the list or reset
-                    adapter.filteredItems = new List<AppSuggestion>();
+                    adapter.filteredItems = new List<Application>();
                     adapter.NotifyDataSetInvalidated();
                 }
             }
