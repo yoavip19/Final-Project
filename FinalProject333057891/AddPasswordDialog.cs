@@ -114,14 +114,12 @@ namespace FinalProject333057891
             // CRITICAL FIX: Don't switch adapters if locked
             if (lockTextChanges)
             {
-                System.Diagnostics.Debug.WriteLine("TextChanged ignored - locked");
                 return;
             }
 
             // If we were showing search results and user starts typing again
             if (showingSearchResults && !string.IsNullOrEmpty(actvAppSearch.Text))
             {
-                System.Diagnostics.Debug.WriteLine("TextChanged: Switching back to local search");
                 // Switch back to local apps with filtering enabled
                 List<Application> localApps = LoadLocalApps();
                 var adapter = new ApplicationAdapter(Activity, localApps, enableFiltering: true);
@@ -166,11 +164,6 @@ namespace FinalProject333057891
 
                 if (onlineResults != null && onlineResults.Count > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Search returned {onlineResults.Count} results:");
-                    for (int i = 0; i < Math.Min(5, onlineResults.Count); i++)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"  {i}: {onlineResults[i].AppName} ({onlineResults[i].PackageID})");
-                    }
 
                     // Create adapter with filtering DISABLED for search results
                     var searchAdapter = new ApplicationAdapter(Activity, onlineResults, enableFiltering: false);
@@ -202,12 +195,6 @@ namespace FinalProject333057891
 
         private void ActvAppSearch_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("===== ITEM CLICK =====");
-            System.Diagnostics.Debug.WriteLine($"Position: {e.Position}");
-            System.Diagnostics.Debug.WriteLine($"Adapter type: {actvAppSearch.Adapter?.GetType().Name}");
-            System.Diagnostics.Debug.WriteLine($"Adapter count: {actvAppSearch.Adapter?.Count}");
-            System.Diagnostics.Debug.WriteLine($"Showing search results: {showingSearchResults}");
-            System.Diagnostics.Debug.WriteLine($"Text changes locked: {lockTextChanges}");
 
             try
             {
@@ -221,13 +208,11 @@ namespace FinalProject333057891
 
                 if (e.Position < 0 || e.Position >= adapter.Count)
                 {
-                    System.Diagnostics.Debug.WriteLine($"ERROR: Position {e.Position} out of bounds (count: {adapter.Count})");
                     Toast.MakeText(Activity, "Selection error", ToastLength.Short).Show();
                     return;
                 }
 
                 selectedApp = adapter[e.Position];
-                System.Diagnostics.Debug.WriteLine($"Selected: {selectedApp.AppName} ({selectedApp.PackageID})");
 
                 // Update UI
                 tvSelectedAppName.Text = selectedApp.AppName;
@@ -238,7 +223,6 @@ namespace FinalProject333057891
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Icon error: {ex.Message}");
                     ivSelectedAppIcon.SetImageResource(Android.Resource.Drawable.IcMenuGallery);
                 }
 
@@ -249,16 +233,12 @@ namespace FinalProject333057891
 
                 // CRITICAL FIX: Unlock text changes after selection is complete
                 lockTextChanges = false;
-                System.Diagnostics.Debug.WriteLine("Text changes unlocked after selection");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Selection error: {ex}");
                 Toast.MakeText(Activity, "Error: " + ex.Message, ToastLength.Long).Show();
                 lockTextChanges = false; // Unlock on error
             }
-
-            System.Diagnostics.Debug.WriteLine("======================");
         }
 
         private void BtnToggleConfirmPassword_Click(object sender, EventArgs e)
@@ -294,8 +274,6 @@ namespace FinalProject333057891
             List<Application> localApps = LoadLocalApps();
             var adapter = new ApplicationAdapter(Activity, localApps, enableFiltering: true);
             actvAppSearch.Adapter = adapter;
-
-            System.Diagnostics.Debug.WriteLine("Reset to local search - text changes unlocked");
         }
 
         private void BtnAddPassword_Click(object sender, EventArgs e)
@@ -305,8 +283,6 @@ namespace FinalProject333057891
                 Toast.MakeText(Activity, "Please select an application", ToastLength.Short).Show();
                 return;
             }
-
-            System.Diagnostics.Debug.WriteLine($"Adding password for: {selectedApp.AppName} ({selectedApp.PackageID})");
 
             try
             {
@@ -334,7 +310,6 @@ namespace FinalProject333057891
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Add password error: {ex}");
                 Toast.MakeText(Activity, "Error: " + ex.Message, ToastLength.Short).Show();
             }
         }

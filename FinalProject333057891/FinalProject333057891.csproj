@@ -63,6 +63,7 @@
     <Compile Include="AddPasswordDialog.cs" />
     <Compile Include="Application.cs" />
     <Compile Include="ApplicationAdapter.cs" />
+    <Compile Include="ViewPasswordDialog.cs" />
     <Compile Include="EditPasswordDialog.cs" />
     <Compile Include="EmailHelper.cs" />
     <Compile Include="GooglePlayAPI.cs" />
@@ -199,6 +200,11 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\edit_password_dialog_layout.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\view_password_dialog_layout.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>

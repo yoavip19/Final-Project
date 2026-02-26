@@ -49,7 +49,7 @@ namespace FinalProject333057891
             adapter = new PasswordListAdapter(new List<PasswordItem>());
 
             // Subscribe to adapter events
-            adapter.SendPasswordClicked += Adapter_SendPasswordClicked;
+            adapter.ViewPasswordClicked += Adapter_ViewPasswordClicked;
             adapter.EditPasswordClicked += Adapter_EditPasswordClicked;
 
             rvPasswordList.SetAdapter(adapter);
@@ -143,22 +143,22 @@ namespace FinalProject333057891
         }
 
         /// <summary>
-        /// Handle Send Password button click
+        /// Handle view Password button click
         /// </summary>
-        private void Adapter_SendPasswordClicked(object sender, PasswordItem item)
+        private void Adapter_ViewPasswordClicked(object sender, PasswordItem item)
         {
-            // Show master password confirmation before sending email
-            ShowMasterPasswordConfirmationForSend(item);
+            // Show master password confirmation before viewing
+            ShowMasterPasswordConfirmationForView(item);
         }
 
         /// <summary>
-        /// Show master password confirmation dialog before sending password via email
+        /// Show master password confirmation dialog before viewing password
         /// </summary>
-        private void ShowMasterPasswordConfirmationForSend(PasswordItem item)
+        private void ShowMasterPasswordConfirmationForView(PasswordItem item)
         {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.SetTitle("Confirm Master Password");
-            builder.SetMessage($"Enter your master password to send the password for {item.AppName} to your email:");
+            builder.SetMessage($"Enter your master password to view the password for {item.AppName}:");
 
             // Create EditText for master password
             EditText input = new EditText(this);
@@ -177,7 +177,7 @@ namespace FinalProject333057891
             builder.SetPositiveButton("Confirm", (s, e) =>
             {
                 string masterPassword = input.Text;
-                VerifyMasterPasswordAndSendEmail(masterPassword, item);
+                VerifyMasterPasswordAndView(masterPassword, item);
             });
 
             builder.SetNegativeButton("Cancel", (s, e) => { });
@@ -186,17 +186,17 @@ namespace FinalProject333057891
         }
 
         /// <summary>
-        /// Verify master password and send email if correct
+        /// Verify master password, decrypt password, and show view dialog
         /// </summary>
-        private async void VerifyMasterPasswordAndSendEmail(string masterPassword, PasswordItem item)
+        private void VerifyMasterPasswordAndView(string masterPassword, PasswordItem item)
         {
             try
             {
                 SQLiteConnection db = Helper.GetDBCommand(this);
 
                 // Get current user from database
-                var prefs = GetSharedPreferences("details", FileCreationMode.Private);
-                string username = prefs.GetString("Username", "");
+                var sp = GetSharedPreferences("details", FileCreationMode.Private);
+                string username = sp.GetString("Username", "");
 
                 var user = db.Find<User>(username);
 
@@ -214,73 +214,26 @@ namespace FinalProject333057891
                     return;
                 }
 
-                // Master password verified - decrypt and send email
-                await DecryptAndSendPasswordEmail(masterPassword, item, user.Email);
-            }
-            catch (Exception ex)
-            {
-                Toast.MakeText(this, "Error verifying password: " + ex.Message, ToastLength.Long).Show();
-            }
-        }
-
-        /// <summary>
-        /// Decrypt password and send it via email
-        /// </summary>
-        private async Task DecryptAndSendPasswordEmail(string masterPassword, PasswordItem item, string userEmail)
-        {
-            string decryptedPassword = null;
-
-            try
-            {
-                // Show progress dialog
-                ProgressDialog progressDialog = new ProgressDialog(this);
-                progressDialog.SetMessage("Sending password...");
-                progressDialog.SetCancelable(false);
-                progressDialog.Show();
-
-                // Decrypt the password
-                decryptedPassword = SecurityHelper.DecryptAES(
+                // Master password verified - decrypt the password
+                string decryptedPassword = SecurityHelper.DecryptAES(
                     item.PasswordEncrypted,
                     masterPassword,
                     item.Salt,
                     item.InitVector
                 );
 
-                // Create email message body
-                string messageBody = $@"Hello,
+                // Open view dialog with decrypted password
+                var viewPasswordDialog = new ViewPasswordDialog(item, decryptedPassword);
+                viewPasswordDialog.Show(SupportFragmentManager, "view_password");
 
-                    You requested your password for {item.AppName}.
-
-                    App: {item.AppName}
-                    Username: {item.AppUsername}
-                    Password: {decryptedPassword}
-
-                    Please keep this information secure and delete this email after saving your password.
-
-                    Best regards,
-                    Your Password Manager";
-
-                // Send email
-                await EmailHelper.SendEmailAsync(userEmail, messageBody);
-
-                // Dismiss progress dialog
-                progressDialog.Dismiss();
-
-                // Show success message
-                Toast.MakeText(this, $"Password sent to {userEmail}", ToastLength.Long).Show();
+                // CRITICAL SECURITY: Clear decrypted password from local variable
+                // It will be managed by the dialog now
+                decryptedPassword = null;
+                GC.Collect();
             }
             catch (Exception ex)
             {
-                Toast.MakeText(this, "Error sending email: " + ex.Message, ToastLength.Long).Show();
-            }
-            finally
-            {
-                // CRITICAL SECURITY: Clear decrypted password from memory immediately
-                if (decryptedPassword != null)
-                {
-                    decryptedPassword = null;
-                    GC.Collect(); // Force garbage collection to clear memory
-                }
+                Toast.MakeText(this, "Error: " + ex.Message, ToastLength.Long).Show();
             }
         }
 

@@ -12,7 +12,7 @@ namespace FinalProject333057891
         private List<PasswordItem> passwordItems;
         
         // Events for button clicks
-        public event EventHandler<PasswordItem> SendPasswordClicked;
+        public event EventHandler<PasswordItem> ViewPasswordClicked;
         public event EventHandler<PasswordItem> EditPasswordClicked;
 
         public PasswordListAdapter(List<PasswordItem> items)
@@ -24,7 +24,7 @@ namespace FinalProject333057891
         {
             View itemView = LayoutInflater.From(parent.Context)
                 .Inflate(Resource.Layout.password_list_item, parent, false);
-            return new PasswordViewHolder(itemView, OnSendClick, OnEditClick);
+            return new PasswordViewHolder(itemView, OnViewClick, OnEditClick);
         }
 
         public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
@@ -38,11 +38,11 @@ namespace FinalProject333057891
         public override int ItemCount => passwordItems.Count;
 
         // Handle Send button click
-        private void OnSendClick(int position)
+        private void OnViewClick(int position)
         {
             if (position >= 0 && position < passwordItems.Count)
             {
-                SendPasswordClicked?.Invoke(this, passwordItems[position]);
+                ViewPasswordClicked?.Invoke(this, passwordItems[position]);
             }
         }
 
@@ -69,19 +69,19 @@ namespace FinalProject333057891
         {
             private ImageView imgAppIcon;
             private TextView tvAppName;
-            private Button btnSendPassword;
+            private Button btnViewPassword;
             private Button btnEditPassword;
 
-            public PasswordViewHolder(View itemView, Action<int> sendClickListener, Action<int> editClickListener) 
+            public PasswordViewHolder(View itemView, Action<int> viewClickListener, Action<int> editClickListener) 
                 : base(itemView)
             {
                 imgAppIcon = itemView.FindViewById<ImageView>(Resource.Id.imgAppIcon);
                 tvAppName = itemView.FindViewById<TextView>(Resource.Id.tvAppName);
-                btnSendPassword = itemView.FindViewById<Button>(Resource.Id.btnSendPassword);
+                btnViewPassword = itemView.FindViewById<Button>(Resource.Id.btnViewPassword);
                 btnEditPassword = itemView.FindViewById<Button>(Resource.Id.btnEditPassword);
 
                 // Wire up button clicks
-                btnSendPassword.Click += (sender, e) => sendClickListener(AdapterPosition);
+                btnViewPassword.Click += (sender, e) => viewClickListener(AdapterPosition);
                 btnEditPassword.Click += (sender, e) => editClickListener(AdapterPosition);
             }
 
