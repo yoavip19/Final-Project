@@ -13,7 +13,7 @@ namespace FinalProject333057891
     public static class GooglePlayAPI
     {
         private static readonly HttpClient client = new HttpClient();
-        private const string SerpApiKey = MainActivity.Key;
+        private const string SerpApiKey = MainActivity.SerpApiKey;
 
         /// <summary>
         /// Searches Google Play Store and returns Application objects.

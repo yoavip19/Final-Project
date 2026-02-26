@@ -63,6 +63,8 @@
     <Compile Include="AddPasswordDialog.cs" />
     <Compile Include="Application.cs" />
     <Compile Include="ApplicationAdapter.cs" />
+    <Compile Include="LinkCheckerActivity.cs" />
+    <Compile Include="PhishingCheckerAPI.cs" />
     <Compile Include="ViewPasswordDialog.cs" />
     <Compile Include="EditPasswordDialog.cs" />
     <Compile Include="EmailHelper.cs" />
@@ -205,6 +207,11 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\view_password_dialog_layout.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\link_checker_layout.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>

@@ -13,11 +13,13 @@ namespace FinalProject333057891
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
     public class MainActivity : BaseActivity
     {
-        #region Constants
-        public const string Key = "7607fe5ec0ffb1d79744ef9d6e87b5b372360197030129292e46937a979f4aa2";
+        #region Credentials
+        public const string SerpApiKey = "7607fe5ec0ffb1d79744ef9d6e87b5b372360197030129292e46937a979f4aa2";
         public const string MailFrom = "yudbet4ironia@gmail.com";
         public const string AppPassword = "qhip imme dcek jgus";
+        public const string SafeBrowsingKey = "AIzaSyAC4xZih_tGJ8OK08I9FiGZ800TCqKCxNs";
         #endregion
+        //FIX THIS WHEN CREATING SERVER
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);

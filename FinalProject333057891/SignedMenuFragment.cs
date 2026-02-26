@@ -23,6 +23,7 @@ namespace FinalProject333057891
             // Get buttons
             Button btnHomepage = view.FindViewById<Button>(Resource.Id.btnMenuHomepage);
             Button btnPasswordList = view.FindViewById<Button>(Resource.Id.btnMenuPasswordList);
+            Button btnLinkChecker = view.FindViewById<Button>(Resource.Id.btnMenuLinkChecker);
             Button btnLogout = view.FindViewById<Button>(Resource.Id.btnMenuLogout);
 
             sp = Activity.GetSharedPreferences("details", FileCreationMode.Private);
@@ -34,6 +35,10 @@ namespace FinalProject333057891
             btnPasswordList.Click += (s, e) =>
             {
                 Activity.StartActivity(new Intent(Activity, typeof(PasswordListActivity)));
+            };
+            btnLinkChecker.Click += (s, e) =>
+            {
+                Activity.StartActivity(new Intent(Activity, typeof(LinkCheckerActivity)));
             };
             btnLogout.Click += (s, e) =>
             {

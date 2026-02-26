@@ -54,6 +54,7 @@ namespace FinalProject333057891
 
                 intent.PutExtra("UsernameToUpdate", userToRecover.Username);
                 intent.PutExtra("EmailCode", emailCode);
+                intent.PutExtra("UserEmail", userToRecover.Email);
 
                 StartActivity(intent);
             }
@@ -82,19 +83,6 @@ namespace FinalProject333057891
                 Toast.MakeText(this, "Code error:\n" + ex.ToString(), ToastLength.Short).Show();
                 return null;
             }
-        }
-
-        private string GenerateEmailCode()
-        {
-            //Generates 6-digit code
-            Random randomNumberGenerator = new Random();
-            const int CODE_LENGTH = 6;
-            string code = "";
-            for (int i = 0; i < CODE_LENGTH; i++)
-            {
-                code += randomNumberGenerator.Next(10);
-            }
-            return code;
         }
     }
 }
