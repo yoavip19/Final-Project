@@ -76,7 +76,7 @@ namespace FinalProject333057891
             }
             catch (Exception ex)
             {
-                tvResult.Text = "Error checking link. Please verify your connection and try again.";
+                tvResult.Text = ex.Message;//"Error checking link. Please verify your connection and try again.";
                 tvResult.SetTextColor(Android.Graphics.Color.ParseColor("#FF5252"));
                 System.Diagnostics.Debug.WriteLine($"PhishingChecker error: {ex.Message}");
             }

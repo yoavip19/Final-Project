@@ -14,6 +14,7 @@ namespace FinalProject333057891
         // Events for button clicks
         public event EventHandler<PasswordItem> ViewPasswordClicked;
         public event EventHandler<PasswordItem> EditPasswordClicked;
+        public event EventHandler<PasswordItem> DeletePasswordClicked;
 
         public PasswordListAdapter(List<PasswordItem> items)
         {
@@ -24,7 +25,7 @@ namespace FinalProject333057891
         {
             View itemView = LayoutInflater.From(parent.Context)
                 .Inflate(Resource.Layout.password_list_item, parent, false);
-            return new PasswordViewHolder(itemView, OnViewClick, OnEditClick);
+            return new PasswordViewHolder(itemView, OnViewClick, OnEditClick, OnDeleteClick);
         }
 
         public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
@@ -55,6 +56,14 @@ namespace FinalProject333057891
             }
         }
 
+        private void OnDeleteClick(int position)
+        {
+            if (position >= 0 && position < passwordItems.Count)
+            {
+                DeletePasswordClicked?.Invoke(this, passwordItems[position]);
+            }
+        }
+
         /// <summary>
         /// Update the adapter's data and refresh the view
         /// </summary>
@@ -71,18 +80,20 @@ namespace FinalProject333057891
             private TextView tvAppName;
             private Button btnViewPassword;
             private Button btnEditPassword;
+            private Button btnDeletePassword;
 
-            public PasswordViewHolder(View itemView, Action<int> viewClickListener, Action<int> editClickListener) 
+            public PasswordViewHolder(View itemView, Action<int> viewClickListener, Action<int> editClickListener, Action<int> deleteClickListener) 
                 : base(itemView)
             {
                 imgAppIcon = itemView.FindViewById<ImageView>(Resource.Id.imgAppIcon);
                 tvAppName = itemView.FindViewById<TextView>(Resource.Id.tvAppName);
                 btnViewPassword = itemView.FindViewById<Button>(Resource.Id.btnViewPassword);
                 btnEditPassword = itemView.FindViewById<Button>(Resource.Id.btnEditPassword);
+                btnDeletePassword = itemView.FindViewById<Button>(Resource.Id.btnDeletePassword);
 
-                // Wire up button clicks
                 btnViewPassword.Click += (sender, e) => viewClickListener(AdapterPosition);
                 btnEditPassword.Click += (sender, e) => editClickListener(AdapterPosition);
+                btnDeletePassword.Click += (sender, e) => deleteClickListener(AdapterPosition);
             }
 
             public void Bind(PasswordItem item)

@@ -21,6 +21,7 @@ namespace FinalProject333057891
         TextView tvSignupUsernameError, tvSignupEmailError, tvSignupPhoneError, tvSignupPasswordError, tvSignupConfirmPasswordError;
         EditText etSignupUsername, etSignupEmail, etSignupPhone, etSignupPassword, etSignupConfirmPassword;
         Button btnSignupSubmit, btnSignupHidePassword, btnSignupHideConfirmPassword;
+        Spinner spinnerPhonePrefix;
         #endregion
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -39,6 +40,8 @@ namespace FinalProject333057891
             etSignupEmail = FindViewById<EditText>(Resource.Id.etSignupEmail);
 
             tvSignupPhoneError = FindViewById<TextView>(Resource.Id.tvSignupPhoneError);
+
+            spinnerPhonePrefix = FindViewById<Spinner>(Resource.Id.spinnerPhonePrefix);
 
             etSignupPhone = FindViewById<EditText>(Resource.Id.etSignupPhone);
 
@@ -59,6 +62,12 @@ namespace FinalProject333057891
             btnSignupSubmit = FindViewById<Button>(Resource.Id.btnSignupSubmit);
 
             #endregion
+
+            // Populate prefix options
+            var prefixes = new List<string> { "050", "051", "052", "053", "054", "055", "056", "057", "058", "059", "02", "03", "04" };
+            var prefixAdapter = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleSpinnerItem, prefixes);
+            prefixAdapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            spinnerPhonePrefix.Adapter = prefixAdapter;
 
             UnsignedMenuFragment fragment = new UnsignedMenuFragment();
             SupportFragmentManager.BeginTransaction().Replace(Resource.Id.flSignupMenuContainer, fragment).Commit();
@@ -91,16 +100,10 @@ namespace FinalProject333057891
             //handles signup
             //if (IsValid())
             //{
-            User user = new User(etSignupUsername.Text.Trim(), etSignupEmail.Text.Trim(), etSignupPhone.Text.Trim(), etSignupPassword.Text.Trim());
+            string fullPhone = spinnerPhonePrefix.SelectedItem.ToString() + etSignupPhone.Text.Trim();
+            User user = new User(etSignupUsername.Text.Trim(), etSignupEmail.Text.Trim(), fullPhone, etSignupPassword.Text.Trim());
             try
             {
-                dbCommand = Helper.GetDBCommand(this);
-                User check = dbCommand.Find<User>(etSignupUsername.Text);
-                if (check != null)
-                {
-                    Toast.MakeText(this, "Username already exists", ToastLength.Short).Show();
-                    return;
-                }
 
                 int rowChange = dbCommand.Insert(user);
                 if (rowChange > 0)
@@ -122,27 +125,42 @@ namespace FinalProject333057891
         private bool IsValid()
         {
             bool noError = true;
-            if (!Validation.IsValidUsername(etSignupUsername.Text))
+            if (!Validation.IsValidUsername(etSignupUsername.Text.Trim()))
             {
                 noError = false;
                 tvSignupUsernameError.Visibility = ViewStates.Visible;
             }
-            if (!Validation.IsValidEmail(etSignupEmail.Text))
+            if (!Validation.IsUniqueUsername(this, etSignupUsername.Text.Trim()))
+            {
+                noError = false;
+                tvSignupUsernameError.Visibility = ViewStates.Visible;
+            }
+            if (!Validation.IsValidEmail(etSignupEmail.Text.Trim()))
             {
                 noError = false;
                 tvSignupEmailError.Visibility = ViewStates.Visible;
             }
-            //if (!Validation.IsValidPhone(etSignupPhone.Text))
-            //{
-            //    noError = false;
-            //    tvSignupPhoneError.Visibility = ViewStates.Visible;
-            //}
-            if (!Validation.IsStrongPassword(etSignupPassword.Text))
+            if (!Validation.IsUniqueEmail(this, etSignupEmail.Text.Trim()))
+            {
+                noError = false;
+                tvSignupEmailError.Visibility = ViewStates.Visible;
+            }
+            if (!Validation.IsValidPhone(etSignupPhone.Text.Trim()))
+            {
+                noError = false;
+                tvSignupPhoneError.Visibility = ViewStates.Visible;
+            }
+            if (!Validation.IsUniquePhone(this, spinnerPhonePrefix.SelectedItem.ToString() + etSignupPhone.Text.Trim()))
+            {
+                noError = false;
+                tvSignupPhoneError.Visibility = ViewStates.Visible;
+            }
+            if (!Validation.IsStrongPassword(etSignupPassword.Text.Trim()))
             {
                 noError = false;
                 tvSignupPasswordError.Visibility = ViewStates.Visible;
             }
-            if (etSignupConfirmPassword.Text != etSignupPassword.Text)
+            if (etSignupConfirmPassword.Text.Trim() != etSignupPassword.Text.Trim())
             {
                 noError = false;
                 tvSignupConfirmPasswordError.Visibility = ViewStates.Visible;

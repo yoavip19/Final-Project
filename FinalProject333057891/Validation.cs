@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using SQLite;
 
 namespace FinalProject333057891
 {
@@ -21,13 +22,53 @@ namespace FinalProject333057891
             var pattern = @"^[A-Za-z][A-Za-z0-9_]{2,19}$";
             return Regex.IsMatch(username, pattern);
         }
+        public static bool IsUniqueUsername(Context context, string username)
+        {
+            // Check username uniqueness
 
+            SQLiteConnection dbCommand = Helper.GetDBCommand(context);
+            User checkUsername = dbCommand.Find<User>(username);
+            if (checkUsername != null)
+            {
+                return false;
+            }
+            return true;
+        }
         public static bool IsValidEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email)) return false;
 
             var pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
             return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
+        }
+        public static bool IsUniqueEmail(Context context, string email)
+        {
+            // Check email uniqueness
+            SQLiteConnection dbCommand = Helper.GetDBCommand(context);
+            var checkEmail = dbCommand.Query<User>("SELECT * FROM Users WHERE Email = ?", email);
+            if (checkEmail.Count > 0)
+            {
+                return false;
+            }
+            return true;
+        }
+        public static bool IsValidPhone(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return false;
+
+            var pattern = @"[0-9]{7}";
+            return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
+        }
+        public static bool IsUniquePhone(Context context, string phone)
+        {
+            // Check phone uniqueness
+            SQLiteConnection dbCommand = Helper.GetDBCommand(context);
+            var checkPhone = dbCommand.Query<User>("SELECT * FROM Users WHERE Phone = ?", phone);
+            if (checkPhone.Count > 0)
+            {
+                return false;
+            }
+            return true;
         }
         public static bool IsStrongPassword(string password)
         {

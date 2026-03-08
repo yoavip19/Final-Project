@@ -51,6 +51,8 @@ namespace FinalProject333057891
             // Subscribe to adapter events
             adapter.ViewPasswordClicked += Adapter_ViewPasswordClicked;
             adapter.EditPasswordClicked += Adapter_EditPasswordClicked;
+            adapter.DeletePasswordClicked += Adapter_DeletePasswordClicked;
+
 
             rvPasswordList.SetAdapter(adapter);
             #endregion
@@ -248,6 +250,104 @@ namespace FinalProject333057891
             editDialog.PasswordUpdated += async (s, e) => await LoadPasswordsAsync();
 
             editDialog.Show(SupportFragmentManager, "edit_password");
+        }
+
+        /// <summary>
+        /// Handle Delete Password button click — shows confirmation dialog before deleting
+        /// </summary>
+        /// <summary>
+        /// Handle Delete Password button click — prompt for master password first
+        /// </summary>
+        private void Adapter_DeletePasswordClicked(object sender, PasswordItem item)
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.SetTitle("Confirm Master Password");
+            builder.SetMessage($"Enter your master password to delete the password for {item.AppName}:");
+
+            EditText input = new EditText(this);
+            input.InputType = InputTypes.ClassText | InputTypes.TextVariationPassword;
+            input.Hint = "Master Password";
+
+            var layoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MatchParent,
+                LinearLayout.LayoutParams.WrapContent);
+            layoutParams.SetMargins(50, 20, 50, 20);
+            input.LayoutParameters = layoutParams;
+
+            builder.SetView(input);
+
+            builder.SetPositiveButton("Confirm", (s, e) =>
+            {
+                VerifyMasterPasswordAndDelete(input.Text, item);
+            });
+
+            builder.SetNegativeButton("Cancel", (s, e) => { });
+            builder.Show();
+        }
+
+        /// <summary>
+        /// Verify master password, then show final confirmation before deleting
+        /// </summary>
+        private void VerifyMasterPasswordAndDelete(string masterPassword, PasswordItem item)
+        {
+            try
+            {
+                SQLiteConnection db = Helper.GetDBCommand(this);
+                var sp = GetSharedPreferences("details", FileCreationMode.Private);
+                string username = sp.GetString("Username", "");
+
+                var user = db.Find<User>(username);
+                if (user == null)
+                {
+                    Toast.MakeText(this, "User not found", ToastLength.Short).Show();
+                    return;
+                }
+
+                string hashedInput = SecurityHelper.HashPassword(masterPassword, user.MasterSalt);
+                if (hashedInput != user.MasterPasswordHash)
+                {
+                    Toast.MakeText(this, "Incorrect master password", ToastLength.Long).Show();
+                    return;
+                }
+
+                // Master password verified — show final confirmation
+                AlertDialog.Builder confirmBuilder = new AlertDialog.Builder(this);
+                confirmBuilder.SetTitle("Delete Password");
+                confirmBuilder.SetMessage($"Are you sure you want to delete the password for {item.AppName}? This cannot be undone.");
+
+                confirmBuilder.SetPositiveButton("Delete", (s, e) =>
+                {
+                    try
+                    {
+                        int rowsDeleted = db.Execute(
+                            "DELETE FROM Passwords WHERE Username = ? AND AppPackageID = ?",
+                            item.Username,
+                            item.AppPackageID
+                        );
+
+                        if (rowsDeleted > 0)
+                        {
+                            Toast.MakeText(this, $"{item.AppName} password deleted.", ToastLength.Short).Show();
+                            _ = LoadPasswordsAsync();
+                        }
+                        else
+                        {
+                            Toast.MakeText(this, "Failed to delete password.", ToastLength.Short).Show();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Toast.MakeText(this, "Error deleting password: " + ex.Message, ToastLength.Long).Show();
+                    }
+                });
+
+                confirmBuilder.SetNegativeButton("Cancel", (s, e) => { });
+                confirmBuilder.Show();
+            }
+            catch (Exception ex)
+            {
+                Toast.MakeText(this, "Error: " + ex.Message, ToastLength.Long).Show();
+            }
         }
 
         private void BtnAddPasswordToList_Click(object sender, EventArgs e)
