@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace FinalProject333057891
 {
@@ -70,43 +71,73 @@ namespace FinalProject333057891
             else
                 etPassword.InputType = InputTypes.ClassText | InputTypes.TextVariationPassword;
         }
-        private void BtnUpdateMasterPassword_Click(object sender, EventArgs e)
+        private async void BtnUpdateMasterPassword_Click(object sender, EventArgs e)
         {
             //updates the password
-            //if(IsValid())
-            //{
-            try
+            bool validInput = await IsValidAsync();
+            if (validInput)
             {
-                dbCommand = Helper.GetDBCommand(this);
-                User updatedUser = dbCommand.Find<User>(updatedUsername);
-                updatedUser.MasterPasswordHash = SecurityHelper.HashPassword(etUpdateMasterPassword.Text, updatedUser.MasterSalt);
-                int rowChange = dbCommand.Update(updatedUser);
-                if (rowChange > 0)
+                try
                 {
-                    Toast.MakeText(this, "Password Updated successfully", ToastLength.Long).Show();
-                    StartActivity(new Intent(this, typeof(MainActivity)));
+                    dbCommand = Helper.GetDBCommand(this);
+                    User updatedUser = dbCommand.Find<User>(updatedUsername);
+                    updatedUser.MasterPasswordHash = SecurityHelper.HashPassword(etUpdateMasterPassword.Text, updatedUser.MasterSalt);
+                    int rowChange = dbCommand.Update(updatedUser);
+                    if (rowChange > 0)
+                    {
+                        Toast.MakeText(this, "Password Updated successfully", ToastLength.Long).Show();
+                        StartActivity(new Intent(this, typeof(MainActivity)));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Toast.MakeText(this, "Code error:\n" + ex.ToString(), ToastLength.Short).Show();
+                    etUpdateMasterConfirmPassword.Text = ex.Message;
                 }
             }
-            catch (Exception ex)
-            {
-                Toast.MakeText(this, "Code error:\n" + ex.ToString(), ToastLength.Short).Show();
-                etUpdateMasterConfirmPassword.Text = ex.Message;
-            }
         }
-        private bool IsValid()
+            
+        private async Task<bool> IsValidAsync()
         {
-            bool noError = true;
-            if (!Validation.IsStrongPassword(etUpdateMasterPassword.Text))
+            bool isValid = true;
+
+            // Password — check format first, then HIBP
+            string passwordError = Validation.GetPasswordError(etUpdateMasterPassword.Text.Trim());
+            if (passwordError != null)
             {
-                noError = false;
+                tvUpdateMasterPasswordError.Text = passwordError;
                 tvUpdateMasterPasswordError.Visibility = ViewStates.Visible;
+                isValid = false;
             }
+            else
+            {
+                // Format passed — now check HIBP
+                bool isCommon = await PasswordStrengthHelper.IsCommonPasswordAsync(this, etUpdateMasterPassword.Text.Trim());
+                if (isCommon)
+                {
+                    tvUpdateMasterPasswordError.Text = "This password has been found in known data breaches, please choose a different one";
+                    tvUpdateMasterPasswordError.Visibility = ViewStates.Visible;
+                    isValid = false;
+                }
+                else
+                {
+                    tvUpdateMasterPasswordError.Visibility = ViewStates.Gone;
+                }
+            }
+
+            // Confirm Password
             if (etUpdateMasterConfirmPassword.Text != etUpdateMasterPassword.Text)
             {
-                noError = false;
+                tvUpdateMasterConfirmPasswordError.Text = "Passwords do not match";
                 tvUpdateMasterConfirmPasswordError.Visibility = ViewStates.Visible;
+                isValid = false;
             }
-            return noError;
+            else
+            {
+                tvUpdateMasterConfirmPasswordError.Visibility = ViewStates.Gone;
+            }
+
+            return isValid;
         }
     }
 }

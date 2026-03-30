@@ -21,6 +21,7 @@ namespace FinalProject333057891
         {
             base.OnCreate(savedInstanceState);
 
+            dbCommand = Helper.GetDBCommand(this);
             sp = GetSharedPreferences("details", FileCreationMode.Private);
         }
     }

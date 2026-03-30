@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace FinalProject333057891
 {
@@ -95,77 +96,99 @@ namespace FinalProject333057891
                 etPassword.InputType = InputTypes.ClassText | InputTypes.TextVariationPassword;
         }
 
-        private void BtnSignupSubmit_Click(object sender, EventArgs e)
+        private async void BtnSignupSubmit_Click(object sender, EventArgs e)
         {
             //handles signup
-            //if (IsValid())
-            //{
-            string fullPhone = spinnerPhonePrefix.SelectedItem.ToString() + etSignupPhone.Text.Trim();
-            User user = new User(etSignupUsername.Text.Trim(), etSignupEmail.Text.Trim(), fullPhone, etSignupPassword.Text.Trim());
-            try
+            bool validInput = await IsValidAsync();
+            if (validInput)
             {
-
-                int rowChange = dbCommand.Insert(user);
-                if (rowChange > 0)
+                string fullPhone = spinnerPhonePrefix.SelectedItem.ToString() + etSignupPhone.Text.Trim();
+                User user = new User(etSignupUsername.Text.Trim(), etSignupEmail.Text.Trim(), fullPhone, etSignupPassword.Text.Trim());
+                try
                 {
-                    Toast.MakeText(this, "User registered successfully", ToastLength.Short).Show();
-                    StartActivity(new Intent(this, typeof(MainActivity)));
+
+                    int rowChange = dbCommand.Insert(user);
+                    if (rowChange > 0)
+                    {
+                        Toast.MakeText(this, "User registered successfully", ToastLength.Short).Show();
+                        StartActivity(new Intent(this, typeof(MainActivity)));
+                    }
+                    else
+                    {
+                        Toast.MakeText(this, "Error with registering", ToastLength.Short).Show();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Toast.MakeText(this, "Code error:\n" + ex.ToString(), ToastLength.Short).Show();
+                }
+            }
+        }
+        private async Task<bool> IsValidAsync()
+        {
+            bool isValid = true;
+
+            // Username
+            if (!Validation.IsValidUsername(etSignupUsername.Text.Trim()))
+            {
+                tvSignupUsernameError.Text = "Username must be 3-20 characters, start with a letter, and contain only letters, digits, or underscores";
+                tvSignupUsernameError.Visibility = ViewStates.Visible;
+                isValid = false;
+            }
+            else
+            {
+                tvSignupUsernameError.Visibility = ViewStates.Gone;
+            }
+
+            // Email
+            if (!Validation.IsValidEmail(etSignupEmail.Text.Trim()))
+            {
+                tvSignupEmailError.Text = "Please enter a valid email address";
+                tvSignupEmailError.Visibility = ViewStates.Visible;
+                isValid = false;
+            }
+            else
+            {
+                tvSignupEmailError.Visibility = ViewStates.Gone;
+            }
+
+            // Password — check format first, then HIBP
+            string passwordError = Validation.GetPasswordError(etSignupPassword.Text.Trim());
+            if (passwordError != null)
+            {
+                tvSignupPasswordError.Text = passwordError;
+                tvSignupPasswordError.Visibility = ViewStates.Visible;
+                isValid = false;
+            }
+            else
+            {
+                // Format passed — now check HIBP
+                bool isCommon = await PasswordStrengthHelper.IsCommonPasswordAsync(this, etSignupPassword.Text.Trim());
+                if (isCommon)
+                {
+                    tvSignupPasswordError.Text = "This password has been found in known data breaches, please choose a different one";
+                    tvSignupPasswordError.Visibility = ViewStates.Visible;
+                    isValid = false;
                 }
                 else
                 {
-                    Toast.MakeText(this, "Error with registering", ToastLength.Short).Show();
+                    tvSignupPasswordError.Visibility = ViewStates.Gone;
                 }
             }
-            catch (Exception ex)
+
+            // Confirm Password
+            if (etSignupConfirmPassword.Text != etSignupPassword.Text)
             {
-                Toast.MakeText(this, "Code error:\n" + ex.ToString(), ToastLength.Short).Show();
-            }
-            //}
-        }
-        private bool IsValid()
-        {
-            bool noError = true;
-            if (!Validation.IsValidUsername(etSignupUsername.Text.Trim()))
-            {
-                noError = false;
-                tvSignupUsernameError.Visibility = ViewStates.Visible;
-            }
-            if (!Validation.IsUniqueUsername(this, etSignupUsername.Text.Trim()))
-            {
-                noError = false;
-                tvSignupUsernameError.Visibility = ViewStates.Visible;
-            }
-            if (!Validation.IsValidEmail(etSignupEmail.Text.Trim()))
-            {
-                noError = false;
-                tvSignupEmailError.Visibility = ViewStates.Visible;
-            }
-            if (!Validation.IsUniqueEmail(this, etSignupEmail.Text.Trim()))
-            {
-                noError = false;
-                tvSignupEmailError.Visibility = ViewStates.Visible;
-            }
-            if (!Validation.IsValidPhone(etSignupPhone.Text.Trim()))
-            {
-                noError = false;
-                tvSignupPhoneError.Visibility = ViewStates.Visible;
-            }
-            if (!Validation.IsUniquePhone(this, spinnerPhonePrefix.SelectedItem.ToString() + etSignupPhone.Text.Trim()))
-            {
-                noError = false;
-                tvSignupPhoneError.Visibility = ViewStates.Visible;
-            }
-            if (!Validation.IsStrongPassword(etSignupPassword.Text.Trim()))
-            {
-                noError = false;
-                tvSignupPasswordError.Visibility = ViewStates.Visible;
-            }
-            if (etSignupConfirmPassword.Text.Trim() != etSignupPassword.Text.Trim())
-            {
-                noError = false;
+                tvSignupConfirmPasswordError.Text = "Passwords do not match";
                 tvSignupConfirmPasswordError.Visibility = ViewStates.Visible;
+                isValid = false;
             }
-            return noError;
+            else
+            {
+                tvSignupConfirmPasswordError.Visibility = ViewStates.Gone;
+            }
+
+            return isValid;
         }
     }
 }

@@ -64,6 +64,7 @@
     <Compile Include="Application.cs" />
     <Compile Include="ApplicationAdapter.cs" />
     <Compile Include="LinkCheckerActivity.cs" />
+    <Compile Include="PasswordStrengthHelper.cs" />
     <Compile Include="PhishingCheckerAPI.cs" />
     <Compile Include="ViewPasswordDialog.cs" />
     <Compile Include="EditPasswordDialog.cs" />

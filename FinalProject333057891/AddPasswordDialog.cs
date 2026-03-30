@@ -278,11 +278,8 @@ namespace FinalProject333057891
 
         private void BtnAddPassword_Click(object sender, EventArgs e)
         {
-            if (selectedApp == null)
-            {
-                Toast.MakeText(Activity, "Please select an application", ToastLength.Short).Show();
+            if (!IsValid())
                 return;
-            }
 
             try
             {
@@ -312,6 +309,62 @@ namespace FinalProject333057891
             {
                 Toast.MakeText(Activity, "Error: " + ex.Message, ToastLength.Short).Show();
             }
+        }
+
+        private bool IsValid()
+        {
+            bool isValid = true;
+
+            // App must be selected
+            if (selectedApp == null)
+            {
+                Toast.MakeText(Activity, "Please select an application", ToastLength.Short).Show();
+                isValid = false;
+            }
+
+            // Username — must not be empty
+            if (string.IsNullOrWhiteSpace(etAppUsername.Text))
+            {
+                tvAppUsernameError.Text = "Username cannot be empty";
+                tvAppUsernameError.Visibility = ViewStates.Visible;
+                isValid = false;
+            }
+            else
+            {
+                tvAppUsernameError.Visibility = ViewStates.Gone;
+            }
+
+            // Password — must not be empty
+            if (string.IsNullOrWhiteSpace(etPassword.Text))
+            {
+                tvPasswordError.Text = "Password cannot be empty";
+                tvPasswordError.Visibility = ViewStates.Visible;
+                isValid = false;
+            }
+            else
+            {
+                tvPasswordError.Visibility = ViewStates.Gone;
+            }
+
+            // Confirm Password — must not be empty and must match
+            if (string.IsNullOrWhiteSpace(etConfirmPassword.Text))
+            {
+                tvConfirmPasswordError.Text = "Please confirm your password";
+                tvConfirmPasswordError.Visibility = ViewStates.Visible;
+                isValid = false;
+            }
+            else if (etConfirmPassword.Text != etPassword.Text)
+            {
+                tvConfirmPasswordError.Text = "Passwords do not match";
+                tvConfirmPasswordError.Visibility = ViewStates.Visible;
+                isValid = false;
+            }
+            else
+            {
+                tvConfirmPasswordError.Visibility = ViewStates.Gone;
+            }
+
+            return isValid;
         }
     }
 }

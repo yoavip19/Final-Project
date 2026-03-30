@@ -131,7 +131,7 @@ namespace FinalProject333057891
             ClearErrors();
 
             // Validate inputs
-            if (!ValidateInputs())
+            if (!IsValid())
                 return;
 
             // Show master password confirmation dialog before saving
@@ -145,30 +145,37 @@ namespace FinalProject333057891
             tvEditConfirmPasswordError.Visibility = ViewStates.Gone;
         }
 
-        private bool ValidateInputs()
+        private bool IsValid()
         {
             bool isValid = true;
 
-            // Validate app username
+            // Username — must not be empty
             if (string.IsNullOrWhiteSpace(etEditAppUsername.Text))
             {
                 tvEditAppUsernameError.Text = "Username cannot be empty";
                 tvEditAppUsernameError.Visibility = ViewStates.Visible;
                 isValid = false;
             }
+            else
+            {
+                tvEditAppUsernameError.Visibility = ViewStates.Gone;
+            }
 
-            // Validate new password (only if user entered something)
             string newPassword = etEditPassword.Text;
             string confirmPassword = etEditConfirmPassword.Text;
 
-            if (!string.IsNullOrEmpty(newPassword) || !string.IsNullOrEmpty(confirmPassword))
+            // Only validate password fields if the user entered something
+            if (string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
             {
-                // If one field has input, both must be filled
                 if (string.IsNullOrWhiteSpace(newPassword))
                 {
                     tvEditPasswordError.Text = "Please enter a new password";
                     tvEditPasswordError.Visibility = ViewStates.Visible;
                     isValid = false;
+                }
+                else
+                {
+                    tvEditPasswordError.Visibility = ViewStates.Gone;
                 }
 
                 if (string.IsNullOrWhiteSpace(confirmPassword))
@@ -177,17 +184,16 @@ namespace FinalProject333057891
                     tvEditConfirmPasswordError.Visibility = ViewStates.Visible;
                     isValid = false;
                 }
-
-                // Check if passwords match
-                if (!string.IsNullOrWhiteSpace(newPassword) && !string.IsNullOrWhiteSpace(confirmPassword))
-                {
-                    if (newPassword != confirmPassword)
-                    {
-                        tvEditConfirmPasswordError.Text = "Passwords do not match";
-                        tvEditConfirmPasswordError.Visibility = ViewStates.Visible;
-                        isValid = false;
-                    }
-                }
+            }
+            else if (!string.IsNullOrWhiteSpace(newPassword) && newPassword != confirmPassword)
+            {
+                tvEditConfirmPasswordError.Text = "Passwords do not match";
+                tvEditConfirmPasswordError.Visibility = ViewStates.Visible;
+                isValid = false;
+            }
+            else
+            {
+                tvEditConfirmPasswordError.Visibility = ViewStates.Gone;
             }
 
             return isValid;

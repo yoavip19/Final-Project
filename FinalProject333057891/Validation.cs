@@ -17,7 +17,6 @@ namespace FinalProject333057891
 {
     public static class Validation
     {
-        private static readonly HttpClient client = new HttpClient();
         public static bool IsValidUsername(string username)
         {
             if (string.IsNullOrWhiteSpace(username)) return false;
@@ -73,50 +72,41 @@ namespace FinalProject333057891
             }
             return true;
         }
-        //Using the Pwned Passwords API to check if the password has been exposed in a data breach
-        public static async Task<bool> IsPasswordCommonAsync(Context context, string password)
+        /// <summary>
+        /// Checks absolute format requirements for the master password.
+        /// Returns the first error message found, or null if all checks pass.
+        /// For the async HIBP check, call PasswordStrengthHelper.IsCommonPasswordAsync separately.
+        /// </summary>
+        public static string GetPasswordError(string password)
         {
-            // SHA-1 hash the password
-            using var sha1 = System.Security.Cryptography.SHA1.Create();
-            byte[] hashBytes = sha1.ComputeHash(Encoding.UTF8.GetBytes(password));
-            string fullHash = BitConverter.ToString(hashBytes).Replace("-", "").ToUpperInvariant();
+            if (string.IsNullOrEmpty(password))
+                return "Password cannot be empty";
 
-            string prefix = fullHash.Substring(0, 5);
-            string suffix = fullHash.Substring(5);
+            if (password.Length < 10)
+                return "Password must be at least 10 characters";
 
-            try
-            {
-                string url = $"https://api.pwnedpasswords.com/range/{prefix}";
-                string response = await client.GetStringAsync(url);
+            if (!Regex.IsMatch(password, "[a-z]"))
+                return "Password must contain at least one lowercase letter";
 
-                // Each line is "HASHSUFFIX:COUNT"
-                foreach (string line in response.Split('\n'))
-                {
-                    string[] parts = line.Split(':');
-                    if (parts[0].Trim().Equals(suffix, StringComparison.OrdinalIgnoreCase))
-                        return true; // Password found in breach database
-                }
-            }
-            catch
-            {
-                Toast.MakeText(context, "Error checking password against breach database", ToastLength.Short).Show();
-                return false; // If API fails, don't block the user
-            }
+            if (!Regex.IsMatch(password, "[A-Z]"))
+                return "Password must contain at least one uppercase letter";
 
-            return false;
+            if (!Regex.IsMatch(password, "\\d"))
+                return "Password must contain at least one digit";
+
+            if (!Regex.IsMatch(password, "[!@#$%^&*()_\\-+=\\[{\\]};:<>|./?]"))
+                return "Password must contain at least one special character";
+
+            return null; // All checks passed
         }
+
+        /// <summary>
+        /// Synchronous password check — format requirements only.
+        /// Does NOT include the HIBP check.
+        /// </summary>
         public static bool IsStrongPassword(string password)
         {
-            if (string.IsNullOrEmpty(password)) return false;
-
-            bool hasLower = Regex.IsMatch(password, "[a-z]");
-            bool hasUpper = Regex.IsMatch(password, "[A-Z]");
-            bool hasDigit = Regex.IsMatch(password, "\\d");
-            bool hasSpecial = Regex.IsMatch(password, "[!@#$%^&*()_\\-+=\\[{\\]};:<>|./?]");
-            bool longEnough = password.Length >= 8;
-
-            return hasLower && hasUpper && hasDigit && hasSpecial && longEnough;
+            return GetPasswordError(password) == null;
         }
-
     }
 }
