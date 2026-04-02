@@ -54,14 +54,14 @@ namespace FinalProject333057891
             }
             return true;
         }
-        public static bool IsValidPhone(string email)
+        public static bool IsValidPhone(string phone)
         {
-            if (string.IsNullOrWhiteSpace(email)) return false;
+            if (string.IsNullOrWhiteSpace(phone)) return false;
 
-            var pattern = @"[0-9]{7}";
-            return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
+            var pattern = @"^[0-9]{7}$";
+            return Regex.IsMatch(phone, pattern, RegexOptions.IgnoreCase);
         }
-        public static bool IsUniquePhone(Context context, string phone)
+        public static bool IsUniquePhone(Context context, string fullPhone)
         {
             // Check phone uniqueness
             SQLiteConnection dbCommand = Helper.GetDBCommand(context);

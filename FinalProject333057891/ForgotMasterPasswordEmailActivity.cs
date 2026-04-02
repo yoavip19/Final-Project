@@ -31,7 +31,7 @@ namespace FinalProject333057891
             etForgotMasterPassword.InputType = InputTypes.TextVariationEmailAddress;
             etForgotMasterPassword.Hint = "Enter email";
 
-            tvForgotMasterPasswordError.Text = "*Incorrect email";
+            tvForgotMasterPasswordError.Text = "Please enter a valid email";
 
             btnForgotMasterPassword.Text = "Send code";
 
@@ -41,7 +41,18 @@ namespace FinalProject333057891
         private async void BtnForgotMasterPassword_Click(object sender, EventArgs e)
         {
             //Handles code emailing and inflates code fragment
-            User userToRecover = FindUserByEmail(etForgotMasterPassword.Text);
+            string emailInput = etForgotMasterPassword.Text?.Trim();
+
+            if (!Validation.IsValidEmail(emailInput))
+            {
+                tvForgotMasterPasswordError.Visibility = ViewStates.Visible;
+                return;
+            }
+
+            tvForgotMasterPasswordError.Visibility = ViewStates.Gone;
+            
+
+            User userToRecover = FindUserByEmail(emailInput);
             string emailCode;
             if (userToRecover != null)
             {

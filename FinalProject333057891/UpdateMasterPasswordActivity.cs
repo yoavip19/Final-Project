@@ -102,39 +102,50 @@ namespace FinalProject333057891
             bool isValid = true;
 
             // Password — check format first, then HIBP
-            string passwordError = Validation.GetPasswordError(etUpdateMasterPassword.Text.Trim());
-            if (passwordError != null)
+            if (string.IsNullOrWhiteSpace(etUpdateMasterPassword.Text))
             {
-                tvUpdateMasterPasswordError.Text = passwordError;
-                tvUpdateMasterPasswordError.Visibility = ViewStates.Visible;
                 isValid = false;
+                tvUpdateMasterPasswordError.Text = "Password cannot be empty";
+                tvUpdateMasterPasswordError.Visibility = ViewStates.Visible;
             }
             else
             {
-                // Format passed — now check HIBP
-                bool isCommon = await PasswordStrengthHelper.IsCommonPasswordAsync(this, etUpdateMasterPassword.Text.Trim());
-                if (isCommon)
+                string passwordError = Validation.GetPasswordError(etUpdateMasterPassword.Text.Trim());
+                if (passwordError != null)
                 {
-                    tvUpdateMasterPasswordError.Text = "This password has been found in known data breaches, please choose a different one";
+                    tvUpdateMasterPasswordError.Text = passwordError;
                     tvUpdateMasterPasswordError.Visibility = ViewStates.Visible;
                     isValid = false;
                 }
                 else
                 {
-                    tvUpdateMasterPasswordError.Visibility = ViewStates.Gone;
+                    // Format passed — now check HIBP
+                    bool isCommon = await PasswordStrengthHelper.IsCommonPasswordAsync(this, etUpdateMasterPassword.Text.Trim());
+                    if (isCommon)
+                    {
+                        tvUpdateMasterPasswordError.Text = "This password has been found in known data breaches, please choose a different one";
+                        tvUpdateMasterPasswordError.Visibility = ViewStates.Visible;
+                        isValid = false;
+                    }
+                    else
+                    {
+                        tvUpdateMasterPasswordError.Visibility = ViewStates.Gone;
+                    }
                 }
             }
 
             // Confirm Password
-            if (etUpdateMasterConfirmPassword.Text != etUpdateMasterPassword.Text)
+            if (string.IsNullOrWhiteSpace(etUpdateMasterConfirmPassword.Text))
             {
+                isValid = false;
+                tvUpdateMasterConfirmPasswordError.Text = "Confirm password cannot be empty";
+                tvUpdateMasterConfirmPasswordError.Visibility = ViewStates.Visible;
+            }
+            else if (etUpdateMasterConfirmPassword.Text != etUpdateMasterPassword.Text)
+            {
+                isValid = false;
                 tvUpdateMasterConfirmPasswordError.Text = "Passwords do not match";
                 tvUpdateMasterConfirmPasswordError.Visibility = ViewStates.Visible;
-                isValid = false;
-            }
-            else
-            {
-                tvUpdateMasterConfirmPasswordError.Visibility = ViewStates.Gone;
             }
 
             return isValid;

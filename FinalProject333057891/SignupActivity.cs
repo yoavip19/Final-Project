@@ -147,47 +147,86 @@ namespace FinalProject333057891
                 tvSignupEmailError.Visibility = ViewStates.Visible;
                 isValid = false;
             }
+            else if (!Validation.IsUniqueEmail(this, etSignupEmail.Text.Trim()))
+            {
+                tvSignupEmailError.Text = "This email belongs to a different user";
+                tvSignupEmailError.Visibility = ViewStates.Visible;
+                isValid = false;
+            }
             else
             {
                 tvSignupEmailError.Visibility = ViewStates.Gone;
             }
 
-            // Password — check format first, then HIBP
-            string passwordError = Validation.GetPasswordError(etSignupPassword.Text.Trim());
-            if (passwordError != null)
+            // Phone
+            string fullPhone = spinnerPhonePrefix.SelectedItem.ToString() + etSignupPhone.Text.Trim();
+            if (!Validation.IsValidPhone(etSignupPhone.Text.Trim()))
             {
-                tvSignupPasswordError.Text = passwordError;
-                tvSignupPasswordError.Visibility = ViewStates.Visible;
+                tvSignupPhoneError.Text = "Please enter a 7-digit phone number";
+                tvSignupPhoneError.Visibility = ViewStates.Visible;
+                isValid = false;
+            }
+            else if (!Validation.IsUniquePhone(this, fullPhone))
+            {
+                tvSignupPhoneError.Text = "This phone number belongs to a different user";
+                tvSignupPhoneError.Visibility = ViewStates.Visible;
                 isValid = false;
             }
             else
             {
-                // Format passed — now check HIBP
-                bool isCommon = await PasswordStrengthHelper.IsCommonPasswordAsync(this, etSignupPassword.Text.Trim());
-                if (isCommon)
+                tvSignupPhoneError.Visibility = ViewStates.Gone;
+            }
+
+            // Password — check format first, then HIBP
+            if (string.IsNullOrWhiteSpace(etSignupPassword.Text))
+            {
+                isValid = false;
+                tvSignupPasswordError.Text = "Password cannot be empty";
+                tvSignupPasswordError.Visibility = ViewStates.Visible;
+            }
+            else
+            {
+                string passwordError = Validation.GetPasswordError(etSignupPassword.Text.Trim());
+                if (passwordError != null)
                 {
-                    tvSignupPasswordError.Text = "This password has been found in known data breaches, please choose a different one";
+                    tvSignupPasswordError.Text = passwordError;
                     tvSignupPasswordError.Visibility = ViewStates.Visible;
                     isValid = false;
                 }
                 else
                 {
-                    tvSignupPasswordError.Visibility = ViewStates.Gone;
+                    // Format passed — now check HIBP
+                    bool isCommon = await PasswordStrengthHelper.IsCommonPasswordAsync(this, etSignupPassword.Text.Trim());
+                    if (isCommon)
+                    {
+                        tvSignupPasswordError.Text = "This password has been found in known data breaches, please choose a different one";
+                        tvSignupPasswordError.Visibility = ViewStates.Visible;
+                        isValid = false;
+                    }
+                    else
+                    {
+                        tvSignupPasswordError.Visibility = ViewStates.Gone;
+                    }
                 }
             }
 
             // Confirm Password
-            if (etSignupConfirmPassword.Text != etSignupPassword.Text)
+            if (string.IsNullOrWhiteSpace(etSignupConfirmPassword.Text))
             {
+                isValid = false;
+                tvSignupConfirmPasswordError.Text = "Confirm password cannot be empty";
+                tvSignupConfirmPasswordError.Visibility = ViewStates.Visible;
+            }
+            else if (etSignupConfirmPassword.Text != etSignupPassword.Text)
+            {
+                isValid = false;
                 tvSignupConfirmPasswordError.Text = "Passwords do not match";
                 tvSignupConfirmPasswordError.Visibility = ViewStates.Visible;
-                isValid = false;
             }
             else
             {
                 tvSignupConfirmPasswordError.Visibility = ViewStates.Gone;
             }
-
             return isValid;
         }
     }

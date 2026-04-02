@@ -180,7 +180,7 @@ namespace FinalProject333057891
 
                 if (string.IsNullOrWhiteSpace(confirmPassword))
                 {
-                    tvEditConfirmPasswordError.Text = "Please confirm your password";
+                    tvEditConfirmPasswordError.Text = "Confirm password cannot be empty";
                     tvEditConfirmPasswordError.Visibility = ViewStates.Visible;
                     isValid = false;
                 }
