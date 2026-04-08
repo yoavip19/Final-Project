@@ -38,6 +38,7 @@ namespace FinalProject333057891
         CheckBox cbFavorite;
 
         // Errors
+        TextView tvAppError;
         TextView tvAppUsernameError;
         TextView tvPasswordError;
         TextView tvConfirmPasswordError;
@@ -78,6 +79,7 @@ namespace FinalProject333057891
 
             cbFavorite = view.FindViewById<CheckBox>(Resource.Id.cbFavorite);
 
+            tvAppError = view.FindViewById<TextView>(Resource.Id.tvAppError);
             tvAppUsernameError = view.FindViewById<TextView>(Resource.Id.tvAppUsernameError);
             tvPasswordError = view.FindViewById<TextView>(Resource.Id.tvPasswordError);
             tvConfirmPasswordError = view.FindViewById<TextView>(Resource.Id.tvConfirmPasswordError);
@@ -318,7 +320,8 @@ namespace FinalProject333057891
             // App must be selected
             if (selectedApp == null)
             {
-                Toast.MakeText(Activity, "Please select an application", ToastLength.Short).Show();
+                tvAppError.Text = "Please select an app";
+                tvAppError.Visibility = ViewStates.Visible;
                 isValid = false;
             }
 

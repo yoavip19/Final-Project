@@ -18,6 +18,9 @@ namespace FinalProject333057891
         public TextView tvForgotMasterPasswordField, tvForgotMasterPasswordError, tvCodeTimer;
         public EditText etForgotMasterPassword;
         public Button btnForgotMasterPassword, btnResendCode;
+        public static string userNameToRecover;
+        public static string userEmailToRecover;
+        public static string forgotMasterPasswordCode;
         #endregion
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -37,7 +40,7 @@ namespace FinalProject333057891
             SupportFragmentManager.BeginTransaction().Replace(Resource.Id.flForgotMasterPasswordMenuContainer, fragment).Commit();
         }
 
-        protected string GenerateEmailCode()
+        protected void GenerateEmailCode()
         {
             // Generates a cryptographically secure 8-character alphanumeric code
             const string CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Excludes ambiguous chars (0,O,1,I)
@@ -55,7 +58,7 @@ namespace FinalProject333057891
                 code[i] = CHARS[randomBytes[i] % CHARS.Length];
             }
 
-            return new string(code);
+            forgotMasterPasswordCode = new string(code);
         }
     }
 }

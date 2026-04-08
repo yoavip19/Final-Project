@@ -13,9 +13,6 @@ namespace FinalProject333057891
     public class ForgotMasterPasswordCodeActivity : ForgotMasterPasswordActivity
     {
         #region Properties
-        public string updatedUsername;
-        public string forgotMasterPasswordCode;
-        public string userEmail;
 
         private const int CODE_EXPIRY_SECONDS = 120; // 2 minutes
         private bool isCodeExpired = false;
@@ -36,10 +33,6 @@ namespace FinalProject333057891
             tvForgotMasterPasswordError.Text = "*Incorrect or expired code";
 
             btnForgotMasterPassword.Text = "Submit";
-
-            updatedUsername = Intent.GetStringExtra("UsernameToUpdate");
-            forgotMasterPasswordCode = Intent.GetStringExtra("EmailCode");
-            userEmail = Intent.GetStringExtra("UserEmail");
 
             tvCodeTimer.Visibility = ViewStates.Visible;
             btnResendCode.Visibility = ViewStates.Visible;
@@ -91,7 +84,7 @@ namespace FinalProject333057891
         {
             if (isCodeExpired)
             {
-                tvForgotMasterPasswordError.Text = "*Code has expired. Please request a new one.";
+                tvForgotMasterPasswordError.Text = "Code has expired. Please request a new one.";
                 tvForgotMasterPasswordError.Visibility = ViewStates.Visible;
                 return;
             }
@@ -99,7 +92,6 @@ namespace FinalProject333057891
             if (forgotMasterPasswordCode == etForgotMasterPassword.Text.Trim())
             {
                 Intent intent = new Intent(this, typeof(UpdateMasterPasswordActivity));
-                intent.PutExtra("UsernameToUpdate", updatedUsername);
                 StartActivity(intent);
             }
             else
@@ -113,10 +105,10 @@ namespace FinalProject333057891
             btnResendCode.Enabled = false;
             btnResendCode.Text = "Sending...";
 
-            forgotMasterPasswordCode = GenerateEmailCode();
-            string messageBody = $"Hello, {updatedUsername}! Your new code is: {forgotMasterPasswordCode}";
+            GenerateEmailCode();
+            string messageBody = $"Hello, {userNameToRecover}! Your new code is: {forgotMasterPasswordCode}";
 
-            await EmailHelper.SendEmailAsync(userEmail, messageBody);
+            await EmailHelper.SendEmailAsync(userEmailToRecover, messageBody);
 
             etForgotMasterPassword.Text = "";
             tvForgotMasterPasswordError.Visibility = ViewStates.Gone;

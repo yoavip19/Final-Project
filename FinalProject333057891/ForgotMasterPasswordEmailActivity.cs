@@ -53,19 +53,16 @@ namespace FinalProject333057891
             
 
             User userToRecover = FindUserByEmail(emailInput);
-            string emailCode;
             if (userToRecover != null)
             {
-                emailCode = GenerateEmailCode();
-                string messageBody = $"Hello, {userToRecover.Username}! Your 6-digit code is: {emailCode}";
+                userNameToRecover = userToRecover.Username;
+                userEmailToRecover = userToRecover.Email;
+                GenerateEmailCode();
+                string messageBody = $"Hello, {userToRecover.Username}! Your 6-digit code is: {forgotMasterPasswordCode}";
 
                 await EmailHelper.SendEmailAsync(userToRecover.Email, messageBody);
 
                 Intent intent = new Intent(this, typeof(ForgotMasterPasswordCodeActivity));
-
-                intent.PutExtra("UsernameToUpdate", userToRecover.Username);
-                intent.PutExtra("EmailCode", emailCode);
-                intent.PutExtra("UserEmail", userToRecover.Email);
 
                 StartActivity(intent);
             }

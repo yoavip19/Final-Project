@@ -54,7 +54,7 @@ namespace FinalProject333057891
             }
             return true;
         }
-        public static bool IsValidPhone(string phone)
+        public static bool IsValidPhoneSuffix(string phone)
         {
             if (string.IsNullOrWhiteSpace(phone)) return false;
 
@@ -65,7 +65,7 @@ namespace FinalProject333057891
         {
             // Check phone uniqueness
             SQLiteConnection dbCommand = Helper.GetDBCommand(context);
-            var checkPhone = dbCommand.Query<User>("SELECT * FROM Users WHERE Phone = ?", phone);
+            var checkPhone = dbCommand.Query<User>("SELECT * FROM Users WHERE Phone = ?", fullPhone);
             if (checkPhone.Count > 0)
             {
                 return false;

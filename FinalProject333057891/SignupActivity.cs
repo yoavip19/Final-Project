@@ -160,7 +160,7 @@ namespace FinalProject333057891
 
             // Phone
             string fullPhone = spinnerPhonePrefix.SelectedItem.ToString() + etSignupPhone.Text.Trim();
-            if (!Validation.IsValidPhone(etSignupPhone.Text.Trim()))
+            if (!Validation.IsValidPhoneSuffix(etSignupPhone.Text.Trim()))
             {
                 tvSignupPhoneError.Text = "Please enter a 7-digit phone number";
                 tvSignupPhoneError.Visibility = ViewStates.Visible;
