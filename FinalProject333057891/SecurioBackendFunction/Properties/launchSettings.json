@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SecurioBackendFunction": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7071"
+    }
+  }
+}
