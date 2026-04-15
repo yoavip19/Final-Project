@@ -1,5 +1,6 @@
 using Android.App;
 using Android.OS;
+using Android.Text;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
@@ -9,7 +10,6 @@ using SecurioClient.Helpers;
 using SecurioClient.Helpers.ServerHelpers;
 using SecurioModels.DataTransferObjects;
 using System;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SecurioClient
@@ -25,6 +25,7 @@ namespace SecurioClient
         private TextView textViewUsernameError;
         private TextView textViewEmailError;
         private TextView textViewPasswordError;
+        private TextView textViewPasswordStrength;
         private TextView textViewConfirmPasswordError;
         private TextView textViewGeneralError;
         private TextView textViewLoginLink;
@@ -50,6 +51,7 @@ namespace SecurioClient
             textViewUsernameError = FindViewById<TextView>(Resource.Id.textViewUsernameError);
             textViewEmailError = FindViewById<TextView>(Resource.Id.textViewEmailError);
             textViewPasswordError = FindViewById<TextView>(Resource.Id.textViewPasswordError);
+            textViewPasswordStrength = FindViewById<TextView>(Resource.Id.textViewPasswordStrength);
             textViewConfirmPasswordError = FindViewById<TextView>(Resource.Id.textViewConfirmPasswordError);
             textViewGeneralError = FindViewById<TextView>(Resource.Id.textViewGeneralError);
             textViewLoginLink = FindViewById<TextView>(Resource.Id.textViewLoginLink);
@@ -62,9 +64,100 @@ namespace SecurioClient
 
             textViewLoginLink.Click += (sender, e) =>
             {
-                // Navigate back to login (finish this activity)
+                var intent = new Android.Content.Intent(this, typeof(LoginActivity));
+                StartActivity(intent);
                 Finish();
             };
+
+            // Real-time validation feedback as the user types
+            editTextUsername.AddTextChangedListener(new SimpleTextWatcher(_ =>
+            {
+                var result = ValidationHelper.ValidateUsername(editTextUsername.Text?.Trim());
+                if (!result.IsValid)
+                    ShowError(textViewUsernameError, result.ErrorMessage);
+                else
+                    HideError(textViewUsernameError);
+            }));
+
+            editTextEmail.AddTextChangedListener(new SimpleTextWatcher(_ =>
+            {
+                var result = ValidationHelper.ValidateEmail(editTextEmail.Text?.Trim());
+                if (!result.IsValid)
+                    ShowError(textViewEmailError, result.ErrorMessage);
+                else
+                    HideError(textViewEmailError);
+            }));
+
+            editTextPassword.AddTextChangedListener(new SimpleTextWatcher(text =>
+            {
+                // Validate strength and show indicator
+                UpdatePasswordStrengthIndicator(text);
+
+                // Re-validate confirm password if it already has content
+                if (!string.IsNullOrEmpty(editTextConfirmPassword.Text))
+                {
+                    var matchResult = ValidationHelper.ValidatePasswordsMatch(text, editTextConfirmPassword.Text);
+                    if (!matchResult.IsValid)
+                        ShowError(textViewConfirmPasswordError, matchResult.ErrorMessage);
+                    else
+                        HideError(textViewConfirmPasswordError);
+                }
+            }));
+
+            editTextConfirmPassword.AddTextChangedListener(new SimpleTextWatcher(_ =>
+            {
+                var result = ValidationHelper.ValidatePasswordsMatch(
+                    editTextPassword.Text, editTextConfirmPassword.Text);
+                if (!result.IsValid)
+                    ShowError(textViewConfirmPasswordError, result.ErrorMessage);
+                else
+                    HideError(textViewConfirmPasswordError);
+            }));
+        }
+
+        private void UpdatePasswordStrengthIndicator(string password)
+        {
+            if (string.IsNullOrEmpty(password))
+            {
+                textViewPasswordStrength.Visibility = ViewStates.Gone;
+                HideError(textViewPasswordError);
+                return;
+            }
+
+            // Show inline validation error if applicable
+            var passResult = ValidationHelper.ValidatePassword(password);
+            if (!passResult.IsValid)
+                ShowError(textViewPasswordError, passResult.ErrorMessage);
+            else
+                HideError(textViewPasswordError);
+
+            // Show strength indicator
+            var strength = ValidationHelper.GetPasswordStrength(password);
+            textViewPasswordStrength.Visibility = ViewStates.Visible;
+
+            switch (strength)
+            {
+                case PasswordStrength.Weak:
+                    textViewPasswordStrength.Text = GetString(Resource.String.signup_password_strength_weak);
+                    textViewPasswordStrength.SetTextColor(new Android.Graphics.Color(
+                        Resources.GetColor(Resource.Color.passwordStrengthWeak)));
+                    break;
+                case PasswordStrength.Fair:
+                    textViewPasswordStrength.Text = GetString(Resource.String.signup_password_strength_fair);
+                    textViewPasswordStrength.SetTextColor(new Android.Graphics.Color(
+                        Resources.GetColor(Resource.Color.passwordStrengthFair)));
+                    break;
+                case PasswordStrength.Strong:
+                    textViewPasswordStrength.Text = GetString(Resource.String.signup_password_strength_strong);
+                    textViewPasswordStrength.SetTextColor(new Android.Graphics.Color(
+                        Resources.GetColor(Resource.Color.passwordStrengthStrong)));
+                    break;
+                case PasswordStrength.VeryStrong:
+                    textViewPasswordStrength.Text = GetString(Resource.String.signup_password_strength_very_strong);
+                    textViewPasswordStrength.SetTextColor(new Android.Graphics.Color(
+                        Resources.GetColor(Resource.Color.passwordStrengthVeryStrong)));
+                    break;
+            }
         }
 
         private async Task OnSignUpClicked()
@@ -83,11 +176,8 @@ namespace SecurioClient
 
             try
             {
-                // Generate cryptographic salts for this user
                 string authSalt = EncryptionHelper.GenerateSalt();
                 string encryptionSalt = EncryptionHelper.GenerateSalt();
-
-                // Derive the master password key using the auth salt
                 string masterPasswordKey = EncryptionHelper.DeriveKey(password, authSalt);
 
                 var newUser = new User
@@ -104,7 +194,6 @@ namespace SecurioClient
 
                 if (result.Success)
                 {
-                    // Registration successful - navigate to the main activity
                     var intent = new Android.Content.Intent(this, typeof(MainActivity));
                     intent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);
                     StartActivity(intent);
@@ -130,66 +219,47 @@ namespace SecurioClient
         {
             bool isValid = true;
 
-            // Validate username
-            if (string.IsNullOrEmpty(username))
+            var usernameResult = ValidationHelper.ValidateUsername(username);
+            if (!usernameResult.IsValid)
             {
-                ShowError(textViewUsernameError, GetString(Resource.String.signup_error_empty_fields));
-                isValid = false;
-            }
-            else if (username.Length < 3)
-            {
-                ShowError(textViewUsernameError, GetString(Resource.String.signup_error_username_length));
+                ShowError(textViewUsernameError, usernameResult.ErrorMessage);
                 isValid = false;
             }
 
-            // Validate email
-            if (string.IsNullOrEmpty(email))
+            var emailResult = ValidationHelper.ValidateEmail(email);
+            if (!emailResult.IsValid)
             {
-                ShowError(textViewEmailError, GetString(Resource.String.signup_error_empty_fields));
-                isValid = false;
-            }
-            else if (!IsValidEmail(email))
-            {
-                ShowError(textViewEmailError, GetString(Resource.String.signup_error_invalid_email));
+                ShowError(textViewEmailError, emailResult.ErrorMessage);
                 isValid = false;
             }
 
-            // Validate password
-            if (string.IsNullOrEmpty(password))
+            var passwordResult = ValidationHelper.ValidatePassword(password);
+            if (!passwordResult.IsValid)
             {
-                ShowError(textViewPasswordError, GetString(Resource.String.signup_error_empty_fields));
-                isValid = false;
-            }
-            else if (password.Length < 8)
-            {
-                ShowError(textViewPasswordError, GetString(Resource.String.signup_error_password_length));
+                ShowError(textViewPasswordError, passwordResult.ErrorMessage);
                 isValid = false;
             }
 
-            // Validate confirm password
-            if (string.IsNullOrEmpty(confirmPassword))
+            var confirmResult = ValidationHelper.ValidatePasswordsMatch(password, confirmPassword);
+            if (!confirmResult.IsValid)
             {
-                ShowError(textViewConfirmPasswordError, GetString(Resource.String.signup_error_empty_fields));
-                isValid = false;
-            }
-            else if (password != confirmPassword)
-            {
-                ShowError(textViewConfirmPasswordError, GetString(Resource.String.signup_error_password_mismatch));
+                ShowError(textViewConfirmPasswordError, confirmResult.ErrorMessage);
                 isValid = false;
             }
 
             return isValid;
         }
 
-        private static bool IsValidEmail(string email)
-        {
-            return Regex.IsMatch(email, @"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$");
-        }
-
         private void ShowError(TextView errorView, string message)
         {
             errorView.Text = message;
             errorView.Visibility = ViewStates.Visible;
+        }
+
+        private void HideError(TextView errorView)
+        {
+            errorView.Text = null;
+            errorView.Visibility = ViewStates.Gone;
         }
 
         private void ShowGeneralError(string message)
@@ -200,11 +270,11 @@ namespace SecurioClient
 
         private void ClearErrors()
         {
-            textViewUsernameError.Visibility = ViewStates.Gone;
-            textViewEmailError.Visibility = ViewStates.Gone;
-            textViewPasswordError.Visibility = ViewStates.Gone;
-            textViewConfirmPasswordError.Visibility = ViewStates.Gone;
-            textViewGeneralError.Visibility = ViewStates.Gone;
+            HideError(textViewUsernameError);
+            HideError(textViewEmailError);
+            HideError(textViewPasswordError);
+            HideError(textViewConfirmPasswordError);
+            HideError(textViewGeneralError);
         }
 
         private void SetLoadingState(bool isLoading)
@@ -215,6 +285,18 @@ namespace SecurioClient
             editTextEmail.Enabled = !isLoading;
             editTextPassword.Enabled = !isLoading;
             editTextConfirmPassword.Enabled = !isLoading;
+        }
+
+        // Minimal ITextWatcher adapter so lambdas can be used as text-change listeners.
+        private sealed class SimpleTextWatcher : Java.Lang.Object, ITextWatcher
+        {
+            private readonly Action<string> _onChanged;
+
+            public SimpleTextWatcher(Action<string> onChanged) => _onChanged = onChanged;
+
+            public void AfterTextChanged(IEditable s) => _onChanged(s?.ToString());
+            public void BeforeTextChanged(Java.Lang.ICharSequence s, int start, int count, int after) { }
+            public void OnTextChanged(Java.Lang.ICharSequence s, int start, int before, int count) { }
         }
     }
 }
