@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using SecurioBackendFunction.Logic;
 using SecurioModels;
+using SecurioModels.DataTransferObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +32,7 @@ namespace SecurioBackendFunction.ServerFunctions
                 // In a production app, the ID should come from the JWT claims for security
                 if (!int.TryParse(req.Query["userId"], out int userId))
                 {
-                    return new BadRequestObjectResult(new BaseResponse<User> { Success = false, Message = "Invalid User ID." });
+                    return new BadRequestObjectResult(new ServerResponse<User> { Success = false, Message = "Invalid User ID." });
                 }
 
                 var result = await _userManager.GetProfileAsync(userId);
@@ -39,7 +40,7 @@ namespace SecurioBackendFunction.ServerFunctions
             }
             catch
             {
-                return new BadRequestObjectResult(new BaseResponse<User> { Success = false, Message = "Error loading profile data." });
+                return new BadRequestObjectResult(new ServerResponse<User> { Success = false, Message = "Error loading profile data." });
             }
         }
     }

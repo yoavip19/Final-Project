@@ -1,5 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
-using SecurioModels;
+using SecurioModels.DataTransferObjects;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -50,7 +50,7 @@ namespace SecurioBackendFunction.Repositories
             await conn.OpenAsync();
             var sql = "SELECT Id, Username, MasterPasswordKey FROM Users WHERE Email = @email";
             using var cmd = new SqlCommand(sql, conn);
-            cmd.Parameters.Add("@uid", SqlDbType.NVarChar).Value = email;
+            cmd.Parameters.Add("@email", SqlDbType.NVarChar).Value = email;
             using var reader = await cmd.ExecuteReaderAsync();
             if (await reader.ReadAsync())
             {

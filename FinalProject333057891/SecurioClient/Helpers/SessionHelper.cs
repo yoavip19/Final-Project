@@ -21,7 +21,7 @@ namespace SecurioClient.Helpers
         public static string SessionVaultKey { get; private set; }
 
         // Cached list of encrypted vault items to avoid repeated server calls during a session.
-        public static List<VaultItem> CachedVault { get; set; } = new List<VaultItem>();
+        ///public static List<VaultItem> CachedVault { get; set; } = new List<VaultItem>();
 
         // Indicates if the session is currently active with a valid key.
         public static bool IsAuthenticated => !string.IsNullOrEmpty(SessionVaultKey);
@@ -36,9 +36,8 @@ namespace SecurioClient.Helpers
         public static void EndSession()
         {
             SessionVaultKey = null;
-            CachedVault.Clear();
+            ///CachedVault.Clear();
 
-            // Forces garbage collection to help clear sensitive strings from memory.
             GC.Collect();
         }
     }

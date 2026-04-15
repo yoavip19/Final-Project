@@ -10,7 +10,7 @@ using System.Text;
 using SecurioClient.Helpers.ServerHelpers;
 using SecurioClient.Helpers;
 using System;
-using SecurioModels.Responses;
+using SecurioModels.DataTransferObjects;
 
 namespace SecurioClient
 {
@@ -24,7 +24,14 @@ namespace SecurioClient
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
 
-            _ = RunFullSecurioTest();
+            try
+            {
+                _ = RunFullSecurioTest();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"QUAKE! [TEST SUITE ERROR] An exception occurred: {ex.Message}");
+            }
         }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
@@ -108,7 +115,7 @@ namespace SecurioClient
 
             // TEST: Get Profile for ID that doesn't exist (e.g., 99999)
             // You might need to temporarily modify ProfileService to accept an ID for this test
-            StorageHelper.SaveUserId(99999); // Force a non-existent ID into storage for testing
+            await StorageHelper.SaveUserId(99999); // Force a non-existent ID into storage for testing
             var ghostProfile = await profileService.GetProfileAsync();
             System.Diagnostics.Debug.WriteLine($"QUAKE! [PROFILE TEST] Non-existent ID - Success: {ghostProfile.Success} (Should be False), Message: {ghostProfile.Message}");
 

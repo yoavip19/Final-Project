@@ -18,16 +18,13 @@ namespace SecurioClient
     public static class EncryptionHelper
     {
         // High iterations make brute-force attacks much harder
-        private const int Iterations = 50; ///500000;
+        private const int Iterations = 50; ///600000;
 
         // Creates a cryptographically strong 32-byte random salt encoded as a Base64 string.
         public static string GenerateSalt()
         {
             byte[] saltBytes = new byte[32];
-            using (var provider = new RNGCryptoServiceProvider())
-            {
-                provider.GetBytes(saltBytes);
-            }
+            RandomNumberGenerator.Fill(saltBytes);
             return Convert.ToBase64String(saltBytes);
         }
 

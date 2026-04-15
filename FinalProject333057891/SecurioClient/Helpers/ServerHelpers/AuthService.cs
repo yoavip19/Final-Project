@@ -1,11 +1,11 @@
 ﻿using SecurioClient.Helpers;
 using SecurioClient;
-using SecurioModels;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using SecurioModels.Responses;
+using SecurioModels.DataTransferObjects;
 using static Android.Telecom.CallScreeningService;
+using SecurioModels.DataTransferObjects;
 
 
 namespace SecurioClient.Helpers.ServerHelpers

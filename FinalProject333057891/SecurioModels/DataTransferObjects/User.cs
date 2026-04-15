@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SecurioModels
+namespace SecurioModels.DataTransferObjects
 {
     // User - The data structure representing a user account, including security salts and hashed keys stored in the database.
     public class User

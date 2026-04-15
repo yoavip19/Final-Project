@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SecurioModels.Responses
+namespace SecurioModels.DataTransferObjects
 {
     // AuthResponse - Holds session data (Token, ID, Username) returned after successful login or signup.
     public class AuthData

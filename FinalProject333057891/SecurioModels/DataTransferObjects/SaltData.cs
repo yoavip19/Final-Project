@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SecurioModels.Responses
+namespace SecurioModels.DataTransferObjects
 {
 
     // Carries the cryptographic salts required for a client to perform local hashing.

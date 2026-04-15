@@ -12,7 +12,7 @@ using Android.Widget;
 using Xamarin.Essentials;
 using System.Threading.Tasks;
 using Java.Awt.Font;
-using SecurioModels;
+using SecurioModels.DataTransferObjects;
 
 namespace SecurioClient.Helpers
 {

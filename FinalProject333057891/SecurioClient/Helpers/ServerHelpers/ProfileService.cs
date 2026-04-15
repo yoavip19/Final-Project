@@ -9,8 +9,9 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using SecurioModels.Responses;
+using SecurioModels.DataTransferObjects;
 using SecurioModels;
+using SecurioModels.DataTransferObjects;
 
 namespace SecurioClient.Helpers.ServerHelpers
 {
@@ -18,7 +19,7 @@ namespace SecurioClient.Helpers.ServerHelpers
     public class ProfileService : BaseService
     {
         // Fetches the full profile stats from the server.
-        public async Task<BaseResponse<User>> GetProfileAsync()
+        public async Task<ServerResponse<User>> GetProfileAsync()
         {
             int userId = await StorageHelper.GetUserId();
 

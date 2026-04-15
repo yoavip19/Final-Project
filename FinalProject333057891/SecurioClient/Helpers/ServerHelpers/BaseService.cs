@@ -6,14 +6,14 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using SecurioModels;
 using Android.Security.Identity;
-using SecurioModels.Responses;
+using SecurioModels.DataTransferObjects;
 
 namespace SecurioClient.Helpers
 {
     // The central engine for HTTP communication that handles JSON serialization and validates the success of every API call.
     public abstract class BaseService
     {
-        protected readonly HttpClient Client = new HttpClient();
+        protected static readonly HttpClient Client = new HttpClient();
 
         /// Update this to your local or Azure URL
         protected const string BaseUrl = "http://10.0.2.2:7071/api/";
@@ -24,7 +24,7 @@ namespace SecurioClient.Helpers
         }
 
         // This method now returns the specific response object directly.
-        protected async Task<BaseResponse<T>> PostAsync<T>(string endpoint, object data)
+        protected async Task<ServerResponse<T>> PostAsync<T>(string endpoint, object data)
         {
             try
             {
@@ -35,22 +35,22 @@ namespace SecurioClient.Helpers
                 if (response.IsSuccessStatusCode)
                 {
                     // Return the actual BaseResponse<T> from the server
-                    return JsonConvert.DeserializeObject<BaseResponse<T>>(json);
+                    return JsonConvert.DeserializeObject<ServerResponse<T>>(json);
                 }
 
                 // If server returns 401/500, try to parse the error message
-                var error = JsonConvert.DeserializeObject<BaseResponse<T>>(json);
-                return error ?? new BaseResponse<T> { Success = false, Message = "Server error occurred." };
+                var error = JsonConvert.DeserializeObject<ServerResponse<T>>(json);
+                return error ?? new ServerResponse<T> { Success = false, Message = "Server error occurred." };
             }
             catch (Exception ex)
             {
                 // If the internet is down, we return a new instance with the error
-                return new BaseResponse<T> { Success = false, Message = $"Connection failed: {ex.Message}" };
+                return new ServerResponse<T> { Success = false, Message = $"Connection failed." };
             }
         }
 
         // Generic GET: Returns BaseResponse<T> containing the data
-        protected async Task<BaseResponse<T>> GetAsync<T>(string endpoint)
+        protected async Task<ServerResponse<T>> GetAsync<T>(string endpoint)
         {
             try
             {
@@ -61,15 +61,15 @@ namespace SecurioClient.Helpers
                 var json = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
-                    return JsonConvert.DeserializeObject<BaseResponse<T>>(json);
+                    return JsonConvert.DeserializeObject<ServerResponse<T>>(json);
 
                 // Return the server's error message mapped to the object
-                var error = JsonConvert.DeserializeObject<BaseResponse<T>>(json);
-                return error ?? new BaseResponse<T> { Success = false, Message = "Could not retrieve data." };
+                var error = JsonConvert.DeserializeObject<ServerResponse<T>>(json);
+                return error ?? new ServerResponse<T> { Success = false, Message = "Could not retrieve data." };
             }
             catch (Exception)
             {
-                return new BaseResponse<T> { Success = false, Message = "Network error." };
+                return new ServerResponse<T> { Success = false, Message = "Network error." };
             }
         }
     }
