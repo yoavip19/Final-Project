@@ -60,19 +60,20 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="4dp"
-                    app:hintTextColor="@color/colorAccent"
+                    android:textColorHint="@color/colorAccent"
                     app:boxBackgroundMode="outline"
                     app:boxCornerRadiusTopStart="12dp"
                     app:boxCornerRadiusTopEnd="12dp"
                     app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusBottomEnd="12dp"
-                    app:startIconDrawable="@android:drawable/ic_menu_info_details">
+                    app:boxCornerRadiusBottomEnd="12dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextUsername"
                         style="@style/SignupEditTextStyle"
                         android:hint="@string/signup_username_hint"
-                        android:inputType="textPersonName" />
+                        android:inputType="textPersonName"
+                        android:drawableStart="@android:drawable/ic_menu_info_details"
+                        android:drawablePadding="8dp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Username error -->
@@ -88,19 +89,20 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="4dp"
-                    app:hintTextColor="@color/colorAccent"
+                    android:textColorHint="@color/colorAccent"
                     app:boxBackgroundMode="outline"
                     app:boxCornerRadiusTopStart="12dp"
                     app:boxCornerRadiusTopEnd="12dp"
                     app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusBottomEnd="12dp"
-                    app:startIconDrawable="@android:drawable/ic_dialog_email">
+                    app:boxCornerRadiusBottomEnd="12dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextEmail"
                         style="@style/SignupEditTextStyle"
                         android:hint="@string/signup_email_hint"
-                        android:inputType="textEmailAddress" />
+                        android:inputType="textEmailAddress"
+                        android:drawableStart="@android:drawable/ic_dialog_email"
+                        android:drawablePadding="8dp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Email error -->
@@ -116,20 +118,21 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="4dp"
-                    app:hintTextColor="@color/colorAccent"
+                    android:textColorHint="@color/colorAccent"
                     app:boxBackgroundMode="outline"
                     app:boxCornerRadiusTopStart="12dp"
                     app:boxCornerRadiusTopEnd="12dp"
                     app:boxCornerRadiusBottomStart="12dp"
                     app:boxCornerRadiusBottomEnd="12dp"
-                    app:passwordToggleEnabled="true"
-                    app:startIconDrawable="@android:drawable/ic_lock_idle_lock">
+                    app:passwordToggleEnabled="true">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextPassword"
                         style="@style/SignupEditTextStyle"
                         android:hint="@string/signup_password_hint"
-                        android:inputType="textPassword" />
+                        android:inputType="textPassword"
+                        android:drawableStart="@android:drawable/ic_lock_idle_lock"
+                        android:drawablePadding="8dp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Password error -->
@@ -145,20 +148,21 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="4dp"
-                    app:hintTextColor="@color/colorAccent"
+                    android:textColorHint="@color/colorAccent"
                     app:boxBackgroundMode="outline"
                     app:boxCornerRadiusTopStart="12dp"
                     app:boxCornerRadiusTopEnd="12dp"
                     app:boxCornerRadiusBottomStart="12dp"
                     app:boxCornerRadiusBottomEnd="12dp"
-                    app:passwordToggleEnabled="true"
-                    app:startIconDrawable="@android:drawable/ic_lock_idle_lock">
+                    app:passwordToggleEnabled="true">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextConfirmPassword"
                         style="@style/SignupEditTextStyle"
                         android:hint="@string/signup_confirm_password_hint"
-                        android:inputType="textPassword" />
+                        android:inputType="textPassword"
+                        android:drawableStart="@android:drawable/ic_lock_idle_lock"
+                        android:drawablePadding="8dp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Confirm Password error -->
