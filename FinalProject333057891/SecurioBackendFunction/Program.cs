@@ -20,7 +20,7 @@ if (string.IsNullOrEmpty(sqlConn))
     throw new InvalidOperationException("SqlConnectionString environment variable is not configured.");
 
 // 2. Register the Repository as a Singleton (one instance shared by everyone)
-builder.Services.AddSingleton(new UserRepository(sqlConn));
+builder.Services.AddSingleton<IUserRepository>(new UserRepository(sqlConn));
 
 // 3. Register your Managers/Logic as Scoped (new instance created per request)
 builder.Services.AddScoped<UserManager>();

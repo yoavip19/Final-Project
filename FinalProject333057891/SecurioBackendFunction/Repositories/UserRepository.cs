@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace SecurioBackendFunction.Repositories
 {
     // Manages all direct SQL database interactions for user-related data.
-    public class UserRepository
+    public class UserRepository : IUserRepository
     {
         private readonly string _connectionString;
         public UserRepository(string connectionString) => _connectionString = connectionString;
