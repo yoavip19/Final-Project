@@ -12,8 +12,8 @@ namespace SecurioBackendFunction.Logic
 {
     public class AuthManager
     {
-        private readonly UserRepository _repo;
-        public AuthManager(UserRepository repo) => _repo = repo;
+        private readonly IUserRepository _repo;
+        public AuthManager(IUserRepository repo) => _repo = repo;
 
         // Registers user and generates a token immediately for a seamless UI transition.
         public async Task<ServerResponse<AuthData>> RegisterAsync(User user)

@@ -13,9 +13,9 @@ namespace SecurioBackendFunction.Logic
     // Coordinates the retrieval of user-specific data and account statistics.
     public class UserManager
     {
-        private readonly UserRepository _repo;
+        private readonly IUserRepository _repo;
 
-        public UserManager(UserRepository repo) => _repo = repo;
+        public UserManager(IUserRepository repo) => _repo = repo;
 
         // Fetches the profile and wraps it in a standard ProfileResponse for the API.
         public async Task<ServerResponse<User>> GetProfileAsync(int userId)

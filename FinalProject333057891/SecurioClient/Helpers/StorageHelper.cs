@@ -88,9 +88,9 @@ namespace SecurioClient.Helpers
                 Username = await GetUsername(),
                 Email = email,
                 PasswordCount = int.TryParse(await SecureStorage.GetAsync(KeyPasswordCount), out var cnt) ? cnt : 0,
-                CreatedAt = DateTime.Parse(await SecureStorage.GetAsync(KeyCreatedAt)),
-                LastLogin = DateTime.Parse(await SecureStorage.GetAsync(KeyLastLogin)),
-                LastPasswordUpdate = DateTime.Parse(await SecureStorage.GetAsync(KeyLastPasswordChange))
+                CreatedAt = DateTime.TryParse(await SecureStorage.GetAsync(KeyCreatedAt), out var createdAt) ? createdAt : DateTime.MinValue,
+                LastLogin = DateTime.TryParse(await SecureStorage.GetAsync(KeyLastLogin), out var lastLogin) ? lastLogin : DateTime.MinValue,
+                LastPasswordUpdate = DateTime.TryParse(await SecureStorage.GetAsync(KeyLastPasswordChange), out var lastPwChange) ? lastPwChange : DateTime.MinValue
             };
         }
 
