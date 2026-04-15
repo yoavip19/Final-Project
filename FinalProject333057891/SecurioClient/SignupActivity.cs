@@ -104,7 +104,7 @@ namespace SecurioClient
 
                 if (result.Success)
                 {
-                    // Registration successful – navigate to the main activity
+                    // Registration successful - navigate to the main activity
                     var intent = new Android.Content.Intent(this, typeof(MainActivity));
                     intent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);
                     StartActivity(intent);
@@ -183,7 +183,7 @@ namespace SecurioClient
 
         private static bool IsValidEmail(string email)
         {
-            return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+            return Regex.IsMatch(email, @"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$");
         }
 
         private void ShowError(TextView errorView, string message)
