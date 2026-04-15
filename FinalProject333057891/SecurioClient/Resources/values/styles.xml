@@ -8,4 +8,69 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!-- Signup page theme (no action bar, dark background) -->
+    <style name="AppTheme.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@color/signupBackground</item>
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+    </style>
+
+    <!-- Signup title text style -->
+    <style name="SignupTitleStyle">
+        <item name="android:textSize">28sp</item>
+        <item name="android:textColor">@color/signupTitleText</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Signup subtitle text style -->
+    <style name="SignupSubtitleStyle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/signupSubtitleText</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+    </style>
+
+    <!-- Signup input field style -->
+    <style name="SignupEditTextStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/signupInputText</item>
+        <item name="android:textColorHint">@color/signupHintText</item>
+        <item name="android:background">@color/signupInputBackground</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+    <!-- Signup button style -->
+    <style name="SignupButtonStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/signupButtonText</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Signup error text style -->
+    <style name="SignupErrorTextStyle">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/signupErrorText</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <!-- Signup link text style -->
+    <style name="SignupLinkTextStyle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/signupLinkText</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
 </resources>
