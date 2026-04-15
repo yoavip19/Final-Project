@@ -65,6 +65,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\SimpleTextWatcher.cs" />
     <Compile Include="Helpers\ValidationHelper.cs" />
     <Compile Include="Helpers\ServerHelpers\AuthService.cs" />
     <Compile Include="Helpers\ServerHelpers\BaseService.cs" />

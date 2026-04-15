@@ -49,6 +49,9 @@ namespace SecurioClient.Helpers
         private static readonly Regex HasUppercase = new Regex(@"[A-Z]", RegexOptions.Compiled);
         private static readonly Regex HasLowercase = new Regex(@"[a-z]", RegexOptions.Compiled);
         private static readonly Regex HasDigit = new Regex(@"\d", RegexOptions.Compiled);
+
+        // Accepted special characters: ! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
+        // These cover the full set of ASCII printable non-alphanumeric characters (OWASP recommended).
         private static readonly Regex HasSpecial =
             new Regex(@"[!@#$%^&*()_+\-=\[\]{}|;':"",./<>?\\`~]", RegexOptions.Compiled);
 

@@ -206,7 +206,7 @@ namespace SecurioClient
             }
             catch (Exception ex)
             {
-                ShowGeneralError("An unexpected error occurred. Please try again.");
+                ShowGeneralError("Unable to create account. Please check your connection and try again.");
                 System.Diagnostics.Debug.WriteLine($"[SIGNUP ERROR] {ex.Message}");
             }
             finally
@@ -287,16 +287,5 @@ namespace SecurioClient
             editTextConfirmPassword.Enabled = !isLoading;
         }
 
-        // Minimal ITextWatcher adapter so lambdas can be used as text-change listeners.
-        private sealed class SimpleTextWatcher : Java.Lang.Object, ITextWatcher
-        {
-            private readonly Action<string> _onChanged;
-
-            public SimpleTextWatcher(Action<string> onChanged) => _onChanged = onChanged;
-
-            public void AfterTextChanged(IEditable s) => _onChanged(s?.ToString());
-            public void BeforeTextChanged(Java.Lang.ICharSequence s, int start, int count, int after) { }
-            public void OnTextChanged(Java.Lang.ICharSequence s, int start, int before, int count) { }
-        }
     }
 }
