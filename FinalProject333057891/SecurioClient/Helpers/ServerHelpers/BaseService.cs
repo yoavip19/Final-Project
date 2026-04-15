@@ -28,8 +28,14 @@ namespace SecurioClient.Helpers
         {
             try
             {
-                var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-                var response = await Client.PostAsync(endpoint, content);
+                var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                request.Content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+
+                var jwt = await StorageHelper.GetJwt();
+                if (!string.IsNullOrEmpty(jwt))
+                    request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {jwt}");
+
+                var response = await Client.SendAsync(request);
                 var json = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -54,10 +60,16 @@ namespace SecurioClient.Helpers
         {
             try
             {
+                var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
+
+                var jwt = await StorageHelper.GetJwt();
+                if (!string.IsNullOrEmpty(jwt))
+                    request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {jwt}");
+
                 var fullUrl = new Uri(Client.BaseAddress, endpoint);
                 Console.WriteLine($"QUAKE! DEBUG: Full Request URL: {fullUrl}!!!");
 
-                var response = await Client.GetAsync(endpoint);
+                var response = await Client.SendAsync(request);
                 var json = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)

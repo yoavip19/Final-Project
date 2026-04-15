@@ -21,9 +21,7 @@ namespace SecurioClient.Helpers.ServerHelpers
         // Fetches the full profile stats from the server.
         public async Task<ServerResponse<User>> GetProfileAsync()
         {
-            int userId = await StorageHelper.GetUserId();
-
-            var response = await GetAsync<User>($"GetProfile?userId={userId}");
+            var response = await GetAsync<User>("GetProfile");
 
             if (response.Success && response.Data != null)
             {

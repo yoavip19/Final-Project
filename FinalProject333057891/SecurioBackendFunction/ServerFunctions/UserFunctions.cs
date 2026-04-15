@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using SecurioBackendFunction.Helpers;
 using SecurioBackendFunction.Logic;
 using SecurioModels;
 using SecurioModels.DataTransferObjects;
@@ -23,16 +24,32 @@ namespace SecurioBackendFunction.ServerFunctions
         }
 
         // Retrieves the user's statistics and profile details via a GET request.
+        // The user ID is extracted from the validated JWT in the Authorization header.
         [Function("GetProfile")]
         public async Task<IActionResult> GetProfile(
             [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
         {
             try
             {
-                // In a production app, the ID should come from the JWT claims for security
-                if (!int.TryParse(req.Query["userId"], out int userId))
+                // Extract the Bearer token from the Authorization header
+                var authHeader = req.Headers["Authorization"].FirstOrDefault();
+                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
                 {
-                    return new BadRequestObjectResult(new ServerResponse<User> { Success = false, Message = "Invalid User ID." });
+                    return new UnauthorizedObjectResult(new ServerResponse<User> { Success = false, Message = "Unauthorized." });
+                }
+
+                var token = authHeader.Substring("Bearer ".Length);
+                var principal = JwtHelper.ValidateToken(token);
+
+                if (principal == null)
+                {
+                    return new UnauthorizedObjectResult(new ServerResponse<User> { Success = false, Message = "Unauthorized." });
+                }
+
+                int userId = JwtHelper.GetUserIdFromPrincipal(principal);
+                if (userId <= 0)
+                {
+                    return new UnauthorizedObjectResult(new ServerResponse<User> { Success = false, Message = "Unauthorized." });
                 }
 
                 var result = await _userManager.GetProfileAsync(userId);
