@@ -11,7 +11,6 @@ using Android.Views;
 using Android.Widget;
 using SecurioModels.DataTransferObjects;
 using SecurioModels;
-using SecurioModels.DataTransferObjects;
 
 namespace SecurioClient.Helpers.ServerHelpers
 {
