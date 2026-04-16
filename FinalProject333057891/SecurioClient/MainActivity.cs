@@ -25,7 +25,7 @@ namespace SecurioClient
             }
             else
             {
-                var intent = new Android.Content.Intent(this, typeof(LoginActivity));
+                var intent = new Android.Content.Intent(this, typeof(SignupActivity)); ///LoginActivity));
                 StartActivity(intent);
                 Finish();
             }

@@ -8,7 +8,6 @@ using SecurioBackendFunction.Logic;
 using SecurioBackendFunction.Repositories;
 using SecurioModels;
 using SecurioModels.DataTransferObjects;
-using SecurioModels.DataTransferObjects;
 using System.Collections.Generic;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -36,7 +35,7 @@ public class AuthFunctions
         catch (Exception ex)
         {
             // This catch ensures the client ALWAYS gets a JSON BaseResponse, never a raw crash string.
-            return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = "An internal error occurred." });
+            return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = $"An internal error occurred. Error - {ex.Message} " });
         }
     }
 

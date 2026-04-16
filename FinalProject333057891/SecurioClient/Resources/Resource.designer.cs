@@ -2247,106 +2247,118 @@ namespace SecurioClient
 			public const int notification_icon_bg_color = 2131034227;
 			
 			// aapt resource value: 0x7F050074
-			public const int primary_dark_material_dark = 2131034228;
+			public const int passwordStrengthFair = 2131034228;
 			
 			// aapt resource value: 0x7F050075
-			public const int primary_dark_material_light = 2131034229;
+			public const int passwordStrengthStrong = 2131034229;
 			
 			// aapt resource value: 0x7F050076
-			public const int primary_material_dark = 2131034230;
+			public const int passwordStrengthVeryStrong = 2131034230;
 			
 			// aapt resource value: 0x7F050077
-			public const int primary_material_light = 2131034231;
+			public const int passwordStrengthWeak = 2131034231;
 			
 			// aapt resource value: 0x7F050078
-			public const int primary_text_default_material_dark = 2131034232;
+			public const int primary_dark_material_dark = 2131034232;
 			
 			// aapt resource value: 0x7F050079
-			public const int primary_text_default_material_light = 2131034233;
+			public const int primary_dark_material_light = 2131034233;
 			
 			// aapt resource value: 0x7F05007A
-			public const int primary_text_disabled_material_dark = 2131034234;
+			public const int primary_material_dark = 2131034234;
 			
 			// aapt resource value: 0x7F05007B
-			public const int primary_text_disabled_material_light = 2131034235;
+			public const int primary_material_light = 2131034235;
 			
 			// aapt resource value: 0x7F05007C
-			public const int ripple_material_dark = 2131034236;
+			public const int primary_text_default_material_dark = 2131034236;
 			
 			// aapt resource value: 0x7F05007D
-			public const int ripple_material_light = 2131034237;
+			public const int primary_text_default_material_light = 2131034237;
 			
 			// aapt resource value: 0x7F05007E
-			public const int secondary_text_default_material_dark = 2131034238;
+			public const int primary_text_disabled_material_dark = 2131034238;
 			
 			// aapt resource value: 0x7F05007F
-			public const int secondary_text_default_material_light = 2131034239;
+			public const int primary_text_disabled_material_light = 2131034239;
 			
 			// aapt resource value: 0x7F050080
-			public const int secondary_text_disabled_material_dark = 2131034240;
+			public const int ripple_material_dark = 2131034240;
 			
 			// aapt resource value: 0x7F050081
-			public const int secondary_text_disabled_material_light = 2131034241;
+			public const int ripple_material_light = 2131034241;
 			
 			// aapt resource value: 0x7F050082
-			public const int signupBackground = 2131034242;
+			public const int secondary_text_default_material_dark = 2131034242;
 			
 			// aapt resource value: 0x7F050083
-			public const int signupButtonBackground = 2131034243;
+			public const int secondary_text_default_material_light = 2131034243;
 			
 			// aapt resource value: 0x7F050084
-			public const int signupButtonText = 2131034244;
+			public const int secondary_text_disabled_material_dark = 2131034244;
 			
 			// aapt resource value: 0x7F050085
-			public const int signupCardBackground = 2131034245;
+			public const int secondary_text_disabled_material_light = 2131034245;
 			
 			// aapt resource value: 0x7F050086
-			public const int signupDivider = 2131034246;
+			public const int signupBackground = 2131034246;
 			
 			// aapt resource value: 0x7F050087
-			public const int signupErrorText = 2131034247;
+			public const int signupButtonBackground = 2131034247;
 			
 			// aapt resource value: 0x7F050088
-			public const int signupHintText = 2131034248;
+			public const int signupButtonText = 2131034248;
 			
 			// aapt resource value: 0x7F050089
-			public const int signupInputBackground = 2131034249;
+			public const int signupCardBackground = 2131034249;
 			
 			// aapt resource value: 0x7F05008A
-			public const int signupInputText = 2131034250;
+			public const int signupDivider = 2131034250;
 			
 			// aapt resource value: 0x7F05008B
-			public const int signupLinkText = 2131034251;
+			public const int signupErrorText = 2131034251;
 			
 			// aapt resource value: 0x7F05008C
-			public const int signupSubtitleText = 2131034252;
+			public const int signupHintText = 2131034252;
 			
 			// aapt resource value: 0x7F05008D
-			public const int signupTitleText = 2131034253;
+			public const int signupInputBackground = 2131034253;
 			
 			// aapt resource value: 0x7F05008E
-			public const int switch_thumb_disabled_material_dark = 2131034254;
+			public const int signupInputText = 2131034254;
 			
 			// aapt resource value: 0x7F05008F
-			public const int switch_thumb_disabled_material_light = 2131034255;
+			public const int signupLinkText = 2131034255;
 			
 			// aapt resource value: 0x7F050090
-			public const int switch_thumb_material_dark = 2131034256;
+			public const int signupSubtitleText = 2131034256;
 			
 			// aapt resource value: 0x7F050091
-			public const int switch_thumb_material_light = 2131034257;
+			public const int signupTitleText = 2131034257;
 			
 			// aapt resource value: 0x7F050092
-			public const int switch_thumb_normal_material_dark = 2131034258;
+			public const int switch_thumb_disabled_material_dark = 2131034258;
 			
 			// aapt resource value: 0x7F050093
-			public const int switch_thumb_normal_material_light = 2131034259;
+			public const int switch_thumb_disabled_material_light = 2131034259;
 			
 			// aapt resource value: 0x7F050094
-			public const int tooltip_background_dark = 2131034260;
+			public const int switch_thumb_material_dark = 2131034260;
 			
 			// aapt resource value: 0x7F050095
-			public const int tooltip_background_light = 2131034261;
+			public const int switch_thumb_material_light = 2131034261;
+			
+			// aapt resource value: 0x7F050096
+			public const int switch_thumb_normal_material_dark = 2131034262;
+			
+			// aapt resource value: 0x7F050097
+			public const int switch_thumb_normal_material_light = 2131034263;
+			
+			// aapt resource value: 0x7F050098
+			public const int tooltip_background_dark = 2131034264;
+			
+			// aapt resource value: 0x7F050099
+			public const int tooltip_background_light = 2131034265;
 			
 			static Color()
 			{
@@ -4052,14 +4064,14 @@ namespace SecurioClient
 			// aapt resource value: 0x7F0800D3
 			public const int text2 = 2131230931;
 			
-			// aapt resource value: 0x7F0800DE
-			public const int textinput_counter = 2131230942;
-			
 			// aapt resource value: 0x7F0800DF
-			public const int textinput_error = 2131230943;
+			public const int textinput_counter = 2131230943;
 			
 			// aapt resource value: 0x7F0800E0
-			public const int textinput_helper_text = 2131230944;
+			public const int textinput_error = 2131230944;
+			
+			// aapt resource value: 0x7F0800E1
+			public const int textinput_helper_text = 2131230945;
 			
 			// aapt resource value: 0x7F0800D4
 			public const int textSpacerNoButtons = 2131230932;
@@ -4086,79 +4098,82 @@ namespace SecurioClient
 			public const int textViewPasswordError = 2131230939;
 			
 			// aapt resource value: 0x7F0800DC
-			public const int textViewUsernameError = 2131230940;
+			public const int textViewPasswordStrength = 2131230940;
 			
 			// aapt resource value: 0x7F0800DD
-			public const int text_input_password_toggle = 2131230941;
+			public const int textViewUsernameError = 2131230941;
 			
-			// aapt resource value: 0x7F0800E1
-			public const int time = 2131230945;
+			// aapt resource value: 0x7F0800DE
+			public const int text_input_password_toggle = 2131230942;
 			
 			// aapt resource value: 0x7F0800E2
-			public const int title = 2131230946;
+			public const int time = 2131230946;
 			
 			// aapt resource value: 0x7F0800E3
-			public const int titleDividerNoCustom = 2131230947;
+			public const int title = 2131230947;
 			
 			// aapt resource value: 0x7F0800E4
-			public const int title_template = 2131230948;
+			public const int titleDividerNoCustom = 2131230948;
 			
 			// aapt resource value: 0x7F0800E5
-			public const int top = 2131230949;
+			public const int title_template = 2131230949;
 			
 			// aapt resource value: 0x7F0800E6
-			public const int topPanel = 2131230950;
+			public const int top = 2131230950;
 			
 			// aapt resource value: 0x7F0800E7
-			public const int touch_outside = 2131230951;
+			public const int topPanel = 2131230951;
 			
 			// aapt resource value: 0x7F0800E8
-			public const int transition_current_scene = 2131230952;
+			public const int touch_outside = 2131230952;
 			
 			// aapt resource value: 0x7F0800E9
-			public const int transition_layout_save = 2131230953;
+			public const int transition_current_scene = 2131230953;
 			
 			// aapt resource value: 0x7F0800EA
-			public const int transition_position = 2131230954;
+			public const int transition_layout_save = 2131230954;
 			
 			// aapt resource value: 0x7F0800EB
-			public const int transition_scene_layoutid_cache = 2131230955;
+			public const int transition_position = 2131230955;
 			
 			// aapt resource value: 0x7F0800EC
-			public const int transition_transform = 2131230956;
+			public const int transition_scene_layoutid_cache = 2131230956;
 			
 			// aapt resource value: 0x7F0800ED
-			public const int @unchecked = 2131230957;
+			public const int transition_transform = 2131230957;
 			
 			// aapt resource value: 0x7F0800EE
-			public const int uniform = 2131230958;
+			public const int @unchecked = 2131230958;
 			
 			// aapt resource value: 0x7F0800EF
-			public const int unlabeled = 2131230959;
+			public const int uniform = 2131230959;
 			
 			// aapt resource value: 0x7F0800F0
-			public const int up = 2131230960;
+			public const int unlabeled = 2131230960;
 			
 			// aapt resource value: 0x7F0800F1
-			public const int useLogo = 2131230961;
+			public const int up = 2131230961;
 			
 			// aapt resource value: 0x7F0800F2
-			public const int view_offset_helper = 2131230962;
+			public const int useLogo = 2131230962;
 			
 			// aapt resource value: 0x7F0800F3
-			public const int view_tree_saved_state_registry_owner = 2131230963;
+			public const int view_offset_helper = 2131230963;
 			
 			// aapt resource value: 0x7F0800F4
-			public const int visible = 2131230964;
+			public const int view_tree_saved_state_registry_owner = 2131230964;
 			
 			// aapt resource value: 0x7F0800F5
-			public const int visible_removing_fragment_view_tag = 2131230965;
+			public const int visible = 2131230965;
 			
 			// aapt resource value: 0x7F0800F6
-			public const int withText = 2131230966;
+			public const int visible_removing_fragment_view_tag = 2131230966;
 			
 			// aapt resource value: 0x7F0800F7
-			public const int wrap_content = 2131230967;
+			public const int withText = 2131230967;
+			
+			// aapt resource value: 0x7F0800F8
+			public const int wrap_content = 2131230968;
 			
 			static Id()
 			{
@@ -4610,73 +4625,130 @@ namespace SecurioClient
 			public const int hide_bottom_view_on_scroll_behavior = 2131558439;
 			
 			// aapt resource value: 0x7F0D0028
-			public const int mtrl_chip_close_icon_content_description = 2131558440;
+			public const int login_button_text = 2131558440;
 			
 			// aapt resource value: 0x7F0D0029
-			public const int password_toggle_content_description = 2131558441;
+			public const int login_email_hint = 2131558441;
 			
 			// aapt resource value: 0x7F0D002A
-			public const int path_password_eye = 2131558442;
+			public const int login_error_empty_fields = 2131558442;
 			
 			// aapt resource value: 0x7F0D002B
-			public const int path_password_eye_mask_strike_through = 2131558443;
+			public const int login_error_invalid_email = 2131558443;
 			
 			// aapt resource value: 0x7F0D002C
-			public const int path_password_eye_mask_visible = 2131558444;
+			public const int login_password_hint = 2131558444;
 			
 			// aapt resource value: 0x7F0D002D
-			public const int path_password_strike_through = 2131558445;
+			public const int login_signup_link = 2131558445;
 			
 			// aapt resource value: 0x7F0D002E
-			public const int search_menu_title = 2131558446;
+			public const int login_signup_prompt = 2131558446;
 			
 			// aapt resource value: 0x7F0D002F
-			public const int signup_button_text = 2131558447;
+			public const int login_subtitle = 2131558447;
 			
 			// aapt resource value: 0x7F0D0030
-			public const int signup_confirm_password_hint = 2131558448;
+			public const int login_title = 2131558448;
 			
 			// aapt resource value: 0x7F0D0031
-			public const int signup_email_hint = 2131558449;
+			public const int mtrl_chip_close_icon_content_description = 2131558449;
 			
 			// aapt resource value: 0x7F0D0032
-			public const int signup_error_empty_fields = 2131558450;
+			public const int password_toggle_content_description = 2131558450;
 			
 			// aapt resource value: 0x7F0D0033
-			public const int signup_error_invalid_email = 2131558451;
+			public const int path_password_eye = 2131558451;
 			
 			// aapt resource value: 0x7F0D0034
-			public const int signup_error_password_length = 2131558452;
+			public const int path_password_eye_mask_strike_through = 2131558452;
 			
 			// aapt resource value: 0x7F0D0035
-			public const int signup_error_password_mismatch = 2131558453;
+			public const int path_password_eye_mask_visible = 2131558453;
 			
 			// aapt resource value: 0x7F0D0036
-			public const int signup_error_username_length = 2131558454;
+			public const int path_password_strike_through = 2131558454;
 			
 			// aapt resource value: 0x7F0D0037
-			public const int signup_login_link = 2131558455;
+			public const int search_menu_title = 2131558455;
 			
 			// aapt resource value: 0x7F0D0038
-			public const int signup_login_prompt = 2131558456;
+			public const int signup_button_text = 2131558456;
 			
 			// aapt resource value: 0x7F0D0039
-			public const int signup_password_hint = 2131558457;
+			public const int signup_confirm_password_hint = 2131558457;
 			
 			// aapt resource value: 0x7F0D003A
-			public const int signup_progress_message = 2131558458;
+			public const int signup_email_hint = 2131558458;
 			
 			// aapt resource value: 0x7F0D003B
-			public const int signup_subtitle = 2131558459;
+			public const int signup_error_empty_fields = 2131558459;
 			
 			// aapt resource value: 0x7F0D003C
-			public const int signup_title = 2131558460;
+			public const int signup_error_invalid_email = 2131558460;
 			
 			// aapt resource value: 0x7F0D003D
-			public const int signup_username_hint = 2131558461;
+			public const int signup_error_password_digit = 2131558461;
 			
 			// aapt resource value: 0x7F0D003E
-			public const int status_bar_notification_info_overflow = 2131558462;
+			public const int signup_error_password_length = 2131558462;
+			
+			// aapt resource value: 0x7F0D003F
+			public const int signup_error_password_lowercase = 2131558463;
+			
+			// aapt resource value: 0x7F0D0040
+			public const int signup_error_password_mismatch = 2131558464;
+			
+			// aapt resource value: 0x7F0D0041
+			public const int signup_error_password_special = 2131558465;
+			
+			// aapt resource value: 0x7F0D0042
+			public const int signup_error_password_uppercase = 2131558466;
+			
+			// aapt resource value: 0x7F0D0043
+			public const int signup_error_username_chars = 2131558467;
+			
+			// aapt resource value: 0x7F0D0044
+			public const int signup_error_username_length = 2131558468;
+			
+			// aapt resource value: 0x7F0D0045
+			public const int signup_error_username_start = 2131558469;
+			
+			// aapt resource value: 0x7F0D0046
+			public const int signup_login_link = 2131558470;
+			
+			// aapt resource value: 0x7F0D0047
+			public const int signup_login_prompt = 2131558471;
+			
+			// aapt resource value: 0x7F0D0048
+			public const int signup_password_hint = 2131558472;
+			
+			// aapt resource value: 0x7F0D0049
+			public const int signup_password_strength_fair = 2131558473;
+			
+			// aapt resource value: 0x7F0D004A
+			public const int signup_password_strength_strong = 2131558474;
+			
+			// aapt resource value: 0x7F0D004B
+			public const int signup_password_strength_very_strong = 2131558475;
+			
+			// aapt resource value: 0x7F0D004C
+			public const int signup_password_strength_weak = 2131558476;
+			
+			// aapt resource value: 0x7F0D004D
+			public const int signup_progress_message = 2131558477;
+			
+			// aapt resource value: 0x7F0D004E
+			public const int signup_subtitle = 2131558478;
+			
+			// aapt resource value: 0x7F0D004F
+			public const int signup_title = 2131558479;
+			
+			// aapt resource value: 0x7F0D0050
+			public const int signup_username_hint = 2131558480;
+			
+			// aapt resource value: 0x7F0D0051
+			public const int status_bar_notification_info_overflow = 2131558481;
 			
 			static String()
 			{

@@ -64,9 +64,9 @@ namespace SecurioClient
 
             textViewLoginLink.Click += (sender, e) =>
             {
-                var intent = new Android.Content.Intent(this, typeof(LoginActivity));
-                StartActivity(intent);
-                Finish();
+                ///var intent = new Android.Content.Intent(this, typeof(LoginActivity));
+                ///StartActivity(intent);
+                ///Finish();
             };
 
             // Real-time validation feedback as the user types
