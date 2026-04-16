@@ -238,13 +238,21 @@ namespace SecurioClient.Helpers
             return new string(chars.ToArray());
         }
 
-        // Returns a cryptographically secure random index in [0, max).
+        // Returns a cryptographically secure random index in [0, max) using
+        // rejection sampling to eliminate modulo bias.
         private static int SecureRandomIndex(int max)
         {
+            // Largest multiple of max that fits in a uint, used as the rejection threshold.
+            uint limit = uint.MaxValue - (uint.MaxValue % (uint)max);
             byte[] buf = new byte[4];
-            RandomNumberGenerator.Fill(buf);
-            // Use modulo rejection sampling to avoid bias for small max values.
-            uint raw = BitConverter.ToUInt32(buf, 0);
+            uint raw;
+            do
+            {
+                RandomNumberGenerator.Fill(buf);
+                raw = BitConverter.ToUInt32(buf, 0);
+            }
+            while (raw >= limit);
+
             return (int)(raw % (uint)max);
         }
     }
