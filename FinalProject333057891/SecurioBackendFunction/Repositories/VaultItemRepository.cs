@@ -22,8 +22,8 @@ namespace SecurioBackendFunction.Repositories
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.Add("@uid", SqlDbType.Int).Value = item.UserId;
             cmd.Parameters.Add("@name", SqlDbType.NVarChar).Value = item.AccountName;
-            cmd.Parameters.Add("@url", SqlDbType.NVarChar).Value = item.AccountUrl;
-            cmd.Parameters.Add("@uname", SqlDbType.NVarChar).Value = item.AccountUsername;
+            cmd.Parameters.Add("@url", SqlDbType.NVarChar).Value = (object)item.AccountUrl ?? DBNull.Value;
+            cmd.Parameters.Add("@uname", SqlDbType.NVarChar).Value = (object)item.AccountUsername ?? DBNull.Value;
             cmd.Parameters.Add("@pwd", SqlDbType.NVarChar).Value = item.EncryptedPassword;
             return (int)await cmd.ExecuteScalarAsync();
         }
