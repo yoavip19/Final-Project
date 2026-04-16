@@ -18,8 +18,17 @@ namespace SecurioBackendFunction.Logic
             if (string.IsNullOrWhiteSpace(item.AccountName))
                 return new ServerResponse<VaultItem> { Success = false, Message = "Account name is required." };
 
-            if (string.IsNullOrWhiteSpace(item.EncryptedPassword))
-                return new ServerResponse<VaultItem> { Success = false, Message = "Encrypted password is required." };
+            if (string.IsNullOrWhiteSpace(item.CipherText))
+                return new ServerResponse<VaultItem> { Success = false, Message = "CipherText is required." };
+
+            if (string.IsNullOrWhiteSpace(item.IV))
+                return new ServerResponse<VaultItem> { Success = false, Message = "IV is required." };
+
+            if (string.IsNullOrWhiteSpace(item.Tag))
+                return new ServerResponse<VaultItem> { Success = false, Message = "Tag is required." };
+
+            if (string.IsNullOrWhiteSpace(item.Sha1Hash))
+                return new ServerResponse<VaultItem> { Success = false, Message = "Sha1Hash is required." };
 
             int newId = await _repo.AddVaultItemAsync(item);
             if (newId <= 0)

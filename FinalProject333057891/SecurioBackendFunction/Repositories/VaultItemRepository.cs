@@ -16,15 +16,19 @@ namespace SecurioBackendFunction.Repositories
         {
             using var conn = new SqlConnection(_connectionString);
             await conn.OpenAsync();
-            var sql = @"INSERT INTO VaultItems (UserId, AccountName, AccountUrl, AccountUsername, EncryptedPassword, CreatedAt)
+            var sql = @"INSERT INTO VaultItems (UserId, AccountName, AccountUsername, IV, Tag, CipherText, Notes, Sha1Hash, IsLeaked, LastUpdate)
                     OUTPUT INSERTED.Id
-                    VALUES (@uid, @name, @url, @uname, @pwd, GETDATE())";
+                    VALUES (@uid, @name, @uname, @iv, @tag, @cipher, @notes, @hash, @leaked, GETDATE())";
             using var cmd = new SqlCommand(sql, conn);
-            cmd.Parameters.Add("@uid", SqlDbType.Int).Value = item.UserId;
-            cmd.Parameters.Add("@name", SqlDbType.NVarChar).Value = item.AccountName;
-            cmd.Parameters.Add("@url", SqlDbType.NVarChar).Value = (object)item.AccountUrl ?? DBNull.Value;
-            cmd.Parameters.Add("@uname", SqlDbType.NVarChar).Value = (object)item.AccountUsername ?? DBNull.Value;
-            cmd.Parameters.Add("@pwd", SqlDbType.NVarChar).Value = item.EncryptedPassword;
+            cmd.Parameters.Add("@uid",    SqlDbType.Int).Value      = item.UserId;
+            cmd.Parameters.Add("@name",   SqlDbType.NVarChar).Value = item.AccountName;
+            cmd.Parameters.Add("@uname",  SqlDbType.NVarChar).Value = (object)item.AccountUsername ?? DBNull.Value;
+            cmd.Parameters.Add("@iv",     SqlDbType.NVarChar).Value = item.IV;
+            cmd.Parameters.Add("@tag",    SqlDbType.NVarChar).Value = item.Tag;
+            cmd.Parameters.Add("@cipher", SqlDbType.NVarChar).Value = item.CipherText;
+            cmd.Parameters.Add("@notes",  SqlDbType.NVarChar).Value = (object)item.Notes ?? DBNull.Value;
+            cmd.Parameters.Add("@hash",   SqlDbType.NVarChar).Value = item.Sha1Hash;
+            cmd.Parameters.Add("@leaked", SqlDbType.Bit).Value      = item.IsLeaked;
             return (int)await cmd.ExecuteScalarAsync();
         }
     }
