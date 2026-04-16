@@ -16,7 +16,6 @@
         android:paddingTop="48dp"
         android:paddingBottom="32dp">
 
-        <!-- App icon placeholder (shield symbol via text) -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -24,7 +23,6 @@
             android:textSize="64sp"
             android:layout_marginBottom="8dp" />
 
-        <!-- Title -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,7 +30,6 @@
             style="@style/SignupTitleStyle"
             android:layout_marginBottom="8dp" />
 
-        <!-- Subtitle -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -40,7 +37,6 @@
             style="@style/SignupSubtitleStyle"
             android:layout_marginBottom="32dp" />
 
-        <!-- Card container for the form -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -55,18 +51,9 @@
                 android:orientation="vertical"
                 android:padding="24dp">
 
-                <!-- Username input -->
+                <!-- Username -->
                 <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:textColorHint="@color/colorAccent"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusBottomEnd="12dp">
-
+                    style="@style/SignupInputLayoutStyle">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextUsername"
                         style="@style/SignupEditTextStyle"
@@ -76,26 +63,14 @@
                         android:drawablePadding="8dp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Username error -->
                 <TextView
                     android:id="@+id/textViewUsernameError"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     style="@style/SignupErrorTextStyle"
                     android:layout_marginBottom="8dp" />
 
-                <!-- Email input -->
+                <!-- Email -->
                 <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:textColorHint="@color/colorAccent"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusBottomEnd="12dp">
-
+                    style="@style/SignupInputLayoutStyle">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextEmail"
                         style="@style/SignupEditTextStyle"
@@ -105,27 +80,15 @@
                         android:drawablePadding="8dp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Email error -->
                 <TextView
                     android:id="@+id/textViewEmailError"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     style="@style/SignupErrorTextStyle"
                     android:layout_marginBottom="8dp" />
 
-                <!-- Password input -->
+                <!-- Master Password -->
                 <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:textColorHint="@color/colorAccent"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusBottomEnd="12dp"
+                    style="@style/SignupInputLayoutStyle"
                     app:passwordToggleEnabled="true">
-
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextPassword"
                         style="@style/SignupEditTextStyle"
@@ -135,37 +98,44 @@
                         android:drawablePadding="8dp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Password error -->
+                <!-- Generate password button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonGeneratePassword"
+                    style="@style/SignupGenerateButtonStyle"
+                    android:text="@string/signup_generate_password" />
+
                 <TextView
                     android:id="@+id/textViewPasswordError"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     style="@style/SignupErrorTextStyle"
-                    android:layout_marginBottom="2dp" />
+                    android:layout_marginBottom="4dp" />
 
-                <!-- Password strength indicator -->
+                <!-- 5-segment password strength bar -->
+                <ProgressBar
+                    android:id="@+id/progressBarPasswordStrength"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:max="5"
+                    android:progress="0"
+                    android:visibility="gone"
+                    android:progressBackgroundTint="@color/signupDivider"
+                    android:progressTint="@color/passwordStrengthWeak"
+                    android:layout_marginBottom="4dp" />
+
+                <!-- Constructive feedback hint -->
                 <TextView
-                    android:id="@+id/textViewPasswordStrength"
+                    android:id="@+id/textViewPasswordHint"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="12sp"
                     android:fontFamily="sans-serif"
                     android:visibility="gone"
-                    android:layout_marginBottom="8dp" />
+                    android:layout_marginBottom="12dp" />
 
-                <!-- Confirm Password input -->
+                <!-- Confirm Master Password -->
                 <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:textColorHint="@color/colorAccent"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusBottomEnd="12dp"
+                    style="@style/SignupInputLayoutStyle"
                     app:passwordToggleEnabled="true">
-
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextConfirmPassword"
                         style="@style/SignupEditTextStyle"
@@ -175,15 +145,11 @@
                         android:drawablePadding="8dp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Confirm Password error -->
                 <TextView
                     android:id="@+id/textViewConfirmPasswordError"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     style="@style/SignupErrorTextStyle"
                     android:layout_marginBottom="16dp" />
 
-                <!-- Sign Up button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonSignUp"
                     style="@style/SignupButtonStyle"
@@ -191,11 +157,8 @@
                     android:backgroundTint="@color/signupButtonBackground"
                     app:cornerRadius="12dp" />
 
-                <!-- General error message -->
                 <TextView
                     android:id="@+id/textViewGeneralError"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     style="@style/SignupErrorTextStyle"
                     android:layout_gravity="center"
                     android:layout_marginTop="8dp" />
@@ -203,7 +166,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Progress bar (hidden by default) -->
+        <!-- Indeterminate spinner shown while the server request is in flight -->
         <ProgressBar
             android:id="@+id/progressBarSignup"
             android:layout_width="wrap_content"
@@ -211,7 +174,6 @@
             android:visibility="gone"
             android:indeterminateTint="@color/colorAccent" />
 
-        <!-- Login redirect -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -239,3 +201,4 @@
 
     </LinearLayout>
 </ScrollView>
+

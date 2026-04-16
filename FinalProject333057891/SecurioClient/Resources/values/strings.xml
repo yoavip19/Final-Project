@@ -27,6 +27,7 @@
     <string name="signup_password_strength_fair">Strength: Fair</string>
     <string name="signup_password_strength_strong">Strength: Strong</string>
     <string name="signup_password_strength_very_strong">Strength: Very Strong ✓</string>
+    <string name="signup_generate_password">🎲 Generate strong password</string>
     <string name="signup_progress_message">Creating your secure account…</string>
 
     <!-- Login page strings -->

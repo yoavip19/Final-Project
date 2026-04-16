@@ -16,7 +16,6 @@
         android:paddingTop="64dp"
         android:paddingBottom="32dp">
 
-        <!-- App icon -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -24,7 +23,6 @@
             android:textSize="64sp"
             android:layout_marginBottom="8dp" />
 
-        <!-- Title -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,7 +30,6 @@
             style="@style/SignupTitleStyle"
             android:layout_marginBottom="8dp" />
 
-        <!-- Subtitle -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -40,7 +37,6 @@
             style="@style/SignupSubtitleStyle"
             android:layout_marginBottom="40dp" />
 
-        <!-- Card container for the form -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -55,18 +51,9 @@
                 android:orientation="vertical"
                 android:padding="24dp">
 
-                <!-- Email input -->
+                <!-- Email -->
                 <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:textColorHint="@color/colorAccent"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusBottomEnd="12dp">
-
+                    style="@style/SignupInputLayoutStyle">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextLoginEmail"
                         style="@style/SignupEditTextStyle"
@@ -76,27 +63,15 @@
                         android:drawablePadding="8dp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Email error -->
                 <TextView
                     android:id="@+id/textViewLoginEmailError"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     style="@style/SignupErrorTextStyle"
                     android:layout_marginBottom="8dp" />
 
-                <!-- Password input -->
+                <!-- Master Password -->
                 <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:textColorHint="@color/colorAccent"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusBottomEnd="12dp"
+                    style="@style/SignupInputLayoutStyle"
                     app:passwordToggleEnabled="true">
-
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextLoginPassword"
                         style="@style/SignupEditTextStyle"
@@ -106,15 +81,11 @@
                         android:drawablePadding="8dp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Password error -->
                 <TextView
                     android:id="@+id/textViewLoginPasswordError"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     style="@style/SignupErrorTextStyle"
                     android:layout_marginBottom="16dp" />
 
-                <!-- Log In button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonLogin"
                     style="@style/SignupButtonStyle"
@@ -122,11 +93,8 @@
                     android:backgroundTint="@color/signupButtonBackground"
                     app:cornerRadius="12dp" />
 
-                <!-- General error message -->
                 <TextView
                     android:id="@+id/textViewLoginGeneralError"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     style="@style/SignupErrorTextStyle"
                     android:layout_gravity="center"
                     android:layout_marginTop="8dp" />
@@ -134,7 +102,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Progress bar (hidden by default) -->
+        <!-- Indeterminate spinner shown while the server request is in flight -->
         <ProgressBar
             android:id="@+id/progressBarLogin"
             android:layout_width="wrap_content"
@@ -142,7 +110,6 @@
             android:visibility="gone"
             android:indeterminateTint="@color/colorAccent" />
 
-        <!-- Signup redirect -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -18,6 +18,7 @@
     <color name="signupErrorText">#E74C3C</color>
     <color name="signupDivider">#E0E0E0</color>
     <color name="passwordStrengthWeak">#E74C3C</color>
+    <color name="passwordStrengthPoor">#E67E22</color>
     <color name="passwordStrengthFair">#F39C12</color>
     <color name="passwordStrengthStrong">#27AE60</color>
     <color name="passwordStrengthVeryStrong">#1E8449</color>

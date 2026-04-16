@@ -1,14 +1,18 @@
+using System;
+using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
 namespace SecurioClient.Helpers
 {
-    // Classifies how strong a password is.
+    // Classifies how strong a password is across five levels (one per criterion).
     public enum PasswordStrength
     {
-        Weak,
-        Fair,
-        Strong,
-        VeryStrong
+        Weak,       // score 1
+        Poor,       // score 2
+        Fair,       // score 3
+        Strong,     // score 4
+        VeryStrong  // score 5
     }
 
     // Carries the result of a single field validation.
@@ -54,6 +58,12 @@ namespace SecurioClient.Helpers
         // These cover the full set of ASCII printable non-alphanumeric characters (OWASP recommended).
         private static readonly Regex HasSpecial =
             new Regex(@"[!@#$%^&*()_+\-=\[\]{}|;':"",./<>?\\`~]", RegexOptions.Compiled);
+
+        // Character pools used by GenerateStrongPassword
+        private const string UpperPool   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        private const string LowerPool   = "abcdefghijklmnopqrstuvwxyz";
+        private const string DigitPool   = "0123456789";
+        private const string SpecialPool = "!@#$%^&*()-_=+[]{}|;:,.<>?";
 
         // -----------------------------------------------------------------
         // Public validators
@@ -132,45 +142,110 @@ namespace SecurioClient.Helpers
         }
 
         // -----------------------------------------------------------------
-        // Password strength meter
+        // Password strength meter (5-criterion cumulative score)
         // -----------------------------------------------------------------
 
         /// <summary>
-        /// Returns a <see cref="PasswordStrength"/> rating based on how many
-        /// complexity criteria the password satisfies.
-        ///
-        /// Scoring:
-        ///   Criteria (each scores 1 point):
-        ///     1. length >= 8
-        ///     2. length >= 12
-        ///     3. contains uppercase
-        ///     4. contains lowercase
-        ///     5. contains digit
-        ///     6. contains special character
-        ///
-        ///   0-2 points  → Weak
-        ///   3-4 points  → Fair
-        ///   5   points  → Strong
-        ///   6   points  → Very Strong
+        /// Returns a score from 0 to 5 reflecting how many of the five
+        /// complexity criteria the password satisfies:
+        ///   1. Length >= 8
+        ///   2. Contains a lowercase letter
+        ///   3. Contains an uppercase letter
+        ///   4. Contains a digit
+        ///   5. Contains a special character
         /// </summary>
-        public static PasswordStrength GetPasswordStrength(string password)
+        public static int GetPasswordScore(string password)
         {
-            if (string.IsNullOrEmpty(password))
-                return PasswordStrength.Weak;
+            if (string.IsNullOrEmpty(password)) return 0;
 
             int score = 0;
+            if (password.Length >= 8)             score++;
+            if (HasLowercase.IsMatch(password))   score++;
+            if (HasUppercase.IsMatch(password))   score++;
+            if (HasDigit.IsMatch(password))       score++;
+            if (HasSpecial.IsMatch(password))     score++;
 
-            if (password.Length >= 8) score++;
-            if (password.Length >= 12) score++;
-            if (HasUppercase.IsMatch(password)) score++;
-            if (HasLowercase.IsMatch(password)) score++;
-            if (HasDigit.IsMatch(password)) score++;
-            if (HasSpecial.IsMatch(password)) score++;
+            return score;
+        }
 
-            if (score <= 2) return PasswordStrength.Weak;
-            if (score <= 4) return PasswordStrength.Fair;
-            if (score == 5) return PasswordStrength.Strong;
+        /// <summary>Maps a cumulative score (0-5) to a <see cref="PasswordStrength"/> level.</summary>
+        public static PasswordStrength GetPasswordStrength(string password)
+        {
+            int score = GetPasswordScore(password);
+            if (score <= 1) return PasswordStrength.Weak;
+            if (score == 2) return PasswordStrength.Poor;
+            if (score == 3) return PasswordStrength.Fair;
+            if (score == 4) return PasswordStrength.Strong;
             return PasswordStrength.VeryStrong;
+        }
+
+        /// <summary>
+        /// Returns a short, constructive hint listing which criteria are still unmet,
+        /// or a success message when all five criteria are satisfied.
+        /// </summary>
+        public static string GetMissingCriteriaHint(string password)
+        {
+            if (string.IsNullOrEmpty(password)) return null;
+
+            var missing = new List<string>();
+            if (password.Length < 8)             missing.Add("8+ chars");
+            if (!HasLowercase.IsMatch(password)) missing.Add("lowercase");
+            if (!HasUppercase.IsMatch(password)) missing.Add("uppercase");
+            if (!HasDigit.IsMatch(password))     missing.Add("digit");
+            if (!HasSpecial.IsMatch(password))   missing.Add("special char");
+
+            return missing.Count == 0
+                ? "All requirements met ✓"
+                : "Missing: " + string.Join(", ", missing);
+        }
+
+        // -----------------------------------------------------------------
+        // Password generator
+        // -----------------------------------------------------------------
+
+        /// <summary>
+        /// Generates a cryptographically random password that satisfies all five
+        /// complexity criteria.  The result is <paramref name="length"/> characters
+        /// long (minimum 12, default 16) and is NOT placed in the confirm-password
+        /// field automatically.
+        /// </summary>
+        public static string GenerateStrongPassword(int length = 16)
+        {
+            if (length < 12) length = 12;
+
+            string allChars = UpperPool + LowerPool + DigitPool + SpecialPool;
+
+            // Start with one guaranteed character from each required category.
+            var chars = new List<char>
+            {
+                UpperPool[SecureRandomIndex(UpperPool.Length)],
+                LowerPool[SecureRandomIndex(LowerPool.Length)],
+                DigitPool[SecureRandomIndex(DigitPool.Length)],
+                SpecialPool[SecureRandomIndex(SpecialPool.Length)]
+            };
+
+            // Fill the remainder with random characters from the combined pool.
+            for (int i = chars.Count; i < length; i++)
+                chars.Add(allChars[SecureRandomIndex(allChars.Length)]);
+
+            // Fisher-Yates shuffle so the guaranteed characters aren't always at the start.
+            for (int i = chars.Count - 1; i > 0; i--)
+            {
+                int j = SecureRandomIndex(i + 1);
+                (chars[i], chars[j]) = (chars[j], chars[i]);
+            }
+
+            return new string(chars.ToArray());
+        }
+
+        // Returns a cryptographically secure random index in [0, max).
+        private static int SecureRandomIndex(int max)
+        {
+            byte[] buf = new byte[4];
+            RandomNumberGenerator.Fill(buf);
+            // Use modulo rejection sampling to avoid bias for small max values.
+            uint raw = BitConverter.ToUInt32(buf, 0);
+            return (int)(raw % (uint)max);
         }
     }
 }
