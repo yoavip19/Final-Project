@@ -58,6 +58,25 @@ namespace SecurioBackendFunction.Logic
                 }
             };
         }
+
+        // Retrieves the user's salts for the login process. This is a critical step for secure password handling.
+        public async Task<ServerResponse<SaltData>> GetUserSaltsAsync(string email)
+        {
+            var user = await _repo.GetUserByEmailAsync(email);
+            if (user == null)
+                return new ServerResponse<SaltData> { Success = false, Message = "User not found." };
+
+            return new ServerResponse<SaltData>
+            {
+                Success = true,
+                Message = "Salts retrieved successfully",
+                Data = new SaltData
+                {
+                    AuthSalt = user.AuthSalt,
+                    EncryptionSalt = user.EncryptionSalt
+                }
+            };
+        }
     }
 }
 

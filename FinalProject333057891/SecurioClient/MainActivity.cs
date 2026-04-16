@@ -9,7 +9,7 @@ namespace SecurioClient
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
-        protected override void OnCreate(Bundle savedInstanceState)
+        protected override async void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
@@ -18,7 +18,9 @@ namespace SecurioClient
             // Route to the appropriate screen based on session state.
             // If the user has an active in-memory session key they are already
             // authenticated; otherwise send them to the login screen.
-            if (SessionHelper.IsAuthenticated)
+            StorageHelper.ClearAll();
+
+            if (!string.IsNullOrEmpty(await StorageHelper.GetJwt()))
             {
                 // TODO: navigate to the vault / dashboard activity when it exists.
                 // For now, authenticated users stay on the (empty) main screen.

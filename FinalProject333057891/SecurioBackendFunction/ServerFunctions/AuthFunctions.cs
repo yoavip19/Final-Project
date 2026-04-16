@@ -54,5 +54,23 @@ public class AuthFunctions
             return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = "An internal error occurred." });
         }
     }
+
+    // Gets the user's salts (AuthSalt and EncryptionSalt) for the login process. This is a critical step for secure password handling.
+    [Function("GetSalts")]
+    public async Task<IActionResult> GetSalts([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+    {
+        try
+        {
+            var request = JsonConvert.DeserializeObject<dynamic>(await new StreamReader(req.Body).ReadToEndAsync());
+            string email = request.Email;
+
+            var user = await _authManager.GetUserSaltsAsync(email);
+            return user.Success ? new OkObjectResult(user) : new NotFoundObjectResult(user);
+        }
+        catch (Exception ex)
+        {
+            return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = "An internal error occurred." });
+        }
+    }
 }
 
