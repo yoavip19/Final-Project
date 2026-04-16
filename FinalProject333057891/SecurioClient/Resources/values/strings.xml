@@ -40,4 +40,15 @@
     <string name="login_signup_link">Sign Up</string>
     <string name="login_error_empty_fields">Please fill in all fields</string>
     <string name="login_error_invalid_email">Please enter a valid email address</string>
+
+    <!-- Vault page strings -->
+    <string name="vault_title">My Vault</string>
+    <string name="vault_subtitle">Your saved passwords</string>
+    <string name="vault_search_hint">Search passwords…</string>
+    <string name="vault_empty_title">No passwords yet</string>
+    <string name="vault_empty_subtitle">Tap + to add your first password</string>
+    <string name="vault_add_password">Add Password</string>
+    <string name="vault_nav_vault">Vault</string>
+    <string name="vault_nav_generator">Generator</string>
+    <string name="vault_nav_profile">Profile</string>
 </resources>

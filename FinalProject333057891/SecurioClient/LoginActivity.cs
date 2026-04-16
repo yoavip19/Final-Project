@@ -96,7 +96,7 @@ namespace SecurioClient
 
                 if (result.Success)
                 {
-                    var intent = new Android.Content.Intent(this, typeof(MainActivity));
+                    var intent = new Android.Content.Intent(this, typeof(VaultActivity));
                     intent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);
                     StartActivity(intent);
                     Finish();
