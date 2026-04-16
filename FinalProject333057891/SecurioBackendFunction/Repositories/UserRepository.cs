@@ -48,16 +48,30 @@ namespace SecurioBackendFunction.Repositories
         {
             using var conn = new SqlConnection(_connectionString);
             await conn.OpenAsync();
-            var sql = "SELECT Id, Username, MasterPasswordKey FROM Users WHERE Email = @email";
+            var sql = @"SELECT Id, Username, Email, MasterPasswordKey, AuthSalt, EncryptionSalt, 
+                       LastLogin, LastPasswordUpdate, CreatedAt 
+                FROM Users WHERE Email = @email";
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.Add("@email", SqlDbType.NVarChar).Value = email;
             using var reader = await cmd.ExecuteReaderAsync();
             if (await reader.ReadAsync())
             {
-                return new User { Id = (int)reader["Id"], Username = reader["Username"].ToString(), MasterPasswordKey = reader["MasterPasswordKey"].ToString() };
+                return new User
+                {
+                    Id = (int)reader["Id"],
+                    Username = reader["Username"].ToString(),
+                    Email = reader["Email"].ToString(),
+                    MasterPasswordKey = reader["MasterPasswordKey"].ToString(),
+                    AuthSalt = reader["AuthSalt"].ToString(),
+                    EncryptionSalt = reader["EncryptionSalt"].ToString(),
+                    LastLogin = reader["LastLogin"] != DBNull.Value ? (DateTime)reader["LastLogin"] : DateTime.MinValue,
+                    LastPasswordUpdate = reader["LastPasswordUpdate"] != DBNull.Value ? (DateTime)reader["LastPasswordUpdate"] : DateTime.MinValue,
+                    CreatedAt = reader["CreatedAt"] != DBNull.Value ? (DateTime)reader["CreatedAt"] : DateTime.MinValue
+                };
             }
             return null;
         }
+
 
         // UserRepository.cs - Fully populated profile query
         public async Task<User> GetUserProfileAsync(int userId)

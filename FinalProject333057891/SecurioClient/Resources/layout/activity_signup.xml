@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/signupBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
+        android:paddingTop="48dp"
+        android:paddingBottom="32dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🛡️"
+            android:textSize="64sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/signup_title"
+            style="@style/SignupTitleStyle"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/signup_subtitle"
+            style="@style/SignupSubtitleStyle"
+            android:layout_marginBottom="32dp" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="@color/signupCardBackground"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <!-- Username -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/SignupInputLayoutStyle">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextUsername"
+                        style="@style/SignupEditTextStyle"
+                        android:hint="@string/signup_username_hint"
+                        android:inputType="textPersonName"
+                        android:drawableStart="@android:drawable/ic_menu_info_details"
+                        android:drawablePadding="8dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/textViewUsernameError"
+                    style="@style/SignupErrorTextStyle"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Email -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/SignupInputLayoutStyle">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextEmail"
+                        style="@style/SignupEditTextStyle"
+                        android:hint="@string/signup_email_hint"
+                        android:inputType="textEmailAddress"
+                        android:drawableStart="@android:drawable/ic_dialog_email"
+                        android:drawablePadding="8dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/textViewEmailError"
+                    style="@style/SignupErrorTextStyle"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Master Password -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/SignupInputLayoutStyle"
+                    app:passwordToggleEnabled="true">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextPassword"
+                        style="@style/SignupEditTextStyle"
+                        android:hint="@string/signup_password_hint"
+                        android:inputType="textPassword"
+                        android:drawableStart="@android:drawable/ic_lock_idle_lock"
+                        android:drawablePadding="8dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Generate password button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonGeneratePassword"
+                    style="@style/SignupGenerateButtonStyle"
+                    android:text="@string/signup_generate_password" />
+
+                <TextView
+                    android:id="@+id/textViewPasswordError"
+                    style="@style/SignupErrorTextStyle"
+                    android:layout_marginBottom="4dp" />
+
+                <!-- 5-segment password strength bar -->
+                <ProgressBar
+                    android:id="@+id/progressBarPasswordStrength"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:max="5"
+                    android:progress="0"
+                    android:visibility="gone"
+                    android:progressBackgroundTint="@color/signupDivider"
+                    android:progressTint="@color/passwordStrengthWeak"
+                    android:layout_marginBottom="4dp" />
+
+                <!-- Constructive feedback hint -->
+                <TextView
+                    android:id="@+id/textViewPasswordHint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif"
+                    android:visibility="gone"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Confirm Master Password -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/SignupInputLayoutStyle"
+                    app:passwordToggleEnabled="true">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextConfirmPassword"
+                        style="@style/SignupEditTextStyle"
+                        android:hint="@string/signup_confirm_password_hint"
+                        android:inputType="textPassword"
+                        android:drawableStart="@android:drawable/ic_lock_idle_lock"
+                        android:drawablePadding="8dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/textViewConfirmPasswordError"
+                    style="@style/SignupErrorTextStyle"
+                    android:layout_marginBottom="16dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonSignUp"
+                    style="@style/SignupButtonStyle"
+                    android:text="@string/signup_button_text"
+                    android:backgroundTint="@color/signupButtonBackground"
+                    app:cornerRadius="12dp" />
+
+                <TextView
+                    android:id="@+id/textViewGeneralError"
+                    style="@style/SignupErrorTextStyle"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="8dp" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Indeterminate spinner shown while the server request is in flight -->
+        <ProgressBar
+            android:id="@+id/progressBarSignup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:indeterminateTint="@color/colorAccent" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/signup_login_prompt"
+                android:textSize="14sp"
+                android:textColor="@color/signupSubtitleText"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:id="@+id/textViewLoginLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/signup_login_link"
+                style="@style/SignupLinkTextStyle"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
+
