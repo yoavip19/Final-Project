@@ -48,6 +48,7 @@
     <string name="vault_empty_title">No passwords yet</string>
     <string name="vault_empty_subtitle">Tap + to add your first password</string>
     <string name="vault_add_password">Add Password</string>
+    <string name="vault_edit_password">Edit Password</string>
     <string name="vault_nav_vault">Vault</string>
     <string name="vault_nav_generator">Generator</string>
     <string name="vault_nav_profile">Profile</string>

@@ -65,7 +65,7 @@ namespace SecurioClient
             {
                 if (position >= 0 && position < allEntries.Count)
                 {
-                    Toast.MakeText(this, $"Edit: {allEntries[position].SiteName}", ToastLength.Short).Show();
+                    Toast.MakeText(this, $"Copy: {allEntries[position].SiteName}", ToastLength.Short).Show();
                 }
             };
         }
