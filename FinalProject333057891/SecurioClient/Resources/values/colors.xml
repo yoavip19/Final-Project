@@ -42,4 +42,11 @@
     <color name="vaultBottomNavUnselected">#78909C</color>
     <color name="vaultDivider">#37474F</color>
     <color name="vaultEmptyText">#78909C</color>
+
+    <!-- Entry (Add / Edit) page colors -->
+    <color name="entryBackground">#1B2838</color>
+    <color name="entryCardBackground">#FFFFFF</color>
+    <color name="entryButtonBackground">#3498db</color>
+    <color name="entryButtonText">#FFFFFF</color>
+    <color name="entryStrengthBackground">#E0E0E0</color>
 </resources>

@@ -1,4 +1,5 @@
 using Android.App;
+using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -22,6 +23,7 @@ namespace SecurioClient
 
         private PasswordBannerAdapter adapter;
         private List<PasswordEntry> allEntries = new List<PasswordEntry>();
+        private int nextEntryId = 100;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -53,19 +55,24 @@ namespace SecurioClient
             recyclerViewPasswords.SetLayoutManager(new LinearLayoutManager(this));
             recyclerViewPasswords.SetAdapter(adapter);
 
+            // Tapping a banner opens the entry in Edit mode.
             adapter.ItemClick += (sender, position) =>
             {
-                if (position >= 0 && position < allEntries.Count)
+                var displayed = GetDisplayedEntries();
+                if (position >= 0 && position < displayed.Count)
                 {
-                    Toast.MakeText(this, $"Tapped: {allEntries[position].SiteName}", ToastLength.Short).Show();
+                    var entry = displayed[position];
+                    LaunchEntryActivity(entry);
                 }
             };
 
             adapter.CopyClick += (sender, position) =>
             {
-                if (position >= 0 && position < allEntries.Count)
+                var displayed = GetDisplayedEntries();
+                if (position >= 0 && position < displayed.Count)
                 {
-                    Toast.MakeText(this, $"Copy: {allEntries[position].SiteName}", ToastLength.Short).Show();
+                    var entry = displayed[position];
+                    LaunchEntryActivity(entry);
                 }
             };
         }
@@ -93,10 +100,12 @@ namespace SecurioClient
                 FilterPasswords(query);
             }));
 
-            // FAB
+            // FAB — open EntryActivity in Add mode.
             FindViewById(Resource.Id.fabAddPassword).Click += (sender, e) =>
             {
-                Toast.MakeText(this, GetString(Resource.String.vault_add_password), ToastLength.Short).Show();
+                SyncEntryCache();
+                var intent = new Intent(this, typeof(EntryActivity));
+                StartActivityForResult(intent, EntryActivity.RequestCodeAdd);
             };
         }
 
@@ -107,6 +116,65 @@ namespace SecurioClient
             {
                 Toast.MakeText(this, $"{char.ToUpper(tab[0])}{tab.Substring(1)} coming soon!", ToastLength.Short).Show();
             }
+        }
+
+        // ──────────────────────────────────────────
+        //  Entry activity navigation
+        // ──────────────────────────────────────────
+
+        private void LaunchEntryActivity(PasswordEntry entry)
+        {
+            SyncEntryCache();
+            var intent = new Intent(this, typeof(EntryActivity));
+            intent.PutExtra(EntryActivity.ExtraEntryId, entry.Id);
+            intent.PutExtra(EntryActivity.ExtraSiteName, entry.SiteName ?? string.Empty);
+            intent.PutExtra(EntryActivity.ExtraUsername, entry.Username ?? string.Empty);
+            intent.PutExtra(EntryActivity.ExtraPassword, entry.EncryptedPassword ?? string.Empty);
+            intent.PutExtra(EntryActivity.ExtraUrl, entry.Url ?? string.Empty);
+            intent.PutExtra(EntryActivity.ExtraNotes, entry.Notes ?? string.Empty);
+            StartActivityForResult(intent, EntryActivity.RequestCodeEdit);
+        }
+
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+
+            if (resultCode != Result.Ok || data == null)
+                return;
+
+            string siteName = data.GetStringExtra(EntryActivity.ResultSiteName);
+            string username = data.GetStringExtra(EntryActivity.ResultUsername);
+            string password = data.GetStringExtra(EntryActivity.ResultPassword);
+            string url = data.GetStringExtra(EntryActivity.ResultUrl);
+            string notes = data.GetStringExtra(EntryActivity.ResultNotes);
+
+            if (requestCode == EntryActivity.RequestCodeAdd)
+            {
+                allEntries.Add(new PasswordEntry
+                {
+                    Id = nextEntryId++,
+                    SiteName = siteName,
+                    Username = username,
+                    EncryptedPassword = password,
+                    Url = url,
+                    Notes = notes
+                });
+            }
+            else if (requestCode == EntryActivity.RequestCodeEdit)
+            {
+                int entryId = data.GetIntExtra(EntryActivity.ResultEntryId, -1);
+                var existing = allEntries.FirstOrDefault(e => e.Id == entryId);
+                if (existing != null)
+                {
+                    existing.SiteName = siteName;
+                    existing.Username = username;
+                    existing.EncryptedPassword = password;
+                    existing.Url = url;
+                    existing.Notes = notes;
+                }
+            }
+
+            RefreshList();
         }
 
         // ──────────────────────────────────────────
@@ -129,8 +197,7 @@ namespace SecurioClient
                 new PasswordEntry { Id = 6, SiteName = "Amazon",   Username = "shop@example.com" },
             };
 
-            adapter.UpdateData(allEntries);
-            UpdateEmptyState();
+            RefreshList();
         }
 
         private void FilterPasswords(string query)
@@ -141,14 +208,33 @@ namespace SecurioClient
             }
             else
             {
-                var filtered = allEntries
-                    .Where(e => (e.SiteName != null && e.SiteName.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
-                             || (e.Username != null && e.Username.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0))
-                    .ToList();
-                adapter.UpdateData(filtered);
+                adapter.UpdateData(GetFilteredEntries(query));
             }
 
             UpdateEmptyState();
+        }
+
+        private List<PasswordEntry> GetFilteredEntries(string query)
+        {
+            return allEntries
+                .Where(e => (e.SiteName != null && e.SiteName.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+                         || (e.Username != null && e.Username.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0))
+                .ToList();
+        }
+
+        /// <summary>
+        /// Returns the list currently shown in the adapter (filtered or full).
+        /// </summary>
+        private List<PasswordEntry> GetDisplayedEntries()
+        {
+            string query = editTextVaultSearch.Text?.Trim();
+            return string.IsNullOrWhiteSpace(query) ? allEntries : GetFilteredEntries(query);
+        }
+
+        private void RefreshList()
+        {
+            string query = editTextVaultSearch.Text?.Trim();
+            FilterPasswords(query);
         }
 
         private void UpdateEmptyState()
@@ -156,6 +242,15 @@ namespace SecurioClient
             bool isEmpty = adapter.ItemCount == 0;
             layoutVaultEmpty.Visibility = isEmpty ? ViewStates.Visible : ViewStates.Gone;
             recyclerViewPasswords.Visibility = isEmpty ? ViewStates.Gone : ViewStates.Visible;
+        }
+
+        /// <summary>
+        /// Pushes the current entry list into the static cache so that
+        /// <see cref="EntryActivity"/> can perform duplicate checking.
+        /// </summary>
+        private void SyncEntryCache()
+        {
+            VaultEntryCache.Entries = new List<PasswordEntry>(allEntries);
         }
     }
 }

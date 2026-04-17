@@ -9,5 +9,7 @@ namespace SecurioClient
         public string SiteName { get; set; }
         public string Username { get; set; }
         public string EncryptedPassword { get; set; }
+        public string Url { get; set; }
+        public string Notes { get; set; }
     }
 }
