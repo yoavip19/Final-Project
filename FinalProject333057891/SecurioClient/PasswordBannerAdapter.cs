@@ -1,17 +1,18 @@
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
+using SecurioModels.DataTransferObjects;
 using System;
 using System.Collections.Generic;
 
 namespace SecurioClient
 {
     /// <summary>
-    /// Adapter that feeds <see cref="PasswordEntry"/> items into the vault RecyclerView.
+    /// Adapter that feeds <see cref="VaultItem"/> items into the vault RecyclerView.
     /// </summary>
     public class PasswordBannerAdapter : RecyclerView.Adapter
     {
-        private List<PasswordEntry> items;
+        private List<VaultItem> items;
 
         /// <summary>Raised when the user taps a password banner.</summary>
         public event EventHandler<int> ItemClick;
@@ -19,9 +20,9 @@ namespace SecurioClient
         /// <summary>Raised when the user taps the edit icon on a banner.</summary>
         public event EventHandler<int> EditClick;
 
-        public PasswordBannerAdapter(List<PasswordEntry> items)
+        public PasswordBannerAdapter(List<VaultItem> items)
         {
-            this.items = items ?? new List<PasswordEntry>();
+            this.items = items ?? new List<VaultItem>();
         }
 
         public override int ItemCount => items.Count;
@@ -38,12 +39,12 @@ namespace SecurioClient
             var vh = (PasswordBannerViewHolder)holder;
             var entry = items[position];
 
-            vh.TextViewIcon.Text = string.IsNullOrEmpty(entry.SiteName) || entry.SiteName.Length == 0
+            vh.TextViewIcon.Text = string.IsNullOrEmpty(entry.AccountName)
                 ? "?"
-                : entry.SiteName.Substring(0, 1).ToUpperInvariant();
+                : entry.AccountName.Substring(0, 1).ToUpperInvariant();
 
-            vh.TextViewSiteName.Text = entry.SiteName ?? string.Empty;
-            vh.TextViewUsername.Text = entry.Username ?? string.Empty;
+            vh.TextViewSiteName.Text = entry.AccountName ?? string.Empty;
+            vh.TextViewUsername.Text = entry.AccountUsername ?? string.Empty;
 
             vh.ItemView.Click -= vh.OnItemClick;
             vh.ItemView.Click += vh.OnItemClick;
@@ -57,9 +58,9 @@ namespace SecurioClient
         /// <summary>
         /// Replaces the full data set and refreshes the list.
         /// </summary>
-        public void UpdateData(List<PasswordEntry> newItems)
+        public void UpdateData(List<VaultItem> newItems)
         {
-            items = newItems ?? new List<PasswordEntry>();
+            items = newItems ?? new List<VaultItem>();
             NotifyDataSetChanged();
         }
 

@@ -6,6 +6,7 @@ using Android.Widget;
 using AndroidX.AppCompat.App;
 using AndroidX.RecyclerView.Widget;
 using SecurioClient.Helpers;
+using SecurioModels.DataTransferObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,8 +23,7 @@ namespace SecurioClient
         private LinearLayout layoutVaultEmpty;
 
         private PasswordBannerAdapter adapter;
-        private List<PasswordEntry> allEntries = new List<PasswordEntry>();
-        private int nextEntryId = 100;
+        private List<VaultItem> allEntries = new List<VaultItem>();
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -61,7 +61,7 @@ namespace SecurioClient
                 var displayed = GetDisplayedEntries();
                 if (position >= 0 && position < displayed.Count)
                 {
-                    Toast.MakeText(this, $"Edit: {displayed[position].SiteName} — coming soon!", ToastLength.Short).Show();
+                    Toast.MakeText(this, $"Edit: {displayed[position].AccountName} — coming soon!", ToastLength.Short).Show();
                 }
             };
 
@@ -71,7 +71,7 @@ namespace SecurioClient
                 var displayed = GetDisplayedEntries();
                 if (position >= 0 && position < displayed.Count)
                 {
-                    Toast.MakeText(this, $"Edit: {displayed[position].SiteName} — coming soon!", ToastLength.Short).Show();
+                    Toast.MakeText(this, $"Edit: {displayed[position].AccountName} — coming soon!", ToastLength.Short).Show();
                 }
             };
         }
@@ -130,11 +130,11 @@ namespace SecurioClient
 
             if (requestCode == AddPasswordActivity.RequestCodeAdd)
             {
-                allEntries.Add(new PasswordEntry
+                allEntries.Add(new VaultItem
                 {
-                    Id = data.GetIntExtra(AddPasswordActivity.ResultEntryId, nextEntryId++),
-                    SiteName = data.GetStringExtra(AddPasswordActivity.ResultSiteName),
-                    Username = data.GetStringExtra(AddPasswordActivity.ResultUsername),
+                    Id = data.GetIntExtra(AddPasswordActivity.ResultEntryId, 0),
+                    AccountName = data.GetStringExtra(AddPasswordActivity.ResultSiteName),
+                    AccountUsername = data.GetStringExtra(AddPasswordActivity.ResultUsername),
                     Notes = data.GetStringExtra(AddPasswordActivity.ResultNotes)
                 });
 
@@ -152,14 +152,14 @@ namespace SecurioClient
         /// </summary>
         private void LoadSampleData()
         {
-            allEntries = new List<PasswordEntry>
+            allEntries = new List<VaultItem>
             {
-                new PasswordEntry { Id = 1, SiteName = "Google",   Username = "user@gmail.com" },
-                new PasswordEntry { Id = 2, SiteName = "GitHub",   Username = "devuser" },
-                new PasswordEntry { Id = 3, SiteName = "Facebook", Username = "john.doe@fb.com" },
-                new PasswordEntry { Id = 4, SiteName = "Twitter",  Username = "@johndoe" },
-                new PasswordEntry { Id = 5, SiteName = "Netflix",  Username = "john@example.com" },
-                new PasswordEntry { Id = 6, SiteName = "Amazon",   Username = "shop@example.com" },
+                new VaultItem { Id = 1, AccountName = "Google",   AccountUsername = "user@gmail.com" },
+                new VaultItem { Id = 2, AccountName = "GitHub",   AccountUsername = "devuser" },
+                new VaultItem { Id = 3, AccountName = "Facebook", AccountUsername = "john.doe@fb.com" },
+                new VaultItem { Id = 4, AccountName = "Twitter",  AccountUsername = "@johndoe" },
+                new VaultItem { Id = 5, AccountName = "Netflix",  AccountUsername = "john@example.com" },
+                new VaultItem { Id = 6, AccountName = "Amazon",   AccountUsername = "shop@example.com" },
             };
 
             RefreshList();
@@ -179,18 +179,18 @@ namespace SecurioClient
             UpdateEmptyState();
         }
 
-        private List<PasswordEntry> GetFilteredEntries(string query)
+        private List<VaultItem> GetFilteredEntries(string query)
         {
             return allEntries
-                .Where(e => (e.SiteName != null && e.SiteName.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
-                         || (e.Username != null && e.Username.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0))
+                .Where(e => (e.AccountName != null && e.AccountName.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+                         || (e.AccountUsername != null && e.AccountUsername.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0))
                 .ToList();
         }
 
         /// <summary>
         /// Returns the list currently shown in the adapter (filtered or full).
         /// </summary>
-        private List<PasswordEntry> GetDisplayedEntries()
+        private List<VaultItem> GetDisplayedEntries()
         {
             string query = editTextVaultSearch.Text?.Trim();
             return string.IsNullOrWhiteSpace(query) ? allEntries : GetFilteredEntries(query);
@@ -215,7 +215,7 @@ namespace SecurioClient
         /// </summary>
         private void SyncEntryCache()
         {
-            VaultEntryCache.Entries = new List<PasswordEntry>(allEntries);
+            VaultEntryCache.Entries = new List<VaultItem>(allEntries);
         }
     }
 }

@@ -55,7 +55,7 @@ namespace SecurioClient
         private ProgressBar progressBar;
 
         // Holds existing entries for duplicate checking.
-        private List<PasswordEntry> existingEntries = new List<PasswordEntry>();
+        private List<VaultItem> existingEntries = new List<VaultItem>();
 
         // ── Lifecycle ──────────────────────────────────────────
 
@@ -109,7 +109,7 @@ namespace SecurioClient
         /// </summary>
         private void PopulateExistingEntries()
         {
-            existingEntries = VaultEntryCache.Entries ?? new List<PasswordEntry>();
+            existingEntries = VaultEntryCache.Entries ?? new List<VaultItem>();
         }
 
         private void SetupEventHandlers()
@@ -272,8 +272,8 @@ namespace SecurioClient
         private bool IsDuplicate(string siteName, string username)
         {
             return existingEntries.Any(e =>
-                string.Equals(e.SiteName, siteName, StringComparison.OrdinalIgnoreCase)
-                && string.Equals(e.Username, username, StringComparison.OrdinalIgnoreCase));
+                string.Equals(e.AccountName, siteName, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(e.AccountUsername, username, StringComparison.OrdinalIgnoreCase));
         }
 
         // ── Password strength indicator (informational) ────────
@@ -355,6 +355,6 @@ namespace SecurioClient
     /// </summary>
     public static class VaultEntryCache
     {
-        public static List<PasswordEntry> Entries { get; set; } = new List<PasswordEntry>();
+        public static List<VaultItem> Entries { get; set; } = new List<VaultItem>();
     }
 }
