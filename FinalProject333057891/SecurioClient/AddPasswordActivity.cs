@@ -14,31 +14,21 @@ using System.Linq;
 namespace SecurioClient
 {
     /// <summary>
-    /// A single activity that handles both adding a new vault entry and editing an
-    /// existing one.  The mode is determined by the presence of the <c>EXTRA_ENTRY_ID</c>
-    /// intent extra:  absent → Add mode, present → Edit mode.
+    /// Activity for adding a new password entry to the vault.
+    /// Uses the shared <c>activity_entry.xml</c> layout.
+    /// A separate Edit activity will reuse the same XML in the future.
     /// </summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
-    public class EntryActivity : AppCompatActivity
+    public class AddPasswordActivity : AppCompatActivity
     {
-        // Intent extra keys used to pass data between activities.
-        public const string ExtraEntryId = "EXTRA_ENTRY_ID";
-        public const string ExtraSiteName = "EXTRA_SITE_NAME";
-        public const string ExtraUsername = "EXTRA_USERNAME";
-        public const string ExtraPassword = "EXTRA_PASSWORD";
-        public const string ExtraUrl = "EXTRA_URL";
-        public const string ExtraNotes = "EXTRA_NOTES";
-
         // Result extras returned to the caller.
         public const string ResultSiteName = "RESULT_SITE_NAME";
         public const string ResultUsername = "RESULT_USERNAME";
         public const string ResultPassword = "RESULT_PASSWORD";
         public const string ResultUrl = "RESULT_URL";
         public const string ResultNotes = "RESULT_NOTES";
-        public const string ResultEntryId = "RESULT_ENTRY_ID";
 
         public const int RequestCodeAdd = 1001;
-        public const int RequestCodeEdit = 1002;
 
         // ── Views ──────────────────────────────────────────────
         private ImageView imageViewBack;
@@ -63,12 +53,7 @@ namespace SecurioClient
         private MaterialButton buttonSave;
         private ProgressBar progressBar;
 
-        // ── State ──────────────────────────────────────────────
-        private bool isEditMode;
-        private int editEntryId = -1;
-
         // Holds existing entries for duplicate checking.
-        // In a real app this would come from a repository/service.
         private List<PasswordEntry> existingEntries = new List<PasswordEntry>();
 
         // ── Lifecycle ──────────────────────────────────────────
@@ -79,21 +64,13 @@ namespace SecurioClient
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_entry);
 
-            DetermineMode();
             InitializeViews();
-            ConfigureForMode();
+            ConfigureForAddMode();
             PopulateExistingEntries();
             SetupEventHandlers();
         }
 
         // ── Setup helpers ──────────────────────────────────────
-
-        private void DetermineMode()
-        {
-            isEditMode = Intent.HasExtra(ExtraEntryId);
-            if (isEditMode)
-                editEntryId = Intent.GetIntExtra(ExtraEntryId, -1);
-        }
 
         private void InitializeViews()
         {
@@ -120,27 +97,15 @@ namespace SecurioClient
             progressBar = FindViewById<ProgressBar>(Resource.Id.progressBarEntry);
         }
 
-        private void ConfigureForMode()
+        private void ConfigureForAddMode()
         {
-            if (isEditMode)
-            {
-                textViewTitle.Text = GetString(Resource.String.entry_title_edit);
-                textViewSubtitle.Text = GetString(Resource.String.entry_subtitle_edit);
-                buttonSave.Text = GetString(Resource.String.entry_button_update);
-
-                // Pre-fill the fields with the existing entry's data.
-                editTextSiteName.Text = Intent.GetStringExtra(ExtraSiteName) ?? string.Empty;
-                editTextUsername.Text = Intent.GetStringExtra(ExtraUsername) ?? string.Empty;
-                editTextPassword.Text = Intent.GetStringExtra(ExtraPassword) ?? string.Empty;
-                editTextUrl.Text = Intent.GetStringExtra(ExtraUrl) ?? string.Empty;
-                editTextNotes.Text = Intent.GetStringExtra(ExtraNotes) ?? string.Empty;
-            }
+            textViewTitle.Text = GetString(Resource.String.entry_title_add);
+            textViewSubtitle.Text = GetString(Resource.String.entry_subtitle_add);
+            buttonSave.Text = GetString(Resource.String.entry_button_save);
         }
 
         /// <summary>
         /// Loads the existing vault entries so that duplicate-check works.
-        /// In a real implementation this would come from a local cache or server.
-        /// For now, VaultActivity passes its entry list via a static helper.
         /// </summary>
         private void PopulateExistingEntries()
         {
@@ -223,13 +188,10 @@ namespace SecurioClient
             resultIntent.PutExtra(ResultUrl, url ?? string.Empty);
             resultIntent.PutExtra(ResultNotes, notes ?? string.Empty);
 
-            if (isEditMode)
-                resultIntent.PutExtra(ResultEntryId, editEntryId);
-
             SetResult(Result.Ok, resultIntent);
 
             Toast.MakeText(this,
-                GetString(isEditMode ? Resource.String.entry_updated_success : Resource.String.entry_saved_success),
+                GetString(Resource.String.entry_saved_success),
                 ToastLength.Short).Show();
 
             Finish();
@@ -267,13 +229,12 @@ namespace SecurioClient
 
         /// <summary>
         /// Returns <c>true</c> when an entry with the same site name AND username
-        /// already exists in the vault, excluding the entry currently being edited.
+        /// already exists in the vault.
         /// </summary>
         private bool IsDuplicate(string siteName, string username)
         {
             return existingEntries.Any(e =>
-                e.Id != editEntryId
-                && string.Equals(e.SiteName, siteName, StringComparison.OrdinalIgnoreCase)
+                string.Equals(e.SiteName, siteName, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(e.Username, username, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -341,7 +302,7 @@ namespace SecurioClient
 
     /// <summary>
     /// Static cache used to share the current entry list between VaultActivity and
-    /// EntryActivity so duplicate checking works without a database round-trip.
+    /// entry activities (Add / Edit) so duplicate checking works without a database round-trip.
     /// </summary>
     public static class VaultEntryCache
     {

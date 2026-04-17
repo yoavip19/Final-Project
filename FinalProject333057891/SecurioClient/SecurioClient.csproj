@@ -78,7 +78,7 @@
     <Compile Include="PasswordEntry.cs" />
     <Compile Include="PasswordBannerAdapter.cs" />
     <Compile Include="BottomNavFragment.cs" />
-    <Compile Include="EntryActivity.cs" />
+    <Compile Include="AddPasswordActivity.cs" />
     <Compile Include="VaultActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

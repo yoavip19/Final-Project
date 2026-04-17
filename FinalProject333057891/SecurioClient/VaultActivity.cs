@@ -55,25 +55,23 @@ namespace SecurioClient
             recyclerViewPasswords.SetLayoutManager(new LinearLayoutManager(this));
             recyclerViewPasswords.SetAdapter(adapter);
 
-            // Tapping a banner opens the entry in Edit mode.
+            // Tapping a banner — Edit activity will be wired here in the future.
             adapter.ItemClick += (sender, position) =>
             {
                 var displayed = GetDisplayedEntries();
                 if (position >= 0 && position < displayed.Count)
                 {
-                    var entry = displayed[position];
-                    LaunchEntryActivity(entry);
+                    Toast.MakeText(this, $"Edit: {displayed[position].SiteName} — coming soon!", ToastLength.Short).Show();
                 }
             };
 
-            // Tapping the edit icon on a banner opens the entry in Edit mode.
+            // Tapping the edit icon on a banner — Edit activity will be wired here in the future.
             adapter.EditClick += (sender, position) =>
             {
                 var displayed = GetDisplayedEntries();
                 if (position >= 0 && position < displayed.Count)
                 {
-                    var entry = displayed[position];
-                    LaunchEntryActivity(entry);
+                    Toast.MakeText(this, $"Edit: {displayed[position].SiteName} — coming soon!", ToastLength.Short).Show();
                 }
             };
         }
@@ -101,12 +99,12 @@ namespace SecurioClient
                 FilterPasswords(query);
             }));
 
-            // FAB — open EntryActivity in Add mode.
+            // FAB — open AddPasswordActivity.
             FindViewById(Resource.Id.fabAddPassword).Click += (sender, e) =>
             {
                 SyncEntryCache();
-                var intent = new Intent(this, typeof(EntryActivity));
-                StartActivityForResult(intent, EntryActivity.RequestCodeAdd);
+                var intent = new Intent(this, typeof(AddPasswordActivity));
+                StartActivityForResult(intent, AddPasswordActivity.RequestCodeAdd);
             };
         }
 
@@ -120,21 +118,8 @@ namespace SecurioClient
         }
 
         // ──────────────────────────────────────────
-        //  Entry activity navigation
+        //  Activity result handling
         // ──────────────────────────────────────────
-
-        private void LaunchEntryActivity(PasswordEntry entry)
-        {
-            SyncEntryCache();
-            var intent = new Intent(this, typeof(EntryActivity));
-            intent.PutExtra(EntryActivity.ExtraEntryId, entry.Id);
-            intent.PutExtra(EntryActivity.ExtraSiteName, entry.SiteName ?? string.Empty);
-            intent.PutExtra(EntryActivity.ExtraUsername, entry.Username ?? string.Empty);
-            intent.PutExtra(EntryActivity.ExtraPassword, entry.EncryptedPassword ?? string.Empty);
-            intent.PutExtra(EntryActivity.ExtraUrl, entry.Url ?? string.Empty);
-            intent.PutExtra(EntryActivity.ExtraNotes, entry.Notes ?? string.Empty);
-            StartActivityForResult(intent, EntryActivity.RequestCodeEdit);
-        }
 
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
@@ -143,39 +128,20 @@ namespace SecurioClient
             if (resultCode != Result.Ok || data == null)
                 return;
 
-            string siteName = data.GetStringExtra(EntryActivity.ResultSiteName);
-            string username = data.GetStringExtra(EntryActivity.ResultUsername);
-            string password = data.GetStringExtra(EntryActivity.ResultPassword);
-            string url = data.GetStringExtra(EntryActivity.ResultUrl);
-            string notes = data.GetStringExtra(EntryActivity.ResultNotes);
-
-            if (requestCode == EntryActivity.RequestCodeAdd)
+            if (requestCode == AddPasswordActivity.RequestCodeAdd)
             {
                 allEntries.Add(new PasswordEntry
                 {
                     Id = nextEntryId++,
-                    SiteName = siteName,
-                    Username = username,
-                    EncryptedPassword = password,
-                    Url = url,
-                    Notes = notes
+                    SiteName = data.GetStringExtra(AddPasswordActivity.ResultSiteName),
+                    Username = data.GetStringExtra(AddPasswordActivity.ResultUsername),
+                    EncryptedPassword = data.GetStringExtra(AddPasswordActivity.ResultPassword),
+                    Url = data.GetStringExtra(AddPasswordActivity.ResultUrl),
+                    Notes = data.GetStringExtra(AddPasswordActivity.ResultNotes)
                 });
-            }
-            else if (requestCode == EntryActivity.RequestCodeEdit)
-            {
-                int entryId = data.GetIntExtra(EntryActivity.ResultEntryId, -1);
-                var existing = allEntries.FirstOrDefault(e => e.Id == entryId);
-                if (existing != null)
-                {
-                    existing.SiteName = siteName;
-                    existing.Username = username;
-                    existing.EncryptedPassword = password;
-                    existing.Url = url;
-                    existing.Notes = notes;
-                }
-            }
 
-            RefreshList();
+                RefreshList();
+            }
         }
 
         // ──────────────────────────────────────────
@@ -247,7 +213,7 @@ namespace SecurioClient
 
         /// <summary>
         /// Pushes the current entry list into the static cache so that
-        /// <see cref="EntryActivity"/> can perform duplicate checking.
+        /// entry activities can perform duplicate checking.
         /// </summary>
         private void SyncEntryCache()
         {
