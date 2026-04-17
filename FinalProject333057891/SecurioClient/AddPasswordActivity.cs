@@ -196,8 +196,7 @@ namespace SecurioClient
                     Tag = tag,
                     CipherText = cipherText,
                     Notes = notes ?? string.Empty,
-                    Sha1Hash = sha1Hash,
-                    LastUpdate = DateTime.UtcNow
+                    Sha1Hash = sha1Hash
                 };
 
                 var vaultService = new VaultService();
