@@ -19,11 +19,13 @@ string sqlConn = Environment.GetEnvironmentVariable("SqlConnectionString");
 if (string.IsNullOrEmpty(sqlConn))
     throw new InvalidOperationException("SqlConnectionString environment variable is not configured.");
 
-// 2. Register the Repository as a Singleton (one instance shared by everyone)
+// 2. Register the Repositories as Singletons (one instance shared by everyone)
 builder.Services.AddSingleton<IUserRepository>(new UserRepository(sqlConn));
+builder.Services.AddSingleton<IVaultItemRepository>(new VaultItemRepository(sqlConn));
 
 // 3. Register your Managers/Logic as Scoped (new instance created per request)
 builder.Services.AddScoped<UserManager>();
 builder.Services.AddScoped<AuthManager>();
+builder.Services.AddScoped<VaultItemManager>();
 
 builder.Build().Run();
