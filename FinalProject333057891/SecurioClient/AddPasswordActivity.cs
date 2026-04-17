@@ -25,7 +25,6 @@ namespace SecurioClient
         public const string ResultSiteName = "RESULT_SITE_NAME";
         public const string ResultUsername = "RESULT_USERNAME";
         public const string ResultPassword = "RESULT_PASSWORD";
-        public const string ResultUrl = "RESULT_URL";
         public const string ResultNotes = "RESULT_NOTES";
 
         public const int RequestCodeAdd = 1001;
@@ -38,7 +37,6 @@ namespace SecurioClient
         private TextInputEditText editTextSiteName;
         private TextInputEditText editTextUsername;
         private TextInputEditText editTextPassword;
-        private TextInputEditText editTextUrl;
         private TextInputEditText editTextNotes;
 
         private TextView textViewSiteNameError;
@@ -81,7 +79,6 @@ namespace SecurioClient
             editTextSiteName = FindViewById<TextInputEditText>(Resource.Id.editTextEntrySiteName);
             editTextUsername = FindViewById<TextInputEditText>(Resource.Id.editTextEntryUsername);
             editTextPassword = FindViewById<TextInputEditText>(Resource.Id.editTextEntryPassword);
-            editTextUrl = FindViewById<TextInputEditText>(Resource.Id.editTextEntryUrl);
             editTextNotes = FindViewById<TextInputEditText>(Resource.Id.editTextEntryNotes);
 
             textViewSiteNameError = FindViewById<TextView>(Resource.Id.textViewEntrySiteNameError);
@@ -168,7 +165,6 @@ namespace SecurioClient
             string siteName = editTextSiteName.Text?.Trim();
             string username = editTextUsername.Text?.Trim();
             string password = editTextPassword.Text;
-            string url = editTextUrl.Text?.Trim();
             string notes = editTextNotes.Text?.Trim();
 
             if (!ValidateInputs(siteName, username, password))
@@ -185,7 +181,6 @@ namespace SecurioClient
             resultIntent.PutExtra(ResultSiteName, siteName);
             resultIntent.PutExtra(ResultUsername, username);
             resultIntent.PutExtra(ResultPassword, password);
-            resultIntent.PutExtra(ResultUrl, url ?? string.Empty);
             resultIntent.PutExtra(ResultNotes, notes ?? string.Empty);
 
             SetResult(Result.Ok, resultIntent);

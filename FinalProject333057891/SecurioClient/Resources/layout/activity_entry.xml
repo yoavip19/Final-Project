@@ -6,7 +6,7 @@
     android:fillViewport="true"
     android:background="@color/entryBackground">
 
-    <LinearLayout
+	<LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -16,13 +16,13 @@
         android:paddingTop="48dp"
         android:paddingBottom="32dp">
 
-        <!-- Back arrow + shield icon row -->
-        <RelativeLayout
+		<!-- Back arrow + shield icon row -->
+		<RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp">
 
-            <ImageView
+			<ImageView
                 android:id="@+id/imageViewEntryBack"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
@@ -33,17 +33,17 @@
                 android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Back" />
 
-            <TextView
+			<TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="🛡️"
                 android:textSize="36sp" />
 
-        </RelativeLayout>
+		</RelativeLayout>
 
-        <!-- Title -->
-        <TextView
+		<!-- Title -->
+		<TextView
             android:id="@+id/textViewEntryTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -51,8 +51,8 @@
             style="@style/SignupTitleStyle"
             android:layout_marginBottom="4dp" />
 
-        <!-- Subtitle -->
-        <TextView
+		<!-- Subtitle -->
+		<TextView
             android:id="@+id/textViewEntrySubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -60,8 +60,8 @@
             style="@style/SignupSubtitleStyle"
             android:layout_marginBottom="28dp" />
 
-        <!-- Form card -->
-        <androidx.cardview.widget.CardView
+		<!-- Form card -->
+		<androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="16dp"
@@ -69,67 +69,67 @@
             app:cardBackgroundColor="@color/entryCardBackground"
             android:layout_marginBottom="24dp">
 
-            <LinearLayout
+			<LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="24dp">
 
-                <!-- Site / App name -->
-                <com.google.android.material.textfield.TextInputLayout
+				<!-- Site / App name -->
+				<com.google.android.material.textfield.TextInputLayout
                     style="@style/SignupInputLayoutStyle">
-                    <com.google.android.material.textfield.TextInputEditText
+					<com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextEntrySiteName"
                         style="@style/SignupEditTextStyle"
                         android:hint="@string/entry_site_name_hint"
                         android:inputType="text"
                         android:drawableStart="@android:drawable/ic_menu_view"
                         android:drawablePadding="8dp" />
-                </com.google.android.material.textfield.TextInputLayout>
+				</com.google.android.material.textfield.TextInputLayout>
 
-                <TextView
+				<TextView
                     android:id="@+id/textViewEntrySiteNameError"
                     style="@style/SignupErrorTextStyle"
                     android:layout_marginBottom="8dp" />
 
-                <!-- Username / Email -->
-                <com.google.android.material.textfield.TextInputLayout
+				<!-- Username / Email -->
+				<com.google.android.material.textfield.TextInputLayout
                     style="@style/SignupInputLayoutStyle">
-                    <com.google.android.material.textfield.TextInputEditText
+					<com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextEntryUsername"
                         style="@style/SignupEditTextStyle"
                         android:hint="@string/entry_username_hint"
                         android:inputType="textEmailAddress"
                         android:drawableStart="@android:drawable/ic_menu_info_details"
                         android:drawablePadding="8dp" />
-                </com.google.android.material.textfield.TextInputLayout>
+				</com.google.android.material.textfield.TextInputLayout>
 
-                <TextView
+				<TextView
                     android:id="@+id/textViewEntryUsernameError"
                     style="@style/SignupErrorTextStyle"
                     android:layout_marginBottom="8dp" />
 
-                <!-- Password -->
-                <com.google.android.material.textfield.TextInputLayout
+				<!-- Password -->
+				<com.google.android.material.textfield.TextInputLayout
                     style="@style/SignupInputLayoutStyle"
                     app:passwordToggleEnabled="true">
-                    <com.google.android.material.textfield.TextInputEditText
+					<com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextEntryPassword"
                         style="@style/SignupEditTextStyle"
                         android:hint="@string/entry_password_hint"
                         android:inputType="textPassword"
                         android:drawableStart="@android:drawable/ic_lock_idle_lock"
                         android:drawablePadding="8dp" />
-                </com.google.android.material.textfield.TextInputLayout>
+				</com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Generate password button -->
-                <com.google.android.material.button.MaterialButton
+				<!-- Generate password button -->
+				<com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonEntryGeneratePassword"
                     style="@style/SignupGenerateButtonStyle"
                     android:text="@string/entry_generate_password" />
 
-                <!-- Password strength bar (informational only) -->
-                <ProgressBar
+				<!-- Password strength bar (informational only) -->
+				<ProgressBar
                     android:id="@+id/progressBarEntryStrength"
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
@@ -141,8 +141,8 @@
                     android:progressTint="@color/passwordStrengthWeak"
                     android:layout_marginBottom="4dp" />
 
-                <!-- Strength hint text -->
-                <TextView
+				<!-- Strength hint text -->
+				<TextView
                     android:id="@+id/textViewEntryStrengthHint"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -151,32 +151,15 @@
                     android:visibility="gone"
                     android:layout_marginBottom="8dp" />
 
-                <TextView
+				<TextView
                     android:id="@+id/textViewEntryPasswordError"
                     style="@style/SignupErrorTextStyle"
                     android:layout_marginBottom="8dp" />
 
-                <!-- Website URL (optional) -->
-                <com.google.android.material.textfield.TextInputLayout
+				<!-- Notes (optional, multiline) -->
+				<com.google.android.material.textfield.TextInputLayout
                     style="@style/SignupInputLayoutStyle">
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/editTextEntryUrl"
-                        style="@style/SignupEditTextStyle"
-                        android:hint="@string/entry_url_hint"
-                        android:inputType="textUri"
-                        android:drawableStart="@android:drawable/ic_menu_compass"
-                        android:drawablePadding="8dp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- Spacer between URL and Notes -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="8dp" />
-
-                <!-- Notes (optional, multiline) -->
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/SignupInputLayoutStyle">
-                    <com.google.android.material.textfield.TextInputEditText
+					<com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextEntryNotes"
                         style="@style/SignupEditTextStyle"
                         android:hint="@string/entry_notes_hint"
@@ -188,34 +171,35 @@
                         android:drawableStart="@android:drawable/ic_menu_edit"
                         android:drawablePadding="8dp"
                         android:gravity="top" />
-                </com.google.android.material.textfield.TextInputLayout>
+				</com.google.android.material.textfield.TextInputLayout>
 
-                <!-- General error (e.g. duplicate entry) -->
-                <TextView
+				<!-- General error (e.g. duplicate entry) -->
+				<TextView
                     android:id="@+id/textViewEntryGeneralError"
                     style="@style/SignupErrorTextStyle"
                     android:layout_gravity="center"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="12dp" />
 
-                <!-- Save / Update button -->
-                <com.google.android.material.button.MaterialButton
+				<!-- Save / Update button -->
+				<com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonEntrySave"
                     style="@style/SignupButtonStyle"
                     android:text="@string/entry_button_save"
                     android:backgroundTint="@color/entryButtonBackground"
                     app:cornerRadius="12dp" />
 
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+			</LinearLayout>
+		</androidx.cardview.widget.CardView>
 
-        <!-- Loading spinner -->
-        <ProgressBar
+		<!-- Loading spinner -->
+		<ProgressBar
             android:id="@+id/progressBarEntry"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
             android:indeterminateTint="@color/colorAccent" />
 
-    </LinearLayout>
+	</LinearLayout>
 </ScrollView>
+
