@@ -7,9 +7,12 @@ using AndroidX.AppCompat.App;
 using Google.Android.Material.Button;
 using Google.Android.Material.TextField;
 using SecurioClient.Helpers;
+using SecurioClient.Helpers.ServerHelpers;
+using SecurioModels.DataTransferObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SecurioClient
 {
@@ -22,9 +25,9 @@ namespace SecurioClient
     public class AddPasswordActivity : AppCompatActivity
     {
         // Result extras returned to the caller.
+        public const string ResultEntryId = "RESULT_ENTRY_ID";
         public const string ResultSiteName = "RESULT_SITE_NAME";
         public const string ResultUsername = "RESULT_USERNAME";
-        public const string ResultPassword = "RESULT_PASSWORD";
         public const string ResultNotes = "RESULT_NOTES";
 
         public const int RequestCodeAdd = 1001;
@@ -122,7 +125,7 @@ namespace SecurioClient
                 editTextPassword.Text = ValidationHelper.GenerateStrongPassword();
             };
 
-            buttonSave.Click += (s, e) => OnSaveClicked();
+            buttonSave.Click += async (s, e) => await OnSaveClicked();
 
             // Real-time validation: site name
             editTextSiteName.AddTextChangedListener(new SimpleTextWatcher(_ =>
@@ -158,7 +161,7 @@ namespace SecurioClient
 
         // ── Save logic ─────────────────────────────────────────
 
-        private void OnSaveClicked()
+        private async Task OnSaveClicked()
         {
             ClearErrors();
 
@@ -176,20 +179,61 @@ namespace SecurioClient
                 return;
             }
 
-            // Return the data to VaultActivity so it can update its list.
-            var resultIntent = new Android.Content.Intent();
-            resultIntent.PutExtra(ResultSiteName, siteName);
-            resultIntent.PutExtra(ResultUsername, username);
-            resultIntent.PutExtra(ResultPassword, password);
-            resultIntent.PutExtra(ResultNotes, notes ?? string.Empty);
+            SetLoadingState(true);
 
-            SetResult(Result.Ok, resultIntent);
+            try
+            {
+                // Encrypt the password with AES-GCM using the session vault key.
+                string vaultKey = SessionHelper.SessionVaultKey;
+                var (iv, tag, cipherText) = EncryptionHelper.EncryptAesGcm(password, vaultKey);
+                string sha1Hash = EncryptionHelper.ComputeSha1Hash(password);
 
-            Toast.MakeText(this,
-                GetString(Resource.String.entry_saved_success),
-                ToastLength.Short).Show();
+                var vaultItem = new VaultItem
+                {
+                    AccountName = siteName,
+                    AccountUsername = username,
+                    IV = iv,
+                    Tag = tag,
+                    CipherText = cipherText,
+                    Notes = notes ?? string.Empty,
+                    Sha1Hash = sha1Hash,
+                    LastUpdate = DateTime.UtcNow
+                };
 
-            Finish();
+                var vaultService = new VaultService();
+                var result = await vaultService.AddVaultItemAsync(vaultItem);
+
+                if (result.Success)
+                {
+                    // Return the data to VaultActivity so it can update its local list.
+                    var resultIntent = new Android.Content.Intent();
+                    resultIntent.PutExtra(ResultEntryId, result.Data?.Id ?? 0);
+                    resultIntent.PutExtra(ResultSiteName, siteName);
+                    resultIntent.PutExtra(ResultUsername, username);
+                    resultIntent.PutExtra(ResultNotes, notes ?? string.Empty);
+
+                    SetResult(Result.Ok, resultIntent);
+
+                    Toast.MakeText(this,
+                        GetString(Resource.String.entry_saved_success),
+                        ToastLength.Short).Show();
+
+                    Finish();
+                }
+                else
+                {
+                    ShowError(textViewGeneralError, result.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError(textViewGeneralError, "Unable to save password. Please check your connection and try again.");
+                System.Diagnostics.Debug.WriteLine($"[ADD PASSWORD ERROR] {ex.Message}");
+            }
+            finally
+            {
+                SetLoadingState(false);
+            }
         }
 
         // ── Validation ─────────────────────────────────────────
@@ -292,6 +336,17 @@ namespace SecurioClient
             HideError(textViewUsernameError);
             HideError(textViewPasswordError);
             HideError(textViewGeneralError);
+        }
+
+        private void SetLoadingState(bool isLoading)
+        {
+            progressBar.Visibility = isLoading ? ViewStates.Visible : ViewStates.Gone;
+            buttonSave.Enabled = !isLoading;
+            buttonGeneratePassword.Enabled = !isLoading;
+            editTextSiteName.Enabled = !isLoading;
+            editTextUsername.Enabled = !isLoading;
+            editTextPassword.Enabled = !isLoading;
+            editTextNotes.Enabled = !isLoading;
         }
     }
 

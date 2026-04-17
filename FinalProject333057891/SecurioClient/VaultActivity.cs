@@ -132,11 +132,9 @@ namespace SecurioClient
             {
                 allEntries.Add(new PasswordEntry
                 {
-                    Id = nextEntryId++,
+                    Id = data.GetIntExtra(AddPasswordActivity.ResultEntryId, nextEntryId++),
                     SiteName = data.GetStringExtra(AddPasswordActivity.ResultSiteName),
                     Username = data.GetStringExtra(AddPasswordActivity.ResultUsername),
-                    EncryptedPassword = data.GetStringExtra(AddPasswordActivity.ResultPassword),
-                    Url = data.GetStringExtra(AddPasswordActivity.ResultUrl),
                     Notes = data.GetStringExtra(AddPasswordActivity.ResultNotes)
                 });
 
