@@ -16,8 +16,8 @@ namespace SecurioClient
         /// <summary>Raised when the user taps a password banner.</summary>
         public event EventHandler<int> ItemClick;
 
-        /// <summary>Raised when the user taps the copy / action icon on a banner.</summary>
-        public event EventHandler<int> CopyClick;
+        /// <summary>Raised when the user taps the edit icon on a banner.</summary>
+        public event EventHandler<int> EditClick;
 
         public PasswordBannerAdapter(List<PasswordEntry> items)
         {
@@ -38,7 +38,7 @@ namespace SecurioClient
             var vh = (PasswordBannerViewHolder)holder;
             var entry = items[position];
 
-            vh.TextViewIcon.Text = string.IsNullOrEmpty(entry.SiteName)
+            vh.TextViewIcon.Text = string.IsNullOrEmpty(entry.SiteName) || entry.SiteName.Length == 0
                 ? "?"
                 : entry.SiteName.Substring(0, 1).ToUpperInvariant();
 
@@ -49,9 +49,9 @@ namespace SecurioClient
             vh.ItemView.Click += vh.OnItemClick;
             vh.ItemClickAction = pos => ItemClick?.Invoke(this, pos);
 
-            vh.ImageViewCopy.Click -= vh.OnCopyClick;
-            vh.ImageViewCopy.Click += vh.OnCopyClick;
-            vh.CopyClickAction = pos => CopyClick?.Invoke(this, pos);
+            vh.ImageViewEdit.Click -= vh.OnEditClick;
+            vh.ImageViewEdit.Click += vh.OnEditClick;
+            vh.EditClickAction = pos => EditClick?.Invoke(this, pos);
         }
 
         /// <summary>
@@ -71,17 +71,17 @@ namespace SecurioClient
             public TextView TextViewIcon { get; }
             public TextView TextViewSiteName { get; }
             public TextView TextViewUsername { get; }
-            public ImageView ImageViewCopy { get; }
+            public ImageView ImageViewEdit { get; }
 
             public Action<int> ItemClickAction { get; set; }
-            public Action<int> CopyClickAction { get; set; }
+            public Action<int> EditClickAction { get; set; }
 
             public PasswordBannerViewHolder(View itemView) : base(itemView)
             {
                 TextViewIcon = itemView.FindViewById<TextView>(Resource.Id.textViewBannerIcon);
                 TextViewSiteName = itemView.FindViewById<TextView>(Resource.Id.textViewBannerSiteName);
                 TextViewUsername = itemView.FindViewById<TextView>(Resource.Id.textViewBannerUsername);
-                ImageViewCopy = itemView.FindViewById<ImageView>(Resource.Id.imageViewBannerCopy);
+                ImageViewEdit = itemView.FindViewById<ImageView>(Resource.Id.imageViewBannerEdit);
             }
 
             public void OnItemClick(object sender, EventArgs e)
@@ -89,9 +89,9 @@ namespace SecurioClient
                 ItemClickAction?.Invoke(AdapterPosition);
             }
 
-            public void OnCopyClick(object sender, EventArgs e)
+            public void OnEditClick(object sender, EventArgs e)
             {
-                CopyClickAction?.Invoke(AdapterPosition);
+                EditClickAction?.Invoke(AdapterPosition);
             }
         }
     }

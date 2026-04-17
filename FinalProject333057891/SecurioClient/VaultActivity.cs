@@ -66,7 +66,8 @@ namespace SecurioClient
                 }
             };
 
-            adapter.CopyClick += (sender, position) =>
+            // Tapping the edit icon on a banner opens the entry in Edit mode.
+            adapter.EditClick += (sender, position) =>
             {
                 var displayed = GetDisplayedEntries();
                 if (position >= 0 && position < displayed.Count)
