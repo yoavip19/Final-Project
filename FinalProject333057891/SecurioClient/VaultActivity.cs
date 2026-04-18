@@ -104,7 +104,7 @@ namespace SecurioClient
                 GetString(Resource.String.sheet_delete_confirm_message),
                 entry.AccountName);
 
-            new AlertDialog.Builder(this)
+            new AndroidX.AppCompat.App.AlertDialog.Builder(this)
                 .SetTitle(Resource.String.sheet_delete_confirm_title)
                 .SetMessage(message)
                 .SetPositiveButton(Resource.String.sheet_delete_confirm_yes, (s, e) =>

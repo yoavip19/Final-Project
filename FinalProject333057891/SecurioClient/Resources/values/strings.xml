@@ -56,7 +56,7 @@
     <string name="sheet_option_edit">Edit</string>
     <string name="sheet_option_delete">Delete</string>
     <string name="sheet_delete_confirm_title">Delete password?</string>
-    <string name="sheet_delete_confirm_message">This will permanently remove the entry for %1$s. This action cannot be undone.</string>
+    <string name="sheet_delete_confirm_message">This will permanently remove the entry for {0}. This action cannot be undone.</string>
     <string name="sheet_delete_confirm_yes">Delete</string>
     <string name="sheet_delete_confirm_no">Cancel</string>
     <string name="sheet_deleted_toast">Password deleted</string>
