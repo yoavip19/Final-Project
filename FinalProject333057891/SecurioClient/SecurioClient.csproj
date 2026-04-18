@@ -65,6 +65,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PasswordOptionsBottomSheet.cs" />
     <Compile Include="Helpers\ServerHelpers\AuthService.cs" />
     <Compile Include="Helpers\ServerHelpers\BaseService.cs" />
     <Compile Include="Helpers\ServerHelpers\ProfileService.cs" />
@@ -79,6 +80,8 @@
     <Compile Include="PasswordBannerAdapter.cs" />
     <Compile Include="BottomNavFragment.cs" />
     <Compile Include="AddPasswordActivity.cs" />
+    <Compile Include="EditPasswordActivity.cs" />
+    <Compile Include="ViewPasswordActivity.cs" />
     <Compile Include="VaultActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -90,6 +93,9 @@
     <None Include="Assets\AboutAssets.txt" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidResource Include="Resources\layout\bottom_sheet_password_options.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
     <AndroidResource Include="Resources\layout\activity_login.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
@@ -111,9 +117,17 @@
     <AndroidResource Include="Resources\layout\activity_entry.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
+    <AndroidResource Include="Resources\layout\activity_view_password.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
     <AndroidResource Include="Resources\drawable\bg_search_bar.xml" />
     <AndroidResource Include="Resources\drawable\bg_icon_circle.xml" />
     <AndroidResource Include="Resources\drawable\bg_bottom_nav.xml" />
+    <AndroidResource Include="Resources\drawable\bg_bottom_sheet.xml" />
+    <AndroidResource Include="Resources\drawable\ic_more_vert.xml" />
+    <AndroidResource Include="Resources\drawable\ic_eye.xml" />
+    <AndroidResource Include="Resources\drawable\ic_edit.xml" />
+    <AndroidResource Include="Resources\drawable\ic_delete.xml" />
     <AndroidResource Include="Resources\values\colors.xml" />
     <AndroidResource Include="Resources\values\ic_launcher_background.xml" />
     <AndroidResource Include="Resources\values\strings.xml" />

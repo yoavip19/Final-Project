@@ -74,6 +74,29 @@ namespace SecurioClient
             );
         }
 
+        // Decrypts AES-GCM encrypted data using the given Base64-encoded 256-bit key.
+        // IV, Tag, and CipherText must all be Base64 strings produced by EncryptAesGcm.
+        public static string DecryptAesGcm(string base64IV, string base64Tag, string base64CipherText, string base64Key)
+        {
+            byte[] keyBytes = Convert.FromBase64String(base64Key);
+            byte[] ivBytes = Convert.FromBase64String(base64IV);
+            byte[] tagBytes = Convert.FromBase64String(base64Tag);
+            byte[] cipherBytes = Convert.FromBase64String(base64CipherText);
+
+            // Java AES-GCM expects the authentication tag appended to the ciphertext.
+            byte[] encrypted = new byte[cipherBytes.Length + tagBytes.Length];
+            Array.Copy(cipherBytes, 0, encrypted, 0, cipherBytes.Length);
+            Array.Copy(tagBytes, 0, encrypted, cipherBytes.Length, tagBytes.Length);
+
+            var cipher = Javax.Crypto.Cipher.GetInstance("AES/GCM/NoPadding");
+            var keySpec = new Javax.Crypto.Spec.SecretKeySpec(keyBytes, "AES");
+            var gcmSpec = new Javax.Crypto.Spec.GCMParameterSpec(128, ivBytes);
+            cipher.Init(Javax.Crypto.CipherMode.DecryptMode, keySpec, gcmSpec);
+
+            byte[] plainBytes = cipher.DoFinal(encrypted);
+            return Encoding.UTF8.GetString(plainBytes);
+        }
+
         // Computes an unsalted SHA-1 hash of the input (uppercase hex). Used for HIBP breach checking only.
         public static string ComputeSha1Hash(string input)
         {

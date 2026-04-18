@@ -1,4 +1,5 @@
 using Android.App;
+using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Views;
@@ -17,13 +18,25 @@ using System.Threading.Tasks;
 namespace SecurioClient
 {
     /// <summary>
-    /// Activity for adding a new password entry to the vault.
-    /// Uses the shared <c>activity_entry.xml</c> layout.
-    /// A separate Edit activity will reuse the same XML in the future.
+    /// Activity for editing an existing password entry in the vault.
+    /// Reuses the shared <c>activity_entry.xml</c> layout with title/button
+    /// configured for edit mode.
     /// </summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
-    public class AddPasswordActivity : AppCompatActivity
+    public class EditPasswordActivity : AppCompatActivity
     {
+        // Intent extras used to pass the item data into this activity.
+        public const string ExtraEntryId = "EXTRA_ENTRY_ID";
+        public const string ExtraSiteName = "EXTRA_SITE_NAME";
+        public const string ExtraUsername = "EXTRA_USERNAME";
+        public const string ExtraNotes = "EXTRA_NOTES";
+        // Existing encrypted fields — passed in so the user does not have to re-enter the password.
+        public const string ExtraIV = "EXTRA_IV";
+        public const string ExtraTag = "EXTRA_TAG";
+        public const string ExtraCipherText = "EXTRA_CIPHER_TEXT";
+        public const string ExtraSha1Hash = "EXTRA_SHA1_HASH";
+        public const string ExtraIsLeaked = "EXTRA_IS_LEAKED";
+
         // Result extras returned to the caller.
         public const string ResultEntryId = "RESULT_ENTRY_ID";
         public const string ResultSiteName = "RESULT_SITE_NAME";
@@ -35,12 +48,15 @@ namespace SecurioClient
         public const string ResultSha1Hash = "RESULT_SHA1_HASH";
         public const string ResultIsLeaked = "RESULT_IS_LEAKED";
 
-        public const int RequestCodeAdd = 1001;
+        public const int RequestCodeEdit = 1002;
 
         // ── Views ──────────────────────────────────────────────
         private ImageView imageViewBack;
         private TextView textViewTitle;
         private TextView textViewSubtitle;
+
+        private TextInputLayout textInputLayoutPassword;
+        private TextInputLayout textInputLayoutConfirmPassword;
 
         private TextInputEditText editTextSiteName;
         private TextInputEditText editTextUsername;
@@ -61,7 +77,10 @@ namespace SecurioClient
         private MaterialButton buttonSave;
         private ProgressBar progressBar;
 
-        // Holds existing entries for duplicate checking.
+        // The ID of the vault item being edited.
+        private int entryId;
+
+        // Holds existing entries for duplicate checking (excludes the item being edited).
         private List<VaultItem> existingEntries = new List<VaultItem>();
 
         // ── Lifecycle ──────────────────────────────────────────
@@ -73,8 +92,9 @@ namespace SecurioClient
             SetContentView(Resource.Layout.activity_entry);
 
             InitializeViews();
-            ConfigureForAddMode();
+            ConfigureForEditMode();
             PopulateExistingEntries();
+            PopulateFieldsFromIntent();
             SetupEventHandlers();
         }
 
@@ -85,6 +105,9 @@ namespace SecurioClient
             imageViewBack = FindViewById<ImageView>(Resource.Id.imageViewEntryBack);
             textViewTitle = FindViewById<TextView>(Resource.Id.textViewEntryTitle);
             textViewSubtitle = FindViewById<TextView>(Resource.Id.textViewEntrySubtitle);
+
+            textInputLayoutPassword = FindViewById<TextInputLayout>(Resource.Id.textInputLayoutEntryPassword);
+            textInputLayoutConfirmPassword = FindViewById<TextInputLayout>(Resource.Id.textInputLayoutEntryConfirmPassword);
 
             editTextSiteName = FindViewById<TextInputEditText>(Resource.Id.editTextEntrySiteName);
             editTextUsername = FindViewById<TextInputEditText>(Resource.Id.editTextEntryUsername);
@@ -106,19 +129,40 @@ namespace SecurioClient
             progressBar = FindViewById<ProgressBar>(Resource.Id.progressBarEntry);
         }
 
-        private void ConfigureForAddMode()
+        private void ConfigureForEditMode()
         {
-            textViewTitle.Text = GetString(Resource.String.entry_title_add);
-            textViewSubtitle.Text = GetString(Resource.String.entry_subtitle_add);
-            buttonSave.Text = GetString(Resource.String.entry_button_save);
+            textViewTitle.Text = GetString(Resource.String.entry_title_edit);
+            textViewSubtitle.Text = GetString(Resource.String.entry_subtitle_edit);
+            buttonSave.Text = GetString(Resource.String.entry_button_update);
+
+            // Update hints to make clear that the password field is optional in edit mode.
+            textInputLayoutPassword.Hint = GetString(Resource.String.entry_password_edit_hint);
+            textInputLayoutConfirmPassword.Hint = GetString(Resource.String.entry_confirm_password_edit_hint);
         }
 
         /// <summary>
-        /// Loads the existing vault entries so that duplicate-check works.
+        /// Loads the existing vault entries (excluding the current item) for duplicate checking.
         /// </summary>
         private void PopulateExistingEntries()
         {
-            existingEntries = VaultEntryCache.Entries ?? new List<VaultItem>();
+            entryId = Intent.GetIntExtra(ExtraEntryId, 0);
+            existingEntries = (VaultEntryCache.Entries ?? new List<VaultItem>())
+                .Where(e => e.Id != entryId)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Pre-fills the form fields with the data passed via the launching Intent.
+        /// The password fields are left blank — the user may enter a new password or leave
+        /// them empty to keep the existing encrypted data unchanged.
+        /// </summary>
+        private void PopulateFieldsFromIntent()
+        {
+            editTextSiteName.Text = Intent.GetStringExtra(ExtraSiteName) ?? string.Empty;
+            editTextUsername.Text = Intent.GetStringExtra(ExtraUsername) ?? string.Empty;
+            editTextNotes.Text = Intent.GetStringExtra(ExtraNotes) ?? string.Empty;
+            // Password and confirm password are intentionally left empty.
+            // Existing encrypted data is carried via ExtraIV/ExtraTag/ExtraCipherText/ExtraSha1Hash.
         }
 
         private void SetupEventHandlers()
@@ -131,10 +175,12 @@ namespace SecurioClient
 
             buttonGeneratePassword.Click += (s, e) =>
             {
-                editTextPassword.Text = ValidationHelper.GenerateStrongPassword();
+                string generated = ValidationHelper.GenerateStrongPassword();
+                editTextPassword.Text = generated;
+                editTextConfirmPassword.Text = generated;
             };
 
-            buttonSave.Click += async (s, e) => await OnSaveClicked();
+            buttonSave.Click += async (s, e) => await OnUpdateClicked();
 
             // Real-time validation: site name
             editTextSiteName.AddTextChangedListener(new SimpleTextWatcher(_ =>
@@ -145,7 +191,6 @@ namespace SecurioClient
                 else
                     HideError(textViewSiteNameError);
 
-                // Clear any previous duplicate error when the user changes the field.
                 HideError(textViewGeneralError);
             }));
 
@@ -161,12 +206,12 @@ namespace SecurioClient
                 HideError(textViewGeneralError);
             }));
 
-            // Real-time validation: password (strength bar — informational only, never blocks)
+            // Real-time validation: password strength (informational only, never blocks)
             editTextPassword.AddTextChangedListener(new SimpleTextWatcher(text =>
             {
                 UpdatePasswordStrengthIndicator(text);
 
-                // Re-validate confirm password if the user has already typed in it.
+                // Re-validate confirm password match whenever the password field changes.
                 if (!string.IsNullOrEmpty(editTextConfirmPassword.Text))
                     ValidatePasswordsMatch();
             }));
@@ -178,9 +223,9 @@ namespace SecurioClient
             }));
         }
 
-        // ── Save logic ─────────────────────────────────────────
+        // ── Update logic ───────────────────────────────────────
 
-        private async Task OnSaveClicked()
+        private async Task OnUpdateClicked()
         {
             ClearErrors();
 
@@ -203,30 +248,48 @@ namespace SecurioClient
 
             try
             {
-                // Encrypt the password with AES-GCM using the session vault key.
-                string vaultKey = SessionHelper.SessionVaultKey;
-                var (iv, tag, cipherText) = EncryptionHelper.EncryptAesGcm(password, vaultKey);
-                string sha1Hash = EncryptionHelper.ComputeSha1Hash(password);
+                string iv, tag, cipherText, sha1Hash;
+                bool isLeaked;
+
+                if (!string.IsNullOrEmpty(password))
+                {
+                    // User entered a new password — encrypt it.
+                    string vaultKey = SessionHelper.SessionVaultKey;
+                    (iv, tag, cipherText) = EncryptionHelper.EncryptAesGcm(password, vaultKey);
+                    sha1Hash = EncryptionHelper.ComputeSha1Hash(password);
+                    isLeaked = false;
+                }
+                else
+                {
+                    // Password left blank — keep the existing encrypted data.
+                    iv         = Intent.GetStringExtra(ExtraIV) ?? string.Empty;
+                    tag        = Intent.GetStringExtra(ExtraTag) ?? string.Empty;
+                    cipherText = Intent.GetStringExtra(ExtraCipherText) ?? string.Empty;
+                    sha1Hash   = Intent.GetStringExtra(ExtraSha1Hash) ?? string.Empty;
+                    isLeaked   = Intent.GetBooleanExtra(ExtraIsLeaked, false);
+                }
 
                 var vaultItem = new VaultItem
                 {
-                    AccountName = siteName,
-                    AccountUsername = username,
-                    IV = iv,
-                    Tag = tag,
-                    CipherText = cipherText,
-                    Notes = notes ?? string.Empty,
-                    Sha1Hash = sha1Hash
+                    Id              = entryId,
+                    AccountName     = siteName,
+                    AccountUsername  = username,
+                    IV              = iv,
+                    Tag             = tag,
+                    CipherText      = cipherText,
+                    Notes           = notes ?? string.Empty,
+                    Sha1Hash        = sha1Hash,
+                    IsLeaked        = isLeaked
                 };
 
                 var vaultService = new VaultService();
-                var result = await vaultService.AddVaultItemAsync(vaultItem);
+                var result = await vaultService.UpdateVaultItemAsync(vaultItem);
 
                 if (result.Success)
                 {
-                    // Return the data to VaultActivity so it can update its local list.
-                    var resultIntent = new Android.Content.Intent();
-                    resultIntent.PutExtra(ResultEntryId, result.Data?.Id ?? 0);
+                    // Return the updated data to VaultActivity so it can refresh its local list.
+                    var resultIntent = new Intent();
+                    resultIntent.PutExtra(ResultEntryId, entryId);
                     resultIntent.PutExtra(ResultSiteName, siteName);
                     resultIntent.PutExtra(ResultUsername, username);
                     resultIntent.PutExtra(ResultNotes, notes ?? string.Empty);
@@ -234,12 +297,12 @@ namespace SecurioClient
                     resultIntent.PutExtra(ResultTag, tag);
                     resultIntent.PutExtra(ResultCipherText, cipherText);
                     resultIntent.PutExtra(ResultSha1Hash, sha1Hash);
-                    resultIntent.PutExtra(ResultIsLeaked, result.Data?.IsLeaked ?? false);
+                    resultIntent.PutExtra(ResultIsLeaked, result.Data?.IsLeaked ?? isLeaked);
 
                     SetResult(Result.Ok, resultIntent);
 
                     Toast.MakeText(this,
-                        GetString(Resource.String.entry_saved_success),
+                        GetString(Resource.String.entry_updated_success),
                         ToastLength.Short).Show();
 
                     Finish();
@@ -251,8 +314,8 @@ namespace SecurioClient
             }
             catch (Exception ex)
             {
-                ShowError(textViewGeneralError, GetString(Resource.String.entry_error_save_failed));
-                System.Diagnostics.Debug.WriteLine($"[ADD PASSWORD ERROR] {ex.Message}");
+                ShowError(textViewGeneralError, GetString(Resource.String.entry_error_update_failed));
+                System.Diagnostics.Debug.WriteLine($"[EDIT PASSWORD ERROR] {ex.Message}");
             }
             finally
             {
@@ -278,32 +341,33 @@ namespace SecurioClient
                 valid = false;
             }
 
-            if (string.IsNullOrEmpty(password))
+            // In edit mode the password is optional; only validate when provided.
+            if (!string.IsNullOrEmpty(password) || !string.IsNullOrEmpty(confirmPassword))
             {
-                ShowError(textViewPasswordError, GetString(Resource.String.entry_error_password_required));
-                valid = false;
+                // If one is set, both must be set and equal.
+                if (string.IsNullOrEmpty(password))
+                {
+                    ShowError(textViewPasswordError, GetString(Resource.String.entry_error_password_required));
+                    valid = false;
+                }
+                else if (string.IsNullOrEmpty(confirmPassword))
+                {
+                    ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_confirm_password_required));
+                    valid = false;
+                }
+                else if (password != confirmPassword)
+                {
+                    ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
+                    valid = false;
+                }
             }
-
-            if (string.IsNullOrEmpty(confirmPassword))
-            {
-                ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_confirm_password_required));
-                valid = false;
-            }
-            else if (!string.IsNullOrEmpty(password) && password != confirmPassword)
-            {
-                ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
-                valid = false;
-            }
-
-            // NOTE: Weak passwords are intentionally allowed because the user cannot
-            // control what password policy external sites enforce (e.g. a 4-digit PIN).
 
             return valid;
         }
 
         /// <summary>
         /// Returns <c>true</c> when an entry with the same site name AND username
-        /// already exists in the vault.
+        /// already exists in the vault (excluding the item currently being edited).
         /// </summary>
         private bool IsDuplicate(string siteName, string username)
         {
@@ -313,8 +377,8 @@ namespace SecurioClient
         }
 
         /// <summary>
-        /// Validates that the confirm password field matches the password field and
-        /// shows or hides the error accordingly. Called during real-time validation.
+        /// Shows or hides the confirm password mismatch error during real-time validation.
+        /// Only fires when the confirm field is non-empty.
         /// </summary>
         private void ValidatePasswordsMatch()
         {
@@ -404,14 +468,5 @@ namespace SecurioClient
             editTextConfirmPassword.Enabled = !isLoading;
             editTextNotes.Enabled = !isLoading;
         }
-    }
-
-    /// <summary>
-    /// Static cache used to share the current entry list between VaultActivity and
-    /// entry activities (Add / Edit) so duplicate checking works without a database round-trip.
-    /// </summary>
-    public static class VaultEntryCache
-    {
-        public static List<VaultItem> Entries { get; set; } = new List<VaultItem>();
     }
 }

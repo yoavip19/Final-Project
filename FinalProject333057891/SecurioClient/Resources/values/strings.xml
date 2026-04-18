@@ -41,6 +41,11 @@
     <string name="login_error_empty_fields">Please fill in all fields</string>
     <string name="login_error_invalid_email">Please enter a valid email address</string>
 
+    <!-- Splash / loading screen strings -->
+    <string name="splash_app_name">Securio</string>
+    <string name="splash_tagline">Your passwords, locked and loaded</string>
+    <string name="splash_verifying">Verifying your session…</string>
+
     <!-- Vault page strings -->
     <string name="vault_title">My Vault</string>
     <string name="vault_subtitle">Your saved passwords</string>
@@ -49,6 +54,18 @@
     <string name="vault_empty_subtitle">Tap + to add your first password</string>
     <string name="vault_add_password">Add Password</string>
     <string name="vault_edit_password">Edit Password</string>
+    <string name="vault_more_options">More options</string>
+
+    <!-- Password options bottom sheet strings -->
+    <string name="sheet_option_view">View</string>
+    <string name="sheet_option_edit">Edit</string>
+    <string name="sheet_option_delete">Delete</string>
+    <string name="sheet_delete_confirm_title">Delete password?</string>
+    <string name="sheet_delete_confirm_message">This will permanently remove the entry for {0}. This action cannot be undone.</string>
+    <string name="sheet_delete_confirm_yes">Delete</string>
+    <string name="sheet_delete_confirm_no">Cancel</string>
+    <string name="sheet_deleted_toast">Password deleted</string>
+    <string name="sheet_delete_error">Failed to delete. Please check your connection and try again.</string>
     <string name="vault_nav_vault">Vault</string>
     <string name="vault_nav_generator">Generator</string>
     <string name="vault_nav_profile">Profile</string>
@@ -72,4 +89,23 @@
     <string name="entry_error_duplicate">An entry with this site name and username already exists</string>
     <string name="entry_saved_success">Password saved successfully</string>
     <string name="entry_updated_success">Password updated successfully</string>
+    <string name="entry_error_save_failed">Unable to save password. Please check your connection and try again.</string>
+    <string name="entry_error_update_failed">Unable to update password. Please check your connection and try again.</string>
+    <string name="entry_confirm_password_hint">Confirm Password</string>
+    <string name="entry_confirm_password_edit_hint">Confirm New Password</string>
+    <string name="entry_error_confirm_password_required">Please confirm your password</string>
+    <string name="entry_error_passwords_mismatch">Passwords do not match</string>
+    <string name="entry_password_edit_hint">New Password (leave blank to keep current)</string>
+
+    <!-- View Password page strings -->
+    <string name="view_title">View Password</string>
+    <string name="view_subtitle">Credential details</string>
+    <string name="view_label_site_name">Site / App</string>
+    <string name="view_label_username">Username / Email</string>
+    <string name="view_label_password">Password</string>
+    <string name="view_label_notes">Notes</string>
+    <string name="view_no_notes">No notes</string>
+    <string name="view_copied_username">Username copied to clipboard</string>
+    <string name="view_copied_password">Password copied to clipboard</string>
+    <string name="view_decrypt_error">Unable to decrypt password</string>
 </resources>

@@ -111,6 +111,7 @@
 
 				<!-- Password -->
 				<com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayoutEntryPassword"
                     style="@style/SignupInputLayoutStyle"
                     app:passwordToggleEnabled="true">
 					<com.google.android.material.textfield.TextInputEditText
@@ -153,6 +154,25 @@
 
 				<TextView
                     android:id="@+id/textViewEntryPasswordError"
+                    style="@style/SignupErrorTextStyle"
+                    android:layout_marginBottom="8dp" />
+
+				<!-- Confirm Password -->
+				<com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayoutEntryConfirmPassword"
+                    style="@style/SignupInputLayoutStyle"
+                    app:passwordToggleEnabled="true">
+					<com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextEntryConfirmPassword"
+                        style="@style/SignupEditTextStyle"
+                        android:hint="@string/entry_confirm_password_hint"
+                        android:inputType="textPassword"
+                        android:drawableStart="@android:drawable/ic_lock_idle_lock"
+                        android:drawablePadding="8dp" />
+				</com.google.android.material.textfield.TextInputLayout>
+
+				<TextView
+                    android:id="@+id/textViewEntryConfirmPasswordError"
                     style="@style/SignupErrorTextStyle"
                     android:layout_marginBottom="8dp" />
 

@@ -6,10 +6,12 @@ using Android.Widget;
 using AndroidX.AppCompat.App;
 using AndroidX.RecyclerView.Widget;
 using SecurioClient.Helpers;
+using SecurioClient.Helpers.ServerHelpers;
 using SecurioModels.DataTransferObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SecurioClient
 {
@@ -36,8 +38,8 @@ namespace SecurioClient
             SetupBottomNavFragment(savedInstanceState);
             SetupEventHandlers();
 
-            // Load sample data so the UI is not empty on first launch.
-            LoadSampleData();
+            // Load entries from the in-memory session cache.
+            LoadVaultFromSession();
         }
 
         private void InitializeViews()
@@ -55,25 +57,111 @@ namespace SecurioClient
             recyclerViewPasswords.SetLayoutManager(new LinearLayoutManager(this));
             recyclerViewPasswords.SetAdapter(adapter);
 
-            // Tapping a banner — Edit activity will be wired here in the future.
-            adapter.ItemClick += (sender, position) =>
+            // Both the full-banner tap and the more-options icon tap open the options sheet.
+            adapter.ItemClick += (sender, position) => OnBannerActionAt(position);
+            adapter.EditClick += (sender, position) => OnBannerActionAt(position);
+        }
+
+        /// <summary>
+        /// Resolves the entry at <paramref name="position"/> in the currently displayed list
+        /// and opens the options bottom sheet for it.
+        /// </summary>
+        private void OnBannerActionAt(int position)
+        {
+            var displayed = GetDisplayedEntries();
+            if (position >= 0 && position < displayed.Count)
+                ShowOptionsSheet(displayed[position]);
+        }
+
+        /// <summary>
+        /// Displays the <see cref="PasswordOptionsBottomSheet"/> for the given entry
+        /// and wires up the View, Edit, and Delete callbacks.
+        /// </summary>
+        private void ShowOptionsSheet(VaultItem entry)
+        {
+            var sheet = PasswordOptionsBottomSheet.NewInstance(entry);
+
+            sheet.ViewClicked += (s, e) =>
             {
-                var displayed = GetDisplayedEntries();
-                if (position >= 0 && position < displayed.Count)
-                {
-                    Toast.MakeText(this, $"Edit: {displayed[position].AccountName} — coming soon!", ToastLength.Short).Show();
-                }
+                var intent = new Intent(this, typeof(ViewPasswordActivity));
+                intent.PutExtra(ViewPasswordActivity.ExtraSiteName, entry.AccountName);
+                intent.PutExtra(ViewPasswordActivity.ExtraUsername, entry.AccountUsername);
+                intent.PutExtra(ViewPasswordActivity.ExtraNotes, entry.Notes);
+                intent.PutExtra(ViewPasswordActivity.ExtraIV, entry.IV);
+                intent.PutExtra(ViewPasswordActivity.ExtraTag, entry.Tag);
+                intent.PutExtra(ViewPasswordActivity.ExtraCipherText, entry.CipherText);
+                StartActivity(intent);
             };
 
-            // Tapping the edit icon on a banner — Edit activity will be wired here in the future.
-            adapter.EditClick += (sender, position) =>
+            sheet.EditClicked += (s, e) =>
             {
-                var displayed = GetDisplayedEntries();
-                if (position >= 0 && position < displayed.Count)
-                {
-                    Toast.MakeText(this, $"Edit: {displayed[position].AccountName} — coming soon!", ToastLength.Short).Show();
-                }
+                SyncEntryCache();
+                var intent = new Intent(this, typeof(EditPasswordActivity));
+                intent.PutExtra(EditPasswordActivity.ExtraEntryId, entry.Id);
+                intent.PutExtra(EditPasswordActivity.ExtraSiteName, entry.AccountName);
+                intent.PutExtra(EditPasswordActivity.ExtraUsername, entry.AccountUsername);
+                intent.PutExtra(EditPasswordActivity.ExtraNotes, entry.Notes);
+                intent.PutExtra(EditPasswordActivity.ExtraIV, entry.IV);
+                intent.PutExtra(EditPasswordActivity.ExtraTag, entry.Tag);
+                intent.PutExtra(EditPasswordActivity.ExtraCipherText, entry.CipherText);
+                intent.PutExtra(EditPasswordActivity.ExtraSha1Hash, entry.Sha1Hash);
+                intent.PutExtra(EditPasswordActivity.ExtraIsLeaked, entry.IsLeaked);
+                StartActivityForResult(intent, EditPasswordActivity.RequestCodeEdit);
             };
+
+            sheet.DeleteClicked += (s, e) => ConfirmDelete(entry);
+
+            sheet.Show(SupportFragmentManager, PasswordOptionsBottomSheet.TagName);
+        }
+
+        /// <summary>
+        /// Shows an <see cref="AlertDialog"/> asking the user to confirm deletion of <paramref name="entry"/>.
+        /// On confirmation, removes the entry from the server and then from the local list.
+        /// </summary>
+        private void ConfirmDelete(VaultItem entry)
+        {
+            string message = string.Format(
+                GetString(Resource.String.sheet_delete_confirm_message),
+                entry.AccountName);
+
+            new AndroidX.AppCompat.App.AlertDialog.Builder(this)
+                .SetTitle(Resource.String.sheet_delete_confirm_title)
+                .SetMessage(message)
+                .SetPositiveButton(Resource.String.sheet_delete_confirm_yes, async (s, e) =>
+                {
+                    await DeleteEntryAsync(entry);
+                })
+                .SetNegativeButton(Resource.String.sheet_delete_confirm_no, (s, e) => { })
+                .Show();
+        }
+
+        /// <summary>
+        /// Calls the server to delete <paramref name="entry"/>, then removes it from the
+        /// local list and session cache. Shows an error toast if the server call fails.
+        /// </summary>
+        private async Task DeleteEntryAsync(VaultItem entry)
+        {
+            try
+            {
+                var vaultService = new VaultService();
+                var result = await vaultService.DeleteVaultItemAsync(entry.Id);
+
+                if (result.Success)
+                {
+                    allEntries.RemoveAll(x => x.Id == entry.Id);
+                    SessionHelper.RemoveVaultItem(entry.Id);
+                    RefreshList();
+                    Toast.MakeText(this, Resource.String.sheet_deleted_toast, ToastLength.Short).Show();
+                }
+                else
+                {
+                    Toast.MakeText(this, Resource.String.sheet_delete_error, ToastLength.Long).Show();
+                }
+            }
+            catch (Exception)
+            {
+                Toast.MakeText(this, Resource.String.sheet_delete_error, ToastLength.Long).Show();
+            }
         }
 
         private void SetupBottomNavFragment(Bundle savedInstanceState)
@@ -130,13 +218,40 @@ namespace SecurioClient
 
             if (requestCode == AddPasswordActivity.RequestCodeAdd)
             {
-                allEntries.Add(new VaultItem
+                var newItem = new VaultItem
                 {
-                    Id = data.GetIntExtra(AddPasswordActivity.ResultEntryId, 0),
-                    AccountName = data.GetStringExtra(AddPasswordActivity.ResultSiteName),
-                    AccountUsername = data.GetStringExtra(AddPasswordActivity.ResultUsername),
-                    Notes = data.GetStringExtra(AddPasswordActivity.ResultNotes)
-                });
+                    Id              = data.GetIntExtra(AddPasswordActivity.ResultEntryId, 0),
+                    AccountName     = data.GetStringExtra(AddPasswordActivity.ResultSiteName),
+                    AccountUsername  = data.GetStringExtra(AddPasswordActivity.ResultUsername),
+                    Notes           = data.GetStringExtra(AddPasswordActivity.ResultNotes),
+                    IV              = data.GetStringExtra(AddPasswordActivity.ResultIV),
+                    Tag             = data.GetStringExtra(AddPasswordActivity.ResultTag),
+                    CipherText      = data.GetStringExtra(AddPasswordActivity.ResultCipherText),
+                    Sha1Hash        = data.GetStringExtra(AddPasswordActivity.ResultSha1Hash),
+                    IsLeaked        = data.GetBooleanExtra(AddPasswordActivity.ResultIsLeaked, false)
+                };
+
+                allEntries.Add(newItem);
+                SessionHelper.AddVaultItem(newItem);
+                RefreshList();
+            }
+            else if (requestCode == EditPasswordActivity.RequestCodeEdit)
+            {
+                int editedId = data.GetIntExtra(EditPasswordActivity.ResultEntryId, 0);
+                var existing = allEntries.FirstOrDefault(e => e.Id == editedId);
+                if (existing != null)
+                {
+                    existing.AccountName     = data.GetStringExtra(EditPasswordActivity.ResultSiteName);
+                    existing.AccountUsername  = data.GetStringExtra(EditPasswordActivity.ResultUsername);
+                    existing.Notes           = data.GetStringExtra(EditPasswordActivity.ResultNotes);
+                    existing.IV              = data.GetStringExtra(EditPasswordActivity.ResultIV);
+                    existing.Tag             = data.GetStringExtra(EditPasswordActivity.ResultTag);
+                    existing.CipherText      = data.GetStringExtra(EditPasswordActivity.ResultCipherText);
+                    existing.Sha1Hash        = data.GetStringExtra(EditPasswordActivity.ResultSha1Hash);
+                    existing.IsLeaked        = data.GetBooleanExtra(EditPasswordActivity.ResultIsLeaked, false);
+
+                    SessionHelper.UpdateVaultItem(existing);
+                }
 
                 RefreshList();
             }
@@ -147,21 +262,12 @@ namespace SecurioClient
         // ──────────────────────────────────────────
 
         /// <summary>
-        /// Populates the RecyclerView with sample password entries for demonstration.
-        /// Replace this with real data loading in the future.
+        /// Loads the vault entries from the in-memory session cache into the local list
+        /// and refreshes the RecyclerView.
         /// </summary>
-        private void LoadSampleData()
+        private void LoadVaultFromSession()
         {
-            allEntries = new List<VaultItem>
-            {
-                new VaultItem { Id = 1, AccountName = "Google",   AccountUsername = "user@gmail.com" },
-                new VaultItem { Id = 2, AccountName = "GitHub",   AccountUsername = "devuser" },
-                new VaultItem { Id = 3, AccountName = "Facebook", AccountUsername = "john.doe@fb.com" },
-                new VaultItem { Id = 4, AccountName = "Twitter",  AccountUsername = "@johndoe" },
-                new VaultItem { Id = 5, AccountName = "Netflix",  AccountUsername = "john@example.com" },
-                new VaultItem { Id = 6, AccountName = "Amazon",   AccountUsername = "shop@example.com" },
-            };
-
+            allEntries = new List<VaultItem>(SessionHelper.CachedVault ?? new List<VaultItem>());
             RefreshList();
         }
 
