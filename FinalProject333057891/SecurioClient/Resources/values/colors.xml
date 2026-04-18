@@ -22,4 +22,31 @@
     <color name="passwordStrengthFair">#F39C12</color>
     <color name="passwordStrengthStrong">#27AE60</color>
     <color name="passwordStrengthVeryStrong">#1E8449</color>
+
+    <!-- Vault page colors -->
+    <color name="vaultBackground">#1B2838</color>
+    <color name="vaultHeaderText">#FFFFFF</color>
+    <color name="vaultSubtitleText">#B0BEC5</color>
+    <color name="vaultSearchBackground">#253649</color>
+    <color name="vaultSearchText">#FFFFFF</color>
+    <color name="vaultSearchHint">#78909C</color>
+    <color name="vaultCardBackground">#253649</color>
+    <color name="vaultCardTitleText">#FFFFFF</color>
+    <color name="vaultCardSubtitleText">#B0BEC5</color>
+    <color name="vaultCardIconBackground">#3498db</color>
+    <color name="vaultCardIconText">#FFFFFF</color>
+    <color name="vaultFabBackground">#3498db</color>
+    <color name="vaultFabIcon">#FFFFFF</color>
+    <color name="vaultBottomNavBackground">#1B2838</color>
+    <color name="vaultBottomNavSelected">#3498db</color>
+    <color name="vaultBottomNavUnselected">#78909C</color>
+    <color name="vaultDivider">#37474F</color>
+    <color name="vaultEmptyText">#78909C</color>
+
+    <!-- Entry (Add / Edit) page colors -->
+    <color name="entryBackground">#1B2838</color>
+    <color name="entryCardBackground">#FFFFFF</color>
+    <color name="entryButtonBackground">#3498db</color>
+    <color name="entryButtonText">#FFFFFF</color>
+    <color name="entryStrengthBackground">#E0E0E0</color>
 </resources>

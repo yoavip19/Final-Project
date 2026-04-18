@@ -20,7 +20,8 @@ namespace SecurioClient.Helpers
 
         public BaseService()
         {
-            Client.BaseAddress = new Uri(BaseUrl);
+            if (Client.BaseAddress == null)
+                Client.BaseAddress = new Uri(BaseUrl);
         }
 
         // This method now returns the specific response object directly.

@@ -22,8 +22,10 @@ namespace SecurioClient
 
             if (!string.IsNullOrEmpty(await StorageHelper.GetJwt()))
             {
-                // TODO: navigate to the vault / dashboard activity when it exists.
-                // For now, authenticated users stay on the (empty) main screen.
+                var vaultIntent = new Android.Content.Intent(this, typeof(VaultActivity));
+                vaultIntent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);
+                StartActivity(vaultIntent);
+                Finish();
             }
             else
             {

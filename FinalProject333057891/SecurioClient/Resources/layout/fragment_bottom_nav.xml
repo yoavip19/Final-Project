@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/bg_bottom_nav"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    android:baselineAligned="false">
+
+    <!-- Vault tab -->
+    <LinearLayout
+        android:id="@+id/navTabVault"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackgroundBorderless">
+
+        <ImageView
+            android:id="@+id/iconNavVault"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_lock_idle_lock"
+            android:contentDescription="@string/vault_nav_vault" />
+
+        <TextView
+            android:id="@+id/textNavVault"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/vault_nav_vault"
+            style="@style/VaultBottomNavTextStyle"
+            android:textColor="@color/vaultBottomNavSelected" />
+
+    </LinearLayout>
+
+    <!-- Generator tab -->
+    <LinearLayout
+        android:id="@+id/navTabGenerator"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackgroundBorderless">
+
+        <ImageView
+            android:id="@+id/iconNavGenerator"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_manage"
+            android:contentDescription="@string/vault_nav_generator" />
+
+        <TextView
+            android:id="@+id/textNavGenerator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/vault_nav_generator"
+            style="@style/VaultBottomNavTextStyle"
+            android:textColor="@color/vaultBottomNavUnselected" />
+
+    </LinearLayout>
+
+    <!-- Profile tab -->
+    <LinearLayout
+        android:id="@+id/navTabProfile"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackgroundBorderless">
+
+        <ImageView
+            android:id="@+id/iconNavProfile"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_myplaces"
+            android:contentDescription="@string/vault_nav_profile" />
+
+        <TextView
+            android:id="@+id/textNavProfile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/vault_nav_profile"
+            style="@style/VaultBottomNavTextStyle"
+            android:textColor="@color/vaultBottomNavUnselected" />
+
+    </LinearLayout>
+
+</LinearLayout>

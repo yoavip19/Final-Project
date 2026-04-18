@@ -40,4 +40,36 @@
     <string name="login_signup_link">Sign Up</string>
     <string name="login_error_empty_fields">Please fill in all fields</string>
     <string name="login_error_invalid_email">Please enter a valid email address</string>
+
+    <!-- Vault page strings -->
+    <string name="vault_title">My Vault</string>
+    <string name="vault_subtitle">Your saved passwords</string>
+    <string name="vault_search_hint">Search passwords…</string>
+    <string name="vault_empty_title">No passwords yet</string>
+    <string name="vault_empty_subtitle">Tap + to add your first password</string>
+    <string name="vault_add_password">Add Password</string>
+    <string name="vault_edit_password">Edit Password</string>
+    <string name="vault_nav_vault">Vault</string>
+    <string name="vault_nav_generator">Generator</string>
+    <string name="vault_nav_profile">Profile</string>
+
+    <!-- Entry (Add / Edit) page strings -->
+    <string name="entry_title_add">Add Password</string>
+    <string name="entry_title_edit">Edit Password</string>
+    <string name="entry_subtitle_add">Save a new credential to your vault</string>
+    <string name="entry_subtitle_edit">Update your saved credential</string>
+    <string name="entry_site_name_hint">App or site name</string>
+    <string name="entry_username_hint">Username or email</string>
+    <string name="entry_password_hint">Password</string>
+    <string name="entry_url_hint">Website URL (optional)</string>
+    <string name="entry_notes_hint">Notes (optional)</string>
+    <string name="entry_generate_password">🎲 Generate password</string>
+    <string name="entry_button_save">Save</string>
+    <string name="entry_button_update">Update</string>
+    <string name="entry_error_site_required">App or site name is required</string>
+    <string name="entry_error_username_required">Username or email is required</string>
+    <string name="entry_error_password_required">Password is required</string>
+    <string name="entry_error_duplicate">An entry with this site name and username already exists</string>
+    <string name="entry_saved_success">Password saved successfully</string>
+    <string name="entry_updated_success">Password updated successfully</string>
 </resources>

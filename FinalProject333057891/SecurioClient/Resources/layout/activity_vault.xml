@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/vaultBackground">
+
+    <!-- Header area -->
+    <LinearLayout
+        android:id="@+id/layoutVaultHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="48dp"
+        android:paddingBottom="8dp"
+        android:layout_alignParentTop="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🛡️"
+            android:textSize="36sp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/textViewVaultTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/vault_title"
+            style="@style/VaultTitleStyle"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/textViewVaultSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/vault_subtitle"
+            style="@style/VaultSubtitleStyle"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Search bar -->
+        <EditText
+            android:id="@+id/editTextVaultSearch"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_search_bar"
+            android:hint="@string/vault_search_hint"
+            android:textColor="@color/vaultSearchText"
+            android:textColorHint="@color/vaultSearchHint"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif"
+            android:singleLine="true"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawablePadding="8dp"
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:layout_marginBottom="8dp" />
+
+    </LinearLayout>
+
+    <!-- Bottom navigation fragment container -->
+    <FrameLayout
+        android:id="@+id/frameBottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+
+    <!-- Password list (RecyclerView) fills space between header and bottom nav -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewPasswords"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/layoutVaultHeader"
+        android:layout_above="@id/frameBottomNav"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="80dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical" />
+
+    <!-- Empty state (shown when there are no passwords) -->
+    <LinearLayout
+        android:id="@+id/layoutVaultEmpty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔐"
+            android:textSize="48sp"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/vault_empty_title"
+            android:textSize="18sp"
+            android:textColor="@color/vaultHeaderText"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/vault_empty_subtitle"
+            android:textSize="14sp"
+            android:textColor="@color/vaultEmptyText"
+            android:fontFamily="sans-serif" />
+
+    </LinearLayout>
+
+    <!-- Floating Action Button to add a new password -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/fabAddPassword"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@id/frameBottomNav"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="16dp"
+        android:text="+"
+        android:textSize="24sp"
+        android:textColor="@color/vaultFabIcon"
+        android:backgroundTint="@color/vaultFabBackground"
+        android:gravity="center"
+        android:padding="0dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        app:cornerRadius="28dp"
+        app:elevation="6dp" />
+
+</RelativeLayout>
