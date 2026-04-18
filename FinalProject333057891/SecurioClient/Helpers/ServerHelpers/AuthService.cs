@@ -78,7 +78,7 @@ namespace SecurioClient.Helpers.ServerHelpers
             if (vaultResult.Success && vaultResult.Data != null)
                 SessionHelper.CachedVault = vaultResult.Data;
             else
-                SessionHelper.CachedVault = new System.Collections.Generic.List<SecurioModels.DataTransferObjects.VaultItem>();
+                SessionHelper.CachedVault = new List<VaultItem>();
         }
 
         // Asks the server to verify that the stored JWT is still valid and unexpired.
