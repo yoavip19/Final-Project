@@ -18,7 +18,9 @@ namespace SecurioClient
     /// (leaked, weak, reused, or old). Receives the category via an Intent extra and
     /// filters <see cref="SessionHelper.CachedVault"/> accordingly.
     /// Reuses the same <see cref="PasswordBannerAdapter"/> and search-bar pattern as
-    /// <see cref="VaultActivity"/>.
+    /// <see cref="VaultActivity"/>. The kebab icon on each banner opens the same
+    /// <see cref="PasswordOptionsBottomSheet"/> as the vault via
+    /// <see cref="PasswordEntryActionsHelper"/>.
     /// </summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class RiskDetailActivity : AppCompatActivity
@@ -67,13 +69,13 @@ namespace SecurioClient
 
         private void InitializeViews()
         {
-            imageViewBack   = FindViewById<ImageView>(Resource.Id.imageViewRiskBack);
-            textViewEmoji   = FindViewById<TextView>(Resource.Id.textViewRiskEmoji);
-            textViewTitle   = FindViewById<TextView>(Resource.Id.textViewRiskTitle);
+            imageViewBack    = FindViewById<ImageView>(Resource.Id.imageViewRiskBack);
+            textViewEmoji    = FindViewById<TextView>(Resource.Id.textViewRiskEmoji);
+            textViewTitle    = FindViewById<TextView>(Resource.Id.textViewRiskTitle);
             textViewSubtitle = FindViewById<TextView>(Resource.Id.textViewRiskSubtitle);
-            editTextSearch  = FindViewById<EditText>(Resource.Id.editTextRiskSearch);
-            recyclerView    = FindViewById<RecyclerView>(Resource.Id.recyclerViewRiskPasswords);
-            layoutEmpty     = FindViewById<LinearLayout>(Resource.Id.layoutRiskEmpty);
+            editTextSearch   = FindViewById<EditText>(Resource.Id.editTextRiskSearch);
+            recyclerView     = FindViewById<RecyclerView>(Resource.Id.recyclerViewRiskPasswords);
+            layoutEmpty      = FindViewById<LinearLayout>(Resource.Id.layoutRiskEmpty);
         }
 
         /// <summary>
@@ -112,26 +114,30 @@ namespace SecurioClient
             recyclerView.SetLayoutManager(new LinearLayoutManager(this));
             recyclerView.SetAdapter(adapter);
 
-            // Tap on a banner opens the View Password activity (read-only).
-            adapter.ItemClick += OnBannerTapped;
-            adapter.EditClick += OnBannerTapped;
+            // Both the full-banner tap and the kebab icon open the options bottom sheet.
+            adapter.ItemClick += (sender, position) => OnBannerActionAt(position);
+            adapter.EditClick += (sender, position) => OnBannerActionAt(position);
         }
 
-        private void OnBannerTapped(object sender, int position)
+        /// <summary>
+        /// Resolves the entry at <paramref name="position"/> and opens the options
+        /// bottom sheet via the shared <see cref="PasswordEntryActionsHelper"/>.
+        /// </summary>
+        private void OnBannerActionAt(int position)
         {
             var displayed = GetDisplayedEntries();
-            if (position < 0 || position >= displayed.Count)
-                return;
+            if (position >= 0 && position < displayed.Count)
+                PasswordEntryActionsHelper.ShowOptionsSheet(
+                    this,
+                    displayed[position],
+                    SyncEntryCache,
+                    OnEntryDeleted);
+        }
 
-            var entry = displayed[position];
-            var intent = new Intent(this, typeof(ViewPasswordActivity));
-            intent.PutExtra(ViewPasswordActivity.ExtraSiteName, entry.AccountName);
-            intent.PutExtra(ViewPasswordActivity.ExtraUsername, entry.AccountUsername);
-            intent.PutExtra(ViewPasswordActivity.ExtraNotes, entry.Notes);
-            intent.PutExtra(ViewPasswordActivity.ExtraIV, entry.IV);
-            intent.PutExtra(ViewPasswordActivity.ExtraTag, entry.Tag);
-            intent.PutExtra(ViewPasswordActivity.ExtraCipherText, entry.CipherText);
-            StartActivity(intent);
+        private void OnEntryDeleted(VaultItem entry)
+        {
+            riskEntries.RemoveAll(x => x.Id == entry.Id);
+            RefreshList();
         }
 
         private void SetupEventHandlers()
@@ -142,6 +148,39 @@ namespace SecurioClient
             {
                 FilterPasswords(query);
             }));
+        }
+
+        // ── Activity result ────────────────────────────────────
+
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+
+            if (resultCode != Result.Ok || data == null)
+                return;
+
+            if (requestCode == EditPasswordActivity.RequestCodeEdit)
+            {
+                int editedId = data.GetIntExtra(EditPasswordActivity.ResultEntryId, 0);
+                var existing = riskEntries.FirstOrDefault(e => e.Id == editedId);
+                if (existing != null)
+                {
+                    existing.AccountName     = data.GetStringExtra(EditPasswordActivity.ResultSiteName);
+                    existing.AccountUsername = data.GetStringExtra(EditPasswordActivity.ResultUsername);
+                    existing.Notes           = data.GetStringExtra(EditPasswordActivity.ResultNotes);
+                    existing.IV              = data.GetStringExtra(EditPasswordActivity.ResultIV);
+                    existing.Tag             = data.GetStringExtra(EditPasswordActivity.ResultTag);
+                    existing.CipherText      = data.GetStringExtra(EditPasswordActivity.ResultCipherText);
+                    existing.Sha1Hash        = data.GetStringExtra(EditPasswordActivity.ResultSha1Hash);
+                    existing.IsLeaked        = data.GetBooleanExtra(EditPasswordActivity.ResultIsLeaked, false);
+                    existing.LastUpdate      = new DateTime(data.GetLongExtra(EditPasswordActivity.ResultLastUpdate, existing.LastUpdate.Ticks));
+
+                    SessionHelper.UpdateVaultItem(existing);
+                    SessionHelper.InvalidateWarnings();
+                }
+
+                RefreshList();
+            }
         }
 
         // ── Data loading ───────────────────────────────────────
@@ -194,8 +233,18 @@ namespace SecurioClient
         private void UpdateEmptyState()
         {
             bool isEmpty = adapter.ItemCount == 0;
-            layoutEmpty.Visibility    = isEmpty ? ViewStates.Visible : ViewStates.Gone;
-            recyclerView.Visibility   = isEmpty ? ViewStates.Gone : ViewStates.Visible;
+            layoutEmpty.Visibility  = isEmpty ? ViewStates.Visible : ViewStates.Gone;
+            recyclerView.Visibility = isEmpty ? ViewStates.Gone : ViewStates.Visible;
+        }
+
+        /// <summary>
+        /// Pushes the full vault cache into <see cref="VaultEntryCache"/> so that
+        /// <see cref="EditPasswordActivity"/> can perform duplicate checking.
+        /// </summary>
+        private void SyncEntryCache()
+        {
+            VaultEntryCache.Entries = new List<VaultItem>(SessionHelper.CachedVault ?? new List<VaultItem>());
         }
     }
 }
+
