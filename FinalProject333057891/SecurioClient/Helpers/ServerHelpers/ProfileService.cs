@@ -30,5 +30,11 @@ namespace SecurioClient.Helpers.ServerHelpers
 
             return response;
         }
+
+        // Permanently deletes the user account and all associated vault items on the server.
+        public async Task<ServerResponse<object>> DeleteAccountAsync()
+        {
+            return await PostAsync<object>("DeleteUser", new { });
+        }
     }
 }

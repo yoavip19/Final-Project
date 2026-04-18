@@ -50,4 +50,10 @@
     <color name="entryButtonBackground">#3498db</color>
     <color name="entryButtonText">#FFFFFF</color>
     <color name="entryStrengthBackground">#E0E0E0</color>
+
+    <!-- Profile page colors -->
+    <color name="profileStatValue">#212121</color>
+    <color name="profileStatLabel">#9E9E9E</color>
+    <color name="profileLogoutButton">#E67E22</color>
+    <color name="profileDeleteButton">#E74C3C</color>
 </resources>

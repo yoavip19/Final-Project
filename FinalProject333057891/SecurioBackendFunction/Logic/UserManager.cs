@@ -33,5 +33,18 @@ namespace SecurioBackendFunction.Logic
                 Data = user
             };
         }
+
+        // Deletes the user account and all associated vault items (via CASCADE).
+        public async Task<ServerResponse<object>> DeleteUserAsync(int userId)
+        {
+            bool deleted = await _repo.DeleteUserAsync(userId);
+
+            if (!deleted)
+            {
+                return new ServerResponse<object> { Success = false, Message = "Account not found." };
+            }
+
+            return new ServerResponse<object> { Success = true, Message = "Account deleted successfully." };
+        }
     }
 }

@@ -199,8 +199,14 @@ namespace SecurioClient
 
         private void OnBottomNavTabSelected(object sender, string tab)
         {
-            // Currently only the vault tab is implemented; other tabs show a toast.
-            if (tab != "vault")
+            if (tab == "profile")
+            {
+                var intent = new Intent(this, typeof(ProfileActivity));
+                intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
+                StartActivity(intent);
+                Finish();
+            }
+            else if (tab != "vault")
             {
                 Toast.MakeText(this, $"{char.ToUpper(tab[0])}{tab.Substring(1)} coming soon!", ToastLength.Short).Show();
             }

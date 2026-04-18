@@ -60,5 +60,42 @@ namespace SecurioBackendFunction.ServerFunctions
                 return new BadRequestObjectResult(new ServerResponse<User> { Success = false, Message = "Error loading profile data." });
             }
         }
+
+        // Permanently deletes the user account and all associated vault items.
+        // The user ID is extracted from the validated JWT in the Authorization header.
+        [Function("DeleteUser")]
+        public async Task<IActionResult> DeleteUser(
+            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+        {
+            try
+            {
+                var authHeader = req.Headers["Authorization"].FirstOrDefault();
+                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+                {
+                    return new UnauthorizedObjectResult(new ServerResponse<object> { Success = false, Message = "Unauthorized." });
+                }
+
+                var token = authHeader.Substring("Bearer ".Length);
+                var principal = JwtHelper.ValidateToken(token);
+
+                if (principal == null)
+                {
+                    return new UnauthorizedObjectResult(new ServerResponse<object> { Success = false, Message = "Unauthorized." });
+                }
+
+                int userId = JwtHelper.GetUserIdFromPrincipal(principal);
+                if (userId <= 0)
+                {
+                    return new UnauthorizedObjectResult(new ServerResponse<object> { Success = false, Message = "Unauthorized." });
+                }
+
+                var result = await _userManager.DeleteUserAsync(userId);
+                return new OkObjectResult(result);
+            }
+            catch
+            {
+                return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = "Error deleting account." });
+            }
+        }
     }
 }
