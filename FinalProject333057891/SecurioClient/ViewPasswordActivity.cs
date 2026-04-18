@@ -83,8 +83,8 @@ namespace SecurioClient
             long lastUpdateTicks = Intent.GetLongExtra(ExtraLastUpdate, 0L);
             if (lastUpdateTicks > 0)
             {
-                var lastUpdate = new DateTime(lastUpdateTicks, DateTimeKind.Utc).ToLocalTime();
-                textViewLastChanged.Text = lastUpdate.ToString("MMM d, yyyy 'at' h:mm tt");
+                var lastUpdate = new DateTime(lastUpdateTicks, DateTimeKind.Utc);
+                textViewLastChanged.Text = lastUpdate.ToString("MMM d, yyyy 'at' h:mm tt 'UTC'");
             }
             else
             {

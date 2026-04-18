@@ -95,7 +95,7 @@
     <string name="entry_confirm_password_edit_hint">Confirm New Password</string>
     <string name="entry_error_confirm_password_required">Please confirm your password</string>
     <string name="entry_error_passwords_mismatch">Passwords do not match</string>
-    <string name="entry_password_edit_hint">New Password (leave blank to keep current)</string>
+    <string name="entry_password_edit_hint">New Password</string>
 
     <!-- View Password page strings -->
     <string name="view_title">View Password</string>

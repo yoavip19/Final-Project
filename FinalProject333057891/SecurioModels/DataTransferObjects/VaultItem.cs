@@ -18,5 +18,8 @@ namespace SecurioModels.DataTransferObjects
         public string Sha1Hash { get; set; }     // Unsalted SHA-1 hash for HIBP breach lookup
         public bool IsLeaked { get; set; }
         public DateTime LastUpdate { get; set; }
+        // Transient flag set by the client to indicate whether the password ciphertext was changed.
+        // Never persisted to the database; used only during the UpdateVaultItem request.
+        public bool PasswordChanged { get; set; }
     }
 }

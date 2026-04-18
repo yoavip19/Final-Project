@@ -1,6 +1,7 @@
 using SecurioBackendFunction.Repositories;
 using SecurioModels;
 using SecurioModels.DataTransferObjects;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -69,7 +70,8 @@ namespace SecurioBackendFunction.Logic
             if (!updated)
                 return new ServerResponse<VaultItem> { Success = false, Message = "Item not found or access denied." };
 
-            item.LastUpdate = DateTime.UtcNow;
+            if (item.PasswordChanged)
+                item.LastUpdate = DateTime.UtcNow;
             return new ServerResponse<VaultItem>
             {
                 Success = true,
