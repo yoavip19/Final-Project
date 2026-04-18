@@ -90,6 +90,7 @@ namespace SecurioClient
                 intent.PutExtra(ViewPasswordActivity.ExtraIV, entry.IV);
                 intent.PutExtra(ViewPasswordActivity.ExtraTag, entry.Tag);
                 intent.PutExtra(ViewPasswordActivity.ExtraCipherText, entry.CipherText);
+                intent.PutExtra(ViewPasswordActivity.ExtraLastUpdate, entry.LastUpdate.Ticks);
                 StartActivity(intent);
             };
 
@@ -249,6 +250,10 @@ namespace SecurioClient
                     existing.CipherText      = data.GetStringExtra(EditPasswordActivity.ResultCipherText);
                     existing.Sha1Hash        = data.GetStringExtra(EditPasswordActivity.ResultSha1Hash);
                     existing.IsLeaked        = data.GetBooleanExtra(EditPasswordActivity.ResultIsLeaked, false);
+
+                    long lastUpdateTicks = data.GetLongExtra(EditPasswordActivity.ResultLastUpdate, 0L);
+                    if (lastUpdateTicks > 0)
+                        existing.LastUpdate = new DateTime(lastUpdateTicks, DateTimeKind.Utc);
 
                     SessionHelper.UpdateVaultItem(existing);
                 }
