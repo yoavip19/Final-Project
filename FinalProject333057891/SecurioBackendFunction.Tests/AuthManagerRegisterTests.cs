@@ -116,6 +116,23 @@ namespace SecurioBackendFunction.Tests
             hibp.Verify(h => h.IsPasswordPwnedAsync(It.IsAny<string>()), Times.Never);
         }
 
+        // ── HIBP check is always invoked when a hash is provided ────────────────
+
+        [Fact]
+        public async Task Register_HashProvided_HibpServiceCalledExactlyOnce()
+        {
+            var hibp = new Mock<IHibpService>();
+            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
+
+            var repo = new Mock<IUserRepository>();
+            repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
+            repo.Setup(r => r.CreateUserAsync(It.IsAny<User>())).ReturnsAsync(1);
+
+            await Build(repo, hibp).RegisterAsync(ValidUser(SafeHash));
+
+            hibp.Verify(h => h.IsPasswordPwnedAsync(SafeHash), Times.Once);
+        }
+
         // ── Duplicate email check still applies ─────────────────────────────────
 
         [Fact]
