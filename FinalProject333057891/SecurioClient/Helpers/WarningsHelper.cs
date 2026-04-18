@@ -91,11 +91,13 @@ namespace SecurioClient.Helpers
                 reused += group.Count();
 
             // ── Old ───────────────────────────────────────────
-            // Passwords whose LastUpdate is older than the threshold
-            // or that have never been updated (DateTime.MinValue).
+            // Passwords whose LastUpdate is older than the threshold.
+            // Items with a default (unset) timestamp are also counted
+            // because the absence of a known update date means the
+            // password has never been confirmed as recently changed.
             foreach (var item in vault)
             {
-                if (item.LastUpdate != default && item.LastUpdate < oldThreshold)
+                if (item.LastUpdate == default || item.LastUpdate < oldThreshold)
                     old++;
             }
 
