@@ -81,6 +81,7 @@
     <Compile Include="BottomNavFragment.cs" />
     <Compile Include="AddPasswordActivity.cs" />
     <Compile Include="EditPasswordActivity.cs" />
+    <Compile Include="ViewPasswordActivity.cs" />
     <Compile Include="VaultActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -114,6 +115,9 @@
       <SubType>Designer</SubType>
     </AndroidResource>
     <AndroidResource Include="Resources\layout\activity_entry.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+    <AndroidResource Include="Resources\layout\activity_view_password.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
     <AndroidResource Include="Resources\drawable\bg_search_bar.xml" />

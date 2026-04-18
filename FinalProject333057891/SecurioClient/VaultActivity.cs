@@ -82,7 +82,14 @@ namespace SecurioClient
 
             sheet.ViewClicked += (s, e) =>
             {
-                Toast.MakeText(this, $"View: {entry.AccountName} — coming soon!", ToastLength.Short).Show();
+                var intent = new Intent(this, typeof(ViewPasswordActivity));
+                intent.PutExtra(ViewPasswordActivity.ExtraSiteName, entry.AccountName);
+                intent.PutExtra(ViewPasswordActivity.ExtraUsername, entry.AccountUsername);
+                intent.PutExtra(ViewPasswordActivity.ExtraNotes, entry.Notes);
+                intent.PutExtra(ViewPasswordActivity.ExtraIV, entry.IV);
+                intent.PutExtra(ViewPasswordActivity.ExtraTag, entry.Tag);
+                intent.PutExtra(ViewPasswordActivity.ExtraCipherText, entry.CipherText);
+                StartActivity(intent);
             };
 
             sheet.EditClicked += (s, e) =>
