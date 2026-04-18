@@ -48,7 +48,7 @@ namespace SecurioBackendFunction.Repositories
                             Notes           = @notes,
                             Sha1Hash        = @hash,
                             IsLeaked        = @leaked,
-                            LastUpdate      = GETDATE()
+                            LastUpdate      = CASE WHEN @passwordChanged = 1 THEN GETDATE() ELSE LastUpdate END
                         WHERE Id = @id AND UserId = @uid";
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.Add("@id",     SqlDbType.Int).Value      = item.Id;
@@ -61,6 +61,7 @@ namespace SecurioBackendFunction.Repositories
             cmd.Parameters.Add("@notes",  SqlDbType.NVarChar).Value = (object)item.Notes ?? DBNull.Value;
             cmd.Parameters.Add("@hash",   SqlDbType.NVarChar).Value = item.Sha1Hash;
             cmd.Parameters.Add("@leaked", SqlDbType.Bit).Value      = item.IsLeaked;
+            cmd.Parameters.Add("@passwordChanged", SqlDbType.Bit).Value = item.PasswordChanged;
             int rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
         }

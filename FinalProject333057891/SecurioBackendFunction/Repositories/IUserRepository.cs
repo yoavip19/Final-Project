@@ -10,5 +10,7 @@ namespace SecurioBackendFunction.Repositories
         Task<int> CreateUserAsync(User user);
         Task<User> GetUserByEmailAsync(string email);
         Task<User> GetUserProfileAsync(int userId);
+        Task UpdateLastLoginAsync(int userId);
+        Task<bool> DeleteUserAsync(int userId);
     }
 }

@@ -95,7 +95,7 @@
     <string name="entry_confirm_password_edit_hint">Confirm New Password</string>
     <string name="entry_error_confirm_password_required">Please confirm your password</string>
     <string name="entry_error_passwords_mismatch">Passwords do not match</string>
-    <string name="entry_password_edit_hint">New Password (leave blank to keep current)</string>
+    <string name="entry_password_edit_hint">New Password</string>
 
     <!-- View Password page strings -->
     <string name="view_title">View Password</string>
@@ -129,4 +129,29 @@
     <string name="risk_empty_title">All clear!</string>
     <string name="risk_empty_subtitle">No passwords at risk in this category</string>
     <string name="warnings_view_all">View All</string>
+    <string name="view_label_last_changed">Last changed</string>
+
+    <!-- Profile page strings -->
+    <string name="profile_title">My Profile</string>
+    <string name="profile_subtitle">Your account details</string>
+    <string name="profile_label_username">Username</string>
+    <string name="profile_label_email">Email</string>
+    <string name="profile_label_last_login">Last Login</string>
+    <string name="profile_label_last_password_change">Last Master Password Change</string>
+    <string name="profile_label_created_at">Account Created</string>
+    <string name="profile_label_password_count">Passwords in Vault</string>
+    <string name="profile_button_edit">Edit Credentials</string>
+    <string name="profile_button_logout">Log Out</string>
+    <string name="profile_button_delete">Remove Account</string>
+    <string name="profile_logout_confirm_title">Log Out?</string>
+    <string name="profile_logout_confirm_message">You will need to sign in again to access your vault.</string>
+    <string name="profile_logout_confirm_yes">Log Out</string>
+    <string name="profile_logout_confirm_no">Cancel</string>
+    <string name="profile_delete_confirm_title">Delete Account?</string>
+    <string name="profile_delete_confirm_message">This will permanently delete your account and all saved passwords. This action cannot be undone.</string>
+    <string name="profile_delete_confirm_yes">Delete</string>
+    <string name="profile_delete_confirm_no">Cancel</string>
+    <string name="profile_deleted_toast">Account deleted successfully</string>
+    <string name="profile_delete_error">Failed to delete account. Please try again.</string>
+    <string name="profile_load_error">Unable to load profile. Showing cached data.</string>
 </resources>

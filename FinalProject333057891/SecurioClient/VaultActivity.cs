@@ -119,6 +119,12 @@ namespace SecurioClient
             {
                 var intent = new Intent(this, typeof(WarningsActivity));
                 StartActivity(intent);
+            if (tab == "profile")
+            {
+                var intent = new Intent(this, typeof(ProfileActivity));
+                intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
+                StartActivity(intent);
+                Finish();
             }
             else if (tab != "vault")
             {
@@ -173,6 +179,10 @@ namespace SecurioClient
                     existing.Sha1Hash        = data.GetStringExtra(EditPasswordActivity.ResultSha1Hash);
                     existing.IsLeaked        = data.GetBooleanExtra(EditPasswordActivity.ResultIsLeaked, false);
                     existing.LastUpdate      = new DateTime(data.GetLongExtra(EditPasswordActivity.ResultLastUpdate, existing.LastUpdate.Ticks));
+
+                    long lastUpdateTicks = data.GetLongExtra(EditPasswordActivity.ResultLastUpdate, 0L);
+                    if (lastUpdateTicks > 0)
+                        existing.LastUpdate = new DateTime(lastUpdateTicks, DateTimeKind.Utc);
 
                     SessionHelper.UpdateVaultItem(existing);
                     SessionHelper.InvalidateWarnings();

@@ -84,6 +84,11 @@ namespace SecurioClient
         // Holds existing entries for duplicate checking (excludes the item being edited).
         private List<VaultItem> existingEntries = new List<VaultItem>();
 
+        // Placeholder shown in the password field to indicate an existing password is stored.
+        // Cleared when the user focuses the field; restored if they leave without typing.
+        private const string PasswordPlaceholder = "••••••••";
+        private bool _passwordIsPlaceholder;
+
         // ── Lifecycle ──────────────────────────────────────────
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -97,6 +102,7 @@ namespace SecurioClient
             PopulateExistingEntries();
             PopulateFieldsFromIntent();
             SetupEventHandlers();
+            ConfigurePasswordPlaceholder();
         }
 
         // ── Setup helpers ──────────────────────────────────────
@@ -176,6 +182,7 @@ namespace SecurioClient
 
             buttonGeneratePassword.Click += (s, e) =>
             {
+                _passwordIsPlaceholder = false;
                 string generated = ValidationHelper.GenerateStrongPassword();
                 editTextPassword.Text = generated;
                 editTextConfirmPassword.Text = generated;
@@ -210,6 +217,7 @@ namespace SecurioClient
             // Real-time validation: password strength (informational only, never blocks)
             editTextPassword.AddTextChangedListener(new SimpleTextWatcher(text =>
             {
+                if (_passwordIsPlaceholder) return;
                 UpdatePasswordStrengthIndicator(text);
 
                 // Re-validate confirm password match whenever the password field changes.
@@ -224,6 +232,33 @@ namespace SecurioClient
             }));
         }
 
+        /// <summary>
+        /// Seeds the password field with a masked placeholder to indicate an existing password
+        /// is stored. Clears on focus so the user can type a new value, and restores the
+        /// placeholder if they leave the field without typing anything.
+        /// </summary>
+        private void ConfigurePasswordPlaceholder()
+        {
+            _passwordIsPlaceholder = true;
+            editTextPassword.Text = PasswordPlaceholder;
+
+            editTextPassword.FocusChange += (s, e) =>
+            {
+                if (e.HasFocus && _passwordIsPlaceholder)
+                {
+                    // User tapped the field — clear the placeholder so they can type.
+                    _passwordIsPlaceholder = false;
+                    editTextPassword.Text = string.Empty;
+                }
+                else if (!e.HasFocus && string.IsNullOrEmpty(editTextPassword.Text))
+                {
+                    // User left the field without entering anything — restore the placeholder.
+                    _passwordIsPlaceholder = true;
+                    editTextPassword.Text = PasswordPlaceholder;
+                }
+            };
+        }
+
         // ── Update logic ───────────────────────────────────────
 
         private async Task OnUpdateClicked()
@@ -232,8 +267,9 @@ namespace SecurioClient
 
             string siteName = editTextSiteName.Text?.Trim();
             string username = editTextUsername.Text?.Trim();
-            string password = editTextPassword.Text;
-            string confirmPassword = editTextConfirmPassword.Text;
+            // Treat the placeholder as an empty field (user kept the existing password).
+            string password = _passwordIsPlaceholder ? string.Empty : editTextPassword.Text;
+            string confirmPassword = _passwordIsPlaceholder ? string.Empty : editTextConfirmPassword.Text;
             string notes = editTextNotes.Text?.Trim();
 
             if (!ValidateInputs(siteName, username, password, confirmPassword))
@@ -280,7 +316,8 @@ namespace SecurioClient
                     CipherText      = cipherText,
                     Notes           = notes ?? string.Empty,
                     Sha1Hash        = sha1Hash,
-                    IsLeaked        = isLeaked
+                    IsLeaked        = isLeaked,
+                    PasswordChanged = !string.IsNullOrEmpty(password)
                 };
 
                 var vaultService = new VaultService();
@@ -299,7 +336,7 @@ namespace SecurioClient
                     resultIntent.PutExtra(ResultCipherText, cipherText);
                     resultIntent.PutExtra(ResultSha1Hash, sha1Hash);
                     resultIntent.PutExtra(ResultIsLeaked, result.Data?.IsLeaked ?? isLeaked);
-                    resultIntent.PutExtra(ResultLastUpdate, result.Data?.LastUpdate.Ticks ?? DateTime.UtcNow.Ticks);
+                    resultIntent.PutExtra(ResultLastUpdate, result.Data?.LastUpdate.Ticks ?? 0L);
 
                     SetResult(Result.Ok, resultIntent);
 
