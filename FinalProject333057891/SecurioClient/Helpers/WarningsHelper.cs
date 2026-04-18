@@ -2,6 +2,7 @@ using SecurioModels.DataTransferObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SecurioClient.Helpers
 {
@@ -35,8 +36,10 @@ namespace SecurioClient.Helpers
         /// Analyses every item in <paramref name="vault"/> and returns aggregated
         /// warning counters. Password decryption (needed for the "weak" check)
         /// uses the provided <paramref name="vaultKey"/>.
+        /// The "leaked" check performs a live HIBP k-anonymity query for each
+        /// password's SHA-1 hash.
         /// </summary>
-        public static WarningsData ComputeWarnings(IList<VaultItem> vault, string vaultKey)
+        public static async Task<WarningsData> ComputeWarningsAsync(IList<VaultItem> vault, string vaultKey)
         {
             if (vault == null || vault.Count == 0)
                 return new WarningsData();
@@ -49,9 +52,14 @@ namespace SecurioClient.Helpers
             DateTime oldThreshold = DateTime.UtcNow.AddDays(-OldPasswordDays);
 
             // ── Leaked ────────────────────────────────────────
-            // Uses the IsLeaked flag that the server sets via the HIBP
-            // k-anonymity check when a password is added or updated.
-            leaked = vault.Count(v => v.IsLeaked);
+            // Query HIBP for each password's SHA-1 hash using the k-anonymity
+            // model so only the first 5 characters are ever transmitted.
+            foreach (var item in vault)
+            {
+                if (!string.IsNullOrEmpty(item.Sha1Hash) &&
+                    await HibpClientService.IsPasswordPwnedAsync(item.Sha1Hash))
+                    leaked++;
+            }
 
             // ── Weak ──────────────────────────────────────────
             // Decrypt each password and run it through the same
@@ -91,13 +99,14 @@ namespace SecurioClient.Helpers
                 reused += group.Count();
 
             // ── Old ───────────────────────────────────────────
-            // Passwords whose LastUpdate is older than the threshold.
-            // Items with a default (unset) timestamp are also counted
-            // because the absence of a known update date means the
-            // password has never been confirmed as recently changed.
+            // Only passwords with a known LastUpdate that is older than
+            // the threshold are flagged.  Items whose LastUpdate has never
+            // been set (DateTime.MinValue / default) are skipped — they
+            // are typically newly created entries whose server-assigned
+            // timestamp has not yet been propagated to the local cache.
             foreach (var item in vault)
             {
-                if (item.LastUpdate == default || item.LastUpdate < oldThreshold)
+                if (item.LastUpdate != default && item.LastUpdate < oldThreshold)
                     old++;
             }
 

@@ -29,7 +29,7 @@ namespace SecurioClient
 
             InitializeViews();
             SetupBottomNavFragment(savedInstanceState);
-            DisplayWarnings();
+            _ = DisplayWarningsAsync();
         }
 
         private void InitializeViews()
@@ -72,14 +72,14 @@ namespace SecurioClient
         /// Reads the cached warnings or recomputes them if the cache was flushed,
         /// then populates the four counter TextViews.
         /// </summary>
-        private void DisplayWarnings()
+        private async System.Threading.Tasks.Task DisplayWarningsAsync()
         {
             var warnings = SessionHelper.CachedWarnings;
 
             if (warnings == null)
             {
-                // Cache was invalidated (vault changed) — recompute.
-                warnings = WarningsHelper.ComputeWarnings(
+                // Cache was invalidated (vault changed) — recompute with live HIBP check.
+                warnings = await WarningsHelper.ComputeWarningsAsync(
                     SessionHelper.CachedVault,
                     SessionHelper.SessionVaultKey);
 

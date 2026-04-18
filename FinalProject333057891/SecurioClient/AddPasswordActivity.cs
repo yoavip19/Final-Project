@@ -34,6 +34,7 @@ namespace SecurioClient
         public const string ResultCipherText = "RESULT_CIPHER_TEXT";
         public const string ResultSha1Hash = "RESULT_SHA1_HASH";
         public const string ResultIsLeaked = "RESULT_IS_LEAKED";
+        public const string ResultLastUpdate = "RESULT_LAST_UPDATE";
 
         public const int RequestCodeAdd = 1001;
 
@@ -235,6 +236,7 @@ namespace SecurioClient
                     resultIntent.PutExtra(ResultCipherText, cipherText);
                     resultIntent.PutExtra(ResultSha1Hash, sha1Hash);
                     resultIntent.PutExtra(ResultIsLeaked, result.Data?.IsLeaked ?? false);
+                    resultIntent.PutExtra(ResultLastUpdate, result.Data?.LastUpdate.Ticks ?? DateTime.UtcNow.Ticks);
 
                     SetResult(Result.Ok, resultIntent);
 

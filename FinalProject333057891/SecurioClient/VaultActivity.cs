@@ -233,7 +233,8 @@ namespace SecurioClient
                     Tag             = data.GetStringExtra(AddPasswordActivity.ResultTag),
                     CipherText      = data.GetStringExtra(AddPasswordActivity.ResultCipherText),
                     Sha1Hash        = data.GetStringExtra(AddPasswordActivity.ResultSha1Hash),
-                    IsLeaked        = data.GetBooleanExtra(AddPasswordActivity.ResultIsLeaked, false)
+                    IsLeaked        = data.GetBooleanExtra(AddPasswordActivity.ResultIsLeaked, false),
+                    LastUpdate      = new DateTime(data.GetLongExtra(AddPasswordActivity.ResultLastUpdate, DateTime.UtcNow.Ticks))
                 };
 
                 allEntries.Add(newItem);
@@ -255,6 +256,7 @@ namespace SecurioClient
                     existing.CipherText      = data.GetStringExtra(EditPasswordActivity.ResultCipherText);
                     existing.Sha1Hash        = data.GetStringExtra(EditPasswordActivity.ResultSha1Hash);
                     existing.IsLeaked        = data.GetBooleanExtra(EditPasswordActivity.ResultIsLeaked, false);
+                    existing.LastUpdate      = new DateTime(data.GetLongExtra(EditPasswordActivity.ResultLastUpdate, existing.LastUpdate.Ticks));
 
                     SessionHelper.UpdateVaultItem(existing);
                     SessionHelper.InvalidateWarnings();

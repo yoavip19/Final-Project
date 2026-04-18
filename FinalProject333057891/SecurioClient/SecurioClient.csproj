@@ -75,6 +75,7 @@
     <Compile Include="Helpers\StorageHelper.cs" />
     <Compile Include="Helpers\EncryptionHelper.cs" />
     <Compile Include="Helpers\WarningsHelper.cs" />
+    <Compile Include="Helpers\HibpClientService.cs" />
     <Compile Include="Helpers\ValidationHelper.cs" />
     <Compile Include="LoginActivity.cs" />
     <Compile Include="MainActivity.cs" />

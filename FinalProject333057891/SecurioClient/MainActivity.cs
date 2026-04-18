@@ -38,7 +38,7 @@ namespace SecurioClient
                     // Compute password-health warnings for the restored session.
                     if (!string.IsNullOrEmpty(vaultKey))
                     {
-                        SessionHelper.CachedWarnings = WarningsHelper.ComputeWarnings(
+                        SessionHelper.CachedWarnings = await WarningsHelper.ComputeWarningsAsync(
                             SessionHelper.CachedVault, vaultKey);
                     }
 

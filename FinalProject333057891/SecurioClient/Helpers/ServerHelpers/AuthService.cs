@@ -70,7 +70,7 @@ namespace SecurioClient.Helpers.ServerHelpers
             await FetchAndCacheVaultAsync();
 
             // 5. Compute password-health warnings and cache them for the session
-            SessionHelper.CachedWarnings = WarningsHelper.ComputeWarnings(
+            SessionHelper.CachedWarnings = await WarningsHelper.ComputeWarningsAsync(
                 SessionHelper.CachedVault, vaultKey);
         }
 
