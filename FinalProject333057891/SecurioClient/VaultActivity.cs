@@ -55,25 +55,66 @@ namespace SecurioClient
             recyclerViewPasswords.SetLayoutManager(new LinearLayoutManager(this));
             recyclerViewPasswords.SetAdapter(adapter);
 
-            // Tapping a banner — Edit activity will be wired here in the future.
-            adapter.ItemClick += (sender, position) =>
+            // Both the full-banner tap and the more-options icon tap open the options sheet.
+            adapter.ItemClick += (sender, position) => OnBannerActionAt(position);
+            adapter.EditClick += (sender, position) => OnBannerActionAt(position);
+        }
+
+        /// <summary>
+        /// Resolves the entry at <paramref name="position"/> in the currently displayed list
+        /// and opens the options bottom sheet for it.
+        /// </summary>
+        private void OnBannerActionAt(int position)
+        {
+            var displayed = GetDisplayedEntries();
+            if (position >= 0 && position < displayed.Count)
+                ShowOptionsSheet(displayed[position]);
+        }
+
+        /// <summary>
+        /// Displays the <see cref="PasswordOptionsBottomSheet"/> for the given entry
+        /// and wires up the View, Edit, and Delete callbacks.
+        /// </summary>
+        private void ShowOptionsSheet(VaultItem entry)
+        {
+            var sheet = PasswordOptionsBottomSheet.NewInstance(entry);
+
+            sheet.ViewClicked += (s, e) =>
             {
-                var displayed = GetDisplayedEntries();
-                if (position >= 0 && position < displayed.Count)
-                {
-                    Toast.MakeText(this, $"Edit: {displayed[position].AccountName} — coming soon!", ToastLength.Short).Show();
-                }
+                Toast.MakeText(this, $"View: {entry.AccountName} — coming soon!", ToastLength.Short).Show();
             };
 
-            // Tapping the edit icon on a banner — Edit activity will be wired here in the future.
-            adapter.EditClick += (sender, position) =>
+            sheet.EditClicked += (s, e) =>
             {
-                var displayed = GetDisplayedEntries();
-                if (position >= 0 && position < displayed.Count)
-                {
-                    Toast.MakeText(this, $"Edit: {displayed[position].AccountName} — coming soon!", ToastLength.Short).Show();
-                }
+                Toast.MakeText(this, $"Edit: {entry.AccountName} — coming soon!", ToastLength.Short).Show();
             };
+
+            sheet.DeleteClicked += (s, e) => ConfirmDelete(entry);
+
+            sheet.Show(SupportFragmentManager, PasswordOptionsBottomSheet.TagName);
+        }
+
+        /// <summary>
+        /// Shows an <see cref="AlertDialog"/> asking the user to confirm deletion of <paramref name="entry"/>.
+        /// Removes the entry and refreshes the list on confirmation.
+        /// </summary>
+        private void ConfirmDelete(VaultItem entry)
+        {
+            string message = string.Format(
+                GetString(Resource.String.sheet_delete_confirm_message),
+                entry.AccountName);
+
+            new AlertDialog.Builder(this)
+                .SetTitle(Resource.String.sheet_delete_confirm_title)
+                .SetMessage(message)
+                .SetPositiveButton(Resource.String.sheet_delete_confirm_yes, (s, e) =>
+                {
+                    allEntries.RemoveAll(x => x.Id == entry.Id);
+                    RefreshList();
+                    Toast.MakeText(this, Resource.String.sheet_deleted_toast, ToastLength.Short).Show();
+                })
+                .SetNegativeButton(Resource.String.sheet_delete_confirm_no, (s, e) => { })
+                .Show();
         }
 
         private void SetupBottomNavFragment(Bundle savedInstanceState)

@@ -49,6 +49,17 @@
     <string name="vault_empty_subtitle">Tap + to add your first password</string>
     <string name="vault_add_password">Add Password</string>
     <string name="vault_edit_password">Edit Password</string>
+    <string name="vault_more_options">More options</string>
+
+    <!-- Password options bottom sheet strings -->
+    <string name="sheet_option_view">View</string>
+    <string name="sheet_option_edit">Edit</string>
+    <string name="sheet_option_delete">Delete</string>
+    <string name="sheet_delete_confirm_title">Delete password?</string>
+    <string name="sheet_delete_confirm_message">This will permanently remove the entry for %1$s. This action cannot be undone.</string>
+    <string name="sheet_delete_confirm_yes">Delete</string>
+    <string name="sheet_delete_confirm_no">Cancel</string>
+    <string name="sheet_deleted_toast">Password deleted</string>
     <string name="vault_nav_vault">Vault</string>
     <string name="vault_nav_generator">Generator</string>
     <string name="vault_nav_profile">Profile</string>

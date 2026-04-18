@@ -42,6 +42,7 @@
     <color name="vaultBottomNavUnselected">#78909C</color>
     <color name="vaultDivider">#37474F</color>
     <color name="vaultEmptyText">#78909C</color>
+    <color name="deleteActionText">#E74C3C</color>
 
     <!-- Entry (Add / Edit) page colors -->
     <color name="entryBackground">#1B2838</color>
