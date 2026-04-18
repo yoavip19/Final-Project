@@ -91,5 +91,21 @@ namespace SecurioBackendFunction.Logic
                 Data = items
             };
         }
+
+        // Validates the request and permanently deletes the specified vault item from the database.
+        public async Task<ServerResponse<object>> DeleteVaultItemAsync(int itemId, int userId)
+        {
+            if (itemId <= 0)
+                return new ServerResponse<object> { Success = false, Message = "Item ID is required." };
+
+            if (userId <= 0)
+                return new ServerResponse<object> { Success = false, Message = "Invalid user ID." };
+
+            bool deleted = await _repo.DeleteVaultItemAsync(itemId, userId);
+            if (!deleted)
+                return new ServerResponse<object> { Success = false, Message = "Item not found or access denied." };
+
+            return new ServerResponse<object> { Success = true, Message = "Vault item deleted successfully." };
+        }
     }
 }

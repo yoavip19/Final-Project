@@ -11,6 +11,7 @@ using SecurioModels.DataTransferObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SecurioClient
 {
@@ -115,7 +116,7 @@ namespace SecurioClient
 
         /// <summary>
         /// Shows an <see cref="AlertDialog"/> asking the user to confirm deletion of <paramref name="entry"/>.
-        /// Removes the entry and refreshes the list on confirmation.
+        /// On confirmation, removes the entry from the server and then from the local list.
         /// </summary>
         private void ConfirmDelete(VaultItem entry)
         {
@@ -126,15 +127,41 @@ namespace SecurioClient
             new AndroidX.AppCompat.App.AlertDialog.Builder(this)
                 .SetTitle(Resource.String.sheet_delete_confirm_title)
                 .SetMessage(message)
-                .SetPositiveButton(Resource.String.sheet_delete_confirm_yes, (s, e) =>
+                .SetPositiveButton(Resource.String.sheet_delete_confirm_yes, async (s, e) =>
+                {
+                    await DeleteEntryAsync(entry);
+                })
+                .SetNegativeButton(Resource.String.sheet_delete_confirm_no, (s, e) => { })
+                .Show();
+        }
+
+        /// <summary>
+        /// Calls the server to delete <paramref name="entry"/>, then removes it from the
+        /// local list and session cache. Shows an error toast if the server call fails.
+        /// </summary>
+        private async Task DeleteEntryAsync(VaultItem entry)
+        {
+            try
+            {
+                var vaultService = new VaultService();
+                var result = await vaultService.DeleteVaultItemAsync(entry.Id);
+
+                if (result.Success)
                 {
                     allEntries.RemoveAll(x => x.Id == entry.Id);
                     SessionHelper.RemoveVaultItem(entry.Id);
                     RefreshList();
                     Toast.MakeText(this, Resource.String.sheet_deleted_toast, ToastLength.Short).Show();
-                })
-                .SetNegativeButton(Resource.String.sheet_delete_confirm_no, (s, e) => { })
-                .Show();
+                }
+                else
+                {
+                    Toast.MakeText(this, Resource.String.sheet_delete_error, ToastLength.Long).Show();
+                }
+            }
+            catch (Exception)
+            {
+                Toast.MakeText(this, Resource.String.sheet_delete_error, ToastLength.Long).Show();
+            }
         }
 
         private void SetupBottomNavFragment(Bundle savedInstanceState)

@@ -383,5 +383,81 @@ namespace SecurioBackendFunction.Tests
             Assert.False(result.Success);
             Assert.Equal("Invalid user ID.", result.Message);
         }
+
+        // ── DeleteVaultItemAsync — happy path ───────────────────────────────────
+
+        [Fact]
+        public async Task DeleteVaultItem_ValidIds_ReturnsSuccess()
+        {
+            var repoMock = new Mock<IVaultItemRepository>();
+            repoMock.Setup(r => r.DeleteVaultItemAsync(42, 1)).ReturnsAsync(true);
+            var manager = new VaultItemManager(repoMock.Object);
+
+            var result = await manager.DeleteVaultItemAsync(42, 1);
+
+            Assert.True(result.Success);
+            Assert.Equal("Vault item deleted successfully.", result.Message);
+        }
+
+        // ── DeleteVaultItemAsync — validation failures ──────────────────────────
+
+        [Fact]
+        public async Task DeleteVaultItem_ZeroItemId_ReturnsFail()
+        {
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.DeleteVaultItemAsync(0, 1);
+
+            Assert.False(result.Success);
+            Assert.Equal("Item ID is required.", result.Message);
+        }
+
+        [Fact]
+        public async Task DeleteVaultItem_NegativeItemId_ReturnsFail()
+        {
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.DeleteVaultItemAsync(-5, 1);
+
+            Assert.False(result.Success);
+            Assert.Equal("Item ID is required.", result.Message);
+        }
+
+        [Fact]
+        public async Task DeleteVaultItem_ZeroUserId_ReturnsFail()
+        {
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.DeleteVaultItemAsync(1, 0);
+
+            Assert.False(result.Success);
+            Assert.Equal("Invalid user ID.", result.Message);
+        }
+
+        [Fact]
+        public async Task DeleteVaultItem_NegativeUserId_ReturnsFail()
+        {
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.DeleteVaultItemAsync(1, -1);
+
+            Assert.False(result.Success);
+            Assert.Equal("Invalid user ID.", result.Message);
+        }
+
+        // ── DeleteVaultItemAsync — repository failures ──────────────────────────
+
+        [Fact]
+        public async Task DeleteVaultItem_RepositoryReturnsFalse_ReturnsNotFound()
+        {
+            var repoMock = new Mock<IVaultItemRepository>();
+            repoMock.Setup(r => r.DeleteVaultItemAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(false);
+            var manager = new VaultItemManager(repoMock.Object);
+
+            var result = await manager.DeleteVaultItemAsync(999, 1);
+
+            Assert.False(result.Success);
+            Assert.Equal("Item not found or access denied.", result.Message);
+        }
     }
 }

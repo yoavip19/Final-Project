@@ -65,6 +65,7 @@
     <string name="sheet_delete_confirm_yes">Delete</string>
     <string name="sheet_delete_confirm_no">Cancel</string>
     <string name="sheet_deleted_toast">Password deleted</string>
+    <string name="sheet_delete_error">Failed to delete. Please check your connection and try again.</string>
     <string name="vault_nav_vault">Vault</string>
     <string name="vault_nav_generator">Generator</string>
     <string name="vault_nav_profile">Profile</string>

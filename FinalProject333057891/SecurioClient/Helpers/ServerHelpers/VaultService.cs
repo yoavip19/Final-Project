@@ -36,5 +36,12 @@ namespace SecurioClient.Helpers.ServerHelpers
             var result = await GetAsync<List<VaultItem>>("GetVaultItems");
             return (result.Success, result.Message, result.Data);
         }
+
+        // Permanently deletes a vault item from the server.
+        public async Task<(bool Success, string Message)> DeleteVaultItemAsync(int itemId)
+        {
+            var result = await PostAsync<object>("DeleteVaultItem", new { Id = itemId });
+            return (result.Success, result.Message);
+        }
     }
 }

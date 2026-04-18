@@ -98,5 +98,18 @@ namespace SecurioBackendFunction.Repositories
             }
             return items;
         }
+
+        // Deletes a vault item by ID, enforcing ownership via UserId.
+        public async Task<bool> DeleteVaultItemAsync(int itemId, int userId)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = "DELETE FROM VaultItems WHERE Id = @id AND UserId = @uid";
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.Add("@id",  SqlDbType.Int).Value = itemId;
+            cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
+            int rows = await cmd.ExecuteNonQueryAsync();
+            return rows > 0;
+        }
     }
 }

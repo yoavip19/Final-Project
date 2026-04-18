@@ -10,5 +10,6 @@ namespace SecurioBackendFunction.Repositories
         Task<int> AddVaultItemAsync(VaultItem item);
         Task<bool> UpdateVaultItemAsync(VaultItem item);
         Task<List<VaultItem>> GetVaultItemsByUserIdAsync(int userId);
+        Task<bool> DeleteVaultItemAsync(int itemId, int userId);
     }
 }
