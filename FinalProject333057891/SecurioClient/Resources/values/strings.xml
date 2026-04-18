@@ -41,6 +41,11 @@
     <string name="login_error_empty_fields">Please fill in all fields</string>
     <string name="login_error_invalid_email">Please enter a valid email address</string>
 
+    <!-- Splash / loading screen strings -->
+    <string name="splash_app_name">Securio</string>
+    <string name="splash_tagline">Your passwords, locked and loaded</string>
+    <string name="splash_verifying">Verifying your session…</string>
+
     <!-- Vault page strings -->
     <string name="vault_title">My Vault</string>
     <string name="vault_subtitle">Your saved passwords</string>

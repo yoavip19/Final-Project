@@ -7,7 +7,7 @@ using SecurioClient.Helpers.ServerHelpers;
 
 namespace SecurioClient
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
         protected override async void OnCreate(Bundle savedInstanceState)
