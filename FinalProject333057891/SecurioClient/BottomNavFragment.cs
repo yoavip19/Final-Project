@@ -15,7 +15,27 @@ namespace SecurioClient
         /// <summary>Raised when the user selects a different tab. The string is "vault", "generator", or "profile".</summary>
         public event EventHandler<string> TabSelected;
 
+        private const string ArgSelectedTab = "selected_tab";
         private string currentTab = "vault";
+
+        /// <summary>
+        /// Creates a new instance with the given tab pre-selected.
+        /// </summary>
+        public static BottomNavFragment NewInstance(string selectedTab)
+        {
+            var fragment = new BottomNavFragment();
+            var args = new Bundle();
+            args.PutString(ArgSelectedTab, selectedTab);
+            fragment.Arguments = args;
+            return fragment;
+        }
+
+        public override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            if (Arguments != null && Arguments.ContainsKey(ArgSelectedTab))
+                currentTab = Arguments.GetString(ArgSelectedTab, "vault");
+        }
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {

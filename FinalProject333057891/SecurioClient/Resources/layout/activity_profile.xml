@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/vaultBackground">
+
+    <!-- Bottom navigation fragment container -->
+    <FrameLayout
+        android:id="@+id/frameBottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+
+    <!-- Scrollable content above the bottom nav -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/frameBottomNav"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="48dp"
+            android:paddingBottom="32dp">
+
+            <!-- Header icon -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👤"
+                android:textSize="36sp"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/textViewProfileTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/profile_title"
+                style="@style/VaultTitleStyle"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Subtitle -->
+            <TextView
+                android:id="@+id/textViewProfileSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/profile_subtitle"
+                style="@style/VaultSubtitleStyle"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Loading indicator -->
+            <ProgressBar
+                android:id="@+id/progressBarProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+
+            <!-- Profile stats card -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardProfileStats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="@color/entryCardBackground"
+                android:layout_marginBottom="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <!-- Username -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_label_username"
+                        android:textSize="12sp"
+                        android:textColor="@color/profileStatLabel"
+                        android:fontFamily="sans-serif"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textViewProfileUsername"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:textColor="@color/profileStatValue"
+                        android:fontFamily="sans-serif-medium"
+                        android:drawableStart="@android:drawable/ic_menu_myplaces"
+                        android:drawablePadding="8dp"
+                        android:layout_marginBottom="20dp" />
+
+                    <!-- Email -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_label_email"
+                        android:textSize="12sp"
+                        android:textColor="@color/profileStatLabel"
+                        android:fontFamily="sans-serif"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textViewProfileEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:textColor="@color/profileStatValue"
+                        android:fontFamily="sans-serif"
+                        android:drawableStart="@android:drawable/ic_dialog_email"
+                        android:drawablePadding="8dp"
+                        android:layout_marginBottom="20dp" />
+
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/signupDivider"
+                        android:layout_marginBottom="20dp" />
+
+                    <!-- Last Login -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_label_last_login"
+                        android:textSize="12sp"
+                        android:textColor="@color/profileStatLabel"
+                        android:fontFamily="sans-serif"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textViewProfileLastLogin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
+                        android:textColor="@color/profileStatValue"
+                        android:fontFamily="sans-serif"
+                        android:drawableStart="@android:drawable/ic_menu_recent_history"
+                        android:drawablePadding="8dp"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Last Master Password Change -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_label_last_password_change"
+                        android:textSize="12sp"
+                        android:textColor="@color/profileStatLabel"
+                        android:fontFamily="sans-serif"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textViewProfileLastPasswordChange"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
+                        android:textColor="@color/profileStatValue"
+                        android:fontFamily="sans-serif"
+                        android:drawableStart="@android:drawable/ic_lock_idle_lock"
+                        android:drawablePadding="8dp"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Account Created -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_label_created_at"
+                        android:textSize="12sp"
+                        android:textColor="@color/profileStatLabel"
+                        android:fontFamily="sans-serif"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textViewProfileCreatedAt"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
+                        android:textColor="@color/profileStatValue"
+                        android:fontFamily="sans-serif"
+                        android:drawableStart="@android:drawable/ic_menu_today"
+                        android:drawablePadding="8dp"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/signupDivider"
+                        android:layout_marginBottom="20dp" />
+
+                    <!-- Password Count -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_label_password_count"
+                        android:textSize="12sp"
+                        android:textColor="@color/profileStatLabel"
+                        android:fontFamily="sans-serif"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textViewProfilePasswordCount"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:textColor="@color/colorAccent"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium"
+                        android:drawableStart="@android:drawable/ic_lock_idle_lock"
+                        android:drawablePadding="8dp" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Action buttons -->
+
+            <!-- Edit Credentials button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonProfileEdit"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="@string/profile_button_edit"
+                android:textSize="16sp"
+                android:textColor="@color/entryButtonText"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:fontFamily="sans-serif-medium"
+                android:backgroundTint="@color/entryButtonBackground"
+                app:cornerRadius="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Log Out button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonProfileLogout"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="@string/profile_button_logout"
+                android:textSize="16sp"
+                android:textColor="@color/entryButtonText"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:fontFamily="sans-serif-medium"
+                android:backgroundTint="@color/profileLogoutButton"
+                app:cornerRadius="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Remove Account button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonProfileDelete"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="@string/profile_button_delete"
+                android:textSize="16sp"
+                android:textColor="@color/entryButtonText"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:fontFamily="sans-serif-medium"
+                android:backgroundTint="@color/profileDeleteButton"
+                app:cornerRadius="12dp"
+                android:layout_marginBottom="16dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>
