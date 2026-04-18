@@ -30,6 +30,12 @@ namespace SecurioClient
         public const string ExtraSiteName = "EXTRA_SITE_NAME";
         public const string ExtraUsername = "EXTRA_USERNAME";
         public const string ExtraNotes = "EXTRA_NOTES";
+        // Existing encrypted fields — passed in so the user does not have to re-enter the password.
+        public const string ExtraIV = "EXTRA_IV";
+        public const string ExtraTag = "EXTRA_TAG";
+        public const string ExtraCipherText = "EXTRA_CIPHER_TEXT";
+        public const string ExtraSha1Hash = "EXTRA_SHA1_HASH";
+        public const string ExtraIsLeaked = "EXTRA_IS_LEAKED";
 
         // Result extras returned to the caller.
         public const string ResultEntryId = "RESULT_ENTRY_ID";
@@ -52,11 +58,13 @@ namespace SecurioClient
         private TextInputEditText editTextSiteName;
         private TextInputEditText editTextUsername;
         private TextInputEditText editTextPassword;
+        private TextInputEditText editTextConfirmPassword;
         private TextInputEditText editTextNotes;
 
         private TextView textViewSiteNameError;
         private TextView textViewUsernameError;
         private TextView textViewPasswordError;
+        private TextView textViewConfirmPasswordError;
         private TextView textViewGeneralError;
 
         private ProgressBar progressBarStrength;
@@ -98,11 +106,13 @@ namespace SecurioClient
             editTextSiteName = FindViewById<TextInputEditText>(Resource.Id.editTextEntrySiteName);
             editTextUsername = FindViewById<TextInputEditText>(Resource.Id.editTextEntryUsername);
             editTextPassword = FindViewById<TextInputEditText>(Resource.Id.editTextEntryPassword);
+            editTextConfirmPassword = FindViewById<TextInputEditText>(Resource.Id.editTextEntryConfirmPassword);
             editTextNotes = FindViewById<TextInputEditText>(Resource.Id.editTextEntryNotes);
 
             textViewSiteNameError = FindViewById<TextView>(Resource.Id.textViewEntrySiteNameError);
             textViewUsernameError = FindViewById<TextView>(Resource.Id.textViewEntryUsernameError);
             textViewPasswordError = FindViewById<TextView>(Resource.Id.textViewEntryPasswordError);
+            textViewConfirmPasswordError = FindViewById<TextView>(Resource.Id.textViewEntryConfirmPasswordError);
             textViewGeneralError = FindViewById<TextView>(Resource.Id.textViewEntryGeneralError);
 
             progressBarStrength = FindViewById<ProgressBar>(Resource.Id.progressBarEntryStrength);
@@ -118,6 +128,10 @@ namespace SecurioClient
             textViewTitle.Text = GetString(Resource.String.entry_title_edit);
             textViewSubtitle.Text = GetString(Resource.String.entry_subtitle_edit);
             buttonSave.Text = GetString(Resource.String.entry_button_update);
+
+            // Update hints to make clear that the password field is optional in edit mode.
+            editTextPassword.Hint = GetString(Resource.String.entry_password_edit_hint);
+            editTextConfirmPassword.Hint = GetString(Resource.String.entry_confirm_password_edit_hint);
         }
 
         /// <summary>
@@ -133,15 +147,16 @@ namespace SecurioClient
 
         /// <summary>
         /// Pre-fills the form fields with the data passed via the launching Intent.
-        /// The password field is left blank because the vault stores only the encrypted
-        /// form — the user must re-enter or generate a new password.
+        /// The password fields are left blank — the user may enter a new password or leave
+        /// them empty to keep the existing encrypted data unchanged.
         /// </summary>
         private void PopulateFieldsFromIntent()
         {
             editTextSiteName.Text = Intent.GetStringExtra(ExtraSiteName) ?? string.Empty;
             editTextUsername.Text = Intent.GetStringExtra(ExtraUsername) ?? string.Empty;
             editTextNotes.Text = Intent.GetStringExtra(ExtraNotes) ?? string.Empty;
-            // Password is intentionally left empty — the vault only stores encrypted ciphertext.
+            // Password and confirm password are intentionally left empty.
+            // Existing encrypted data is carried via ExtraIV/ExtraTag/ExtraCipherText/ExtraSha1Hash.
         }
 
         private void SetupEventHandlers()
@@ -154,7 +169,9 @@ namespace SecurioClient
 
             buttonGeneratePassword.Click += (s, e) =>
             {
-                editTextPassword.Text = ValidationHelper.GenerateStrongPassword();
+                string generated = ValidationHelper.GenerateStrongPassword();
+                editTextPassword.Text = generated;
+                editTextConfirmPassword.Text = generated;
             };
 
             buttonSave.Click += async (s, e) => await OnUpdateClicked();
@@ -187,6 +204,16 @@ namespace SecurioClient
             editTextPassword.AddTextChangedListener(new SimpleTextWatcher(text =>
             {
                 UpdatePasswordStrengthIndicator(text);
+
+                // Re-validate confirm password match whenever the password field changes.
+                if (!string.IsNullOrEmpty(editTextConfirmPassword.Text))
+                    ValidatePasswordsMatch();
+            }));
+
+            // Real-time validation: confirm password
+            editTextConfirmPassword.AddTextChangedListener(new SimpleTextWatcher(_ =>
+            {
+                ValidatePasswordsMatch();
             }));
         }
 
@@ -199,9 +226,10 @@ namespace SecurioClient
             string siteName = editTextSiteName.Text?.Trim();
             string username = editTextUsername.Text?.Trim();
             string password = editTextPassword.Text;
+            string confirmPassword = editTextConfirmPassword.Text;
             string notes = editTextNotes.Text?.Trim();
 
-            if (!ValidateInputs(siteName, username, password))
+            if (!ValidateInputs(siteName, username, password, confirmPassword))
                 return;
 
             if (IsDuplicate(siteName, username))
@@ -214,21 +242,38 @@ namespace SecurioClient
 
             try
             {
-                // Encrypt the password with AES-GCM using the session vault key.
-                string vaultKey = SessionHelper.SessionVaultKey;
-                var (iv, tag, cipherText) = EncryptionHelper.EncryptAesGcm(password, vaultKey);
-                string sha1Hash = EncryptionHelper.ComputeSha1Hash(password);
+                string iv, tag, cipherText, sha1Hash;
+                bool isLeaked;
+
+                if (!string.IsNullOrEmpty(password))
+                {
+                    // User entered a new password — encrypt it.
+                    string vaultKey = SessionHelper.SessionVaultKey;
+                    (iv, tag, cipherText) = EncryptionHelper.EncryptAesGcm(password, vaultKey);
+                    sha1Hash = EncryptionHelper.ComputeSha1Hash(password);
+                    isLeaked = false;
+                }
+                else
+                {
+                    // Password left blank — keep the existing encrypted data.
+                    iv         = Intent.GetStringExtra(ExtraIV) ?? string.Empty;
+                    tag        = Intent.GetStringExtra(ExtraTag) ?? string.Empty;
+                    cipherText = Intent.GetStringExtra(ExtraCipherText) ?? string.Empty;
+                    sha1Hash   = Intent.GetStringExtra(ExtraSha1Hash) ?? string.Empty;
+                    isLeaked   = Intent.GetBooleanExtra(ExtraIsLeaked, false);
+                }
 
                 var vaultItem = new VaultItem
                 {
-                    Id = entryId,
-                    AccountName = siteName,
-                    AccountUsername = username,
-                    IV = iv,
-                    Tag = tag,
-                    CipherText = cipherText,
-                    Notes = notes ?? string.Empty,
-                    Sha1Hash = sha1Hash
+                    Id              = entryId,
+                    AccountName     = siteName,
+                    AccountUsername  = username,
+                    IV              = iv,
+                    Tag             = tag,
+                    CipherText      = cipherText,
+                    Notes           = notes ?? string.Empty,
+                    Sha1Hash        = sha1Hash,
+                    IsLeaked        = isLeaked
                 };
 
                 var vaultService = new VaultService();
@@ -246,7 +291,7 @@ namespace SecurioClient
                     resultIntent.PutExtra(ResultTag, tag);
                     resultIntent.PutExtra(ResultCipherText, cipherText);
                     resultIntent.PutExtra(ResultSha1Hash, sha1Hash);
-                    resultIntent.PutExtra(ResultIsLeaked, result.Data?.IsLeaked ?? false);
+                    resultIntent.PutExtra(ResultIsLeaked, result.Data?.IsLeaked ?? isLeaked);
 
                     SetResult(Result.Ok, resultIntent);
 
@@ -274,7 +319,7 @@ namespace SecurioClient
 
         // ── Validation ─────────────────────────────────────────
 
-        private bool ValidateInputs(string siteName, string username, string password)
+        private bool ValidateInputs(string siteName, string username, string password, string confirmPassword)
         {
             bool valid = true;
 
@@ -290,10 +335,25 @@ namespace SecurioClient
                 valid = false;
             }
 
-            if (string.IsNullOrEmpty(password))
+            // In edit mode the password is optional; only validate when provided.
+            if (!string.IsNullOrEmpty(password) || !string.IsNullOrEmpty(confirmPassword))
             {
-                ShowError(textViewPasswordError, GetString(Resource.String.entry_error_password_required));
-                valid = false;
+                // If one is set, both must be set and equal.
+                if (string.IsNullOrEmpty(password))
+                {
+                    ShowError(textViewPasswordError, GetString(Resource.String.entry_error_password_required));
+                    valid = false;
+                }
+                else if (string.IsNullOrEmpty(confirmPassword))
+                {
+                    ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_confirm_password_required));
+                    valid = false;
+                }
+                else if (password != confirmPassword)
+                {
+                    ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
+                    valid = false;
+                }
             }
 
             return valid;
@@ -308,6 +368,25 @@ namespace SecurioClient
             return existingEntries.Any(e =>
                 string.Equals(e.AccountName, siteName, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(e.AccountUsername, username, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Shows or hides the confirm password mismatch error during real-time validation.
+        /// Only fires when the confirm field is non-empty.
+        /// </summary>
+        private void ValidatePasswordsMatch()
+        {
+            string password = editTextPassword.Text;
+            string confirm = editTextConfirmPassword.Text;
+            if (string.IsNullOrEmpty(confirm))
+            {
+                HideError(textViewConfirmPasswordError);
+                return;
+            }
+            if (password != confirm)
+                ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
+            else
+                HideError(textViewConfirmPasswordError);
         }
 
         // ── Password strength indicator (informational) ────────
@@ -368,6 +447,7 @@ namespace SecurioClient
             HideError(textViewSiteNameError);
             HideError(textViewUsernameError);
             HideError(textViewPasswordError);
+            HideError(textViewConfirmPasswordError);
             HideError(textViewGeneralError);
         }
 
@@ -379,6 +459,7 @@ namespace SecurioClient
             editTextSiteName.Enabled = !isLoading;
             editTextUsername.Enabled = !isLoading;
             editTextPassword.Enabled = !isLoading;
+            editTextConfirmPassword.Enabled = !isLoading;
             editTextNotes.Enabled = !isLoading;
         }
     }

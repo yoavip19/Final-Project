@@ -90,4 +90,9 @@
     <string name="entry_updated_success">Password updated successfully</string>
     <string name="entry_error_save_failed">Unable to save password. Please check your connection and try again.</string>
     <string name="entry_error_update_failed">Unable to update password. Please check your connection and try again.</string>
+    <string name="entry_confirm_password_hint">Confirm Password</string>
+    <string name="entry_confirm_password_edit_hint">Confirm New Password</string>
+    <string name="entry_error_confirm_password_required">Please confirm your password</string>
+    <string name="entry_error_passwords_mismatch">Passwords do not match</string>
+    <string name="entry_password_edit_hint">New Password (leave blank to keep current)</string>
 </resources>

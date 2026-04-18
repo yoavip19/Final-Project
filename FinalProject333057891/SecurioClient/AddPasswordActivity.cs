@@ -45,11 +45,13 @@ namespace SecurioClient
         private TextInputEditText editTextSiteName;
         private TextInputEditText editTextUsername;
         private TextInputEditText editTextPassword;
+        private TextInputEditText editTextConfirmPassword;
         private TextInputEditText editTextNotes;
 
         private TextView textViewSiteNameError;
         private TextView textViewUsernameError;
         private TextView textViewPasswordError;
+        private TextView textViewConfirmPasswordError;
         private TextView textViewGeneralError;
 
         private ProgressBar progressBarStrength;
@@ -87,11 +89,13 @@ namespace SecurioClient
             editTextSiteName = FindViewById<TextInputEditText>(Resource.Id.editTextEntrySiteName);
             editTextUsername = FindViewById<TextInputEditText>(Resource.Id.editTextEntryUsername);
             editTextPassword = FindViewById<TextInputEditText>(Resource.Id.editTextEntryPassword);
+            editTextConfirmPassword = FindViewById<TextInputEditText>(Resource.Id.editTextEntryConfirmPassword);
             editTextNotes = FindViewById<TextInputEditText>(Resource.Id.editTextEntryNotes);
 
             textViewSiteNameError = FindViewById<TextView>(Resource.Id.textViewEntrySiteNameError);
             textViewUsernameError = FindViewById<TextView>(Resource.Id.textViewEntryUsernameError);
             textViewPasswordError = FindViewById<TextView>(Resource.Id.textViewEntryPasswordError);
+            textViewConfirmPasswordError = FindViewById<TextView>(Resource.Id.textViewEntryConfirmPasswordError);
             textViewGeneralError = FindViewById<TextView>(Resource.Id.textViewEntryGeneralError);
 
             progressBarStrength = FindViewById<ProgressBar>(Resource.Id.progressBarEntryStrength);
@@ -161,6 +165,16 @@ namespace SecurioClient
             editTextPassword.AddTextChangedListener(new SimpleTextWatcher(text =>
             {
                 UpdatePasswordStrengthIndicator(text);
+
+                // Re-validate confirm password if the user has already typed in it.
+                if (!string.IsNullOrEmpty(editTextConfirmPassword.Text))
+                    ValidatePasswordsMatch();
+            }));
+
+            // Real-time validation: confirm password
+            editTextConfirmPassword.AddTextChangedListener(new SimpleTextWatcher(_ =>
+            {
+                ValidatePasswordsMatch();
             }));
         }
 
@@ -173,9 +187,10 @@ namespace SecurioClient
             string siteName = editTextSiteName.Text?.Trim();
             string username = editTextUsername.Text?.Trim();
             string password = editTextPassword.Text;
+            string confirmPassword = editTextConfirmPassword.Text;
             string notes = editTextNotes.Text?.Trim();
 
-            if (!ValidateInputs(siteName, username, password))
+            if (!ValidateInputs(siteName, username, password, confirmPassword))
                 return;
 
             if (IsDuplicate(siteName, username))
@@ -247,7 +262,7 @@ namespace SecurioClient
 
         // ── Validation ─────────────────────────────────────────
 
-        private bool ValidateInputs(string siteName, string username, string password)
+        private bool ValidateInputs(string siteName, string username, string password, string confirmPassword)
         {
             bool valid = true;
 
@@ -269,6 +284,17 @@ namespace SecurioClient
                 valid = false;
             }
 
+            if (string.IsNullOrEmpty(confirmPassword))
+            {
+                ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_confirm_password_required));
+                valid = false;
+            }
+            else if (!string.IsNullOrEmpty(password) && password != confirmPassword)
+            {
+                ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
+                valid = false;
+            }
+
             // NOTE: Weak passwords are intentionally allowed because the user cannot
             // control what password policy external sites enforce (e.g. a 4-digit PIN).
 
@@ -284,6 +310,25 @@ namespace SecurioClient
             return existingEntries.Any(e =>
                 string.Equals(e.AccountName, siteName, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(e.AccountUsername, username, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Validates that the confirm password field matches the password field and
+        /// shows or hides the error accordingly. Called during real-time validation.
+        /// </summary>
+        private void ValidatePasswordsMatch()
+        {
+            string password = editTextPassword.Text;
+            string confirm = editTextConfirmPassword.Text;
+            if (string.IsNullOrEmpty(confirm))
+            {
+                HideError(textViewConfirmPasswordError);
+                return;
+            }
+            if (password != confirm)
+                ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
+            else
+                HideError(textViewConfirmPasswordError);
         }
 
         // ── Password strength indicator (informational) ────────
@@ -344,6 +389,7 @@ namespace SecurioClient
             HideError(textViewSiteNameError);
             HideError(textViewUsernameError);
             HideError(textViewPasswordError);
+            HideError(textViewConfirmPasswordError);
             HideError(textViewGeneralError);
         }
 
@@ -355,6 +401,7 @@ namespace SecurioClient
             editTextSiteName.Enabled = !isLoading;
             editTextUsername.Enabled = !isLoading;
             editTextPassword.Enabled = !isLoading;
+            editTextConfirmPassword.Enabled = !isLoading;
             editTextNotes.Enabled = !isLoading;
         }
     }

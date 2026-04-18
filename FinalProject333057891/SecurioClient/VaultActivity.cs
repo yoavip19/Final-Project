@@ -93,6 +93,11 @@ namespace SecurioClient
                 intent.PutExtra(EditPasswordActivity.ExtraSiteName, entry.AccountName);
                 intent.PutExtra(EditPasswordActivity.ExtraUsername, entry.AccountUsername);
                 intent.PutExtra(EditPasswordActivity.ExtraNotes, entry.Notes);
+                intent.PutExtra(EditPasswordActivity.ExtraIV, entry.IV);
+                intent.PutExtra(EditPasswordActivity.ExtraTag, entry.Tag);
+                intent.PutExtra(EditPasswordActivity.ExtraCipherText, entry.CipherText);
+                intent.PutExtra(EditPasswordActivity.ExtraSha1Hash, entry.Sha1Hash);
+                intent.PutExtra(EditPasswordActivity.ExtraIsLeaked, entry.IsLeaked);
                 StartActivityForResult(intent, EditPasswordActivity.RequestCodeEdit);
             };
 
