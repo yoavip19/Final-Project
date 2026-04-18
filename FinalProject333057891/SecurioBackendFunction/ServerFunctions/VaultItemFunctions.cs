@@ -77,5 +77,59 @@ namespace SecurioBackendFunction.ServerFunctions
                     new ServerResponse<VaultItem> { Success = false, Message = "An internal error occurred." });
             }
         }
+
+        // Receives an updated vault item from the client, validates the session, and persists the changes.
+        [Function("UpdateVaultItem")]
+        public async Task<IActionResult> UpdateVaultItem(
+            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+        {
+            try
+            {
+                var authHeader = req.Headers["Authorization"].FirstOrDefault();
+                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+                {
+                    return new UnauthorizedObjectResult(
+                        new ServerResponse<VaultItem> { Success = false, Message = "Unauthorized." });
+                }
+
+                var token = authHeader.Substring("Bearer ".Length);
+                var principal = JwtHelper.ValidateToken(token);
+
+                if (principal == null)
+                {
+                    return new UnauthorizedObjectResult(
+                        new ServerResponse<VaultItem> { Success = false, Message = "Unauthorized." });
+                }
+
+                int userId = JwtHelper.GetUserIdFromPrincipal(principal);
+                if (userId <= 0)
+                {
+                    return new UnauthorizedObjectResult(
+                        new ServerResponse<VaultItem> { Success = false, Message = "Unauthorized." });
+                }
+
+                var body = await new StreamReader(req.Body).ReadToEndAsync();
+                var item = JsonConvert.DeserializeObject<VaultItem>(body);
+
+                if (item == null)
+                {
+                    return new BadRequestObjectResult(
+                        new ServerResponse<VaultItem> { Success = false, Message = "Invalid request body." });
+                }
+
+                // Bind the authenticated user's ID so the client cannot spoof ownership.
+                item.UserId = userId;
+
+                var result = await _vaultItemManager.UpdateVaultItemAsync(item);
+                return result.Success
+                    ? new OkObjectResult(result)
+                    : new BadRequestObjectResult(result);
+            }
+            catch (Exception)
+            {
+                return new BadRequestObjectResult(
+                    new ServerResponse<VaultItem> { Success = false, Message = "An internal error occurred." });
+            }
+        }
     }
 }

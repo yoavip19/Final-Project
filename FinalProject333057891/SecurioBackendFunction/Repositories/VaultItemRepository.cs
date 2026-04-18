@@ -31,5 +31,36 @@ namespace SecurioBackendFunction.Repositories
             cmd.Parameters.Add("@leaked", SqlDbType.Bit).Value      = item.IsLeaked;
             return (int)await cmd.ExecuteScalarAsync();
         }
+
+        // Updates an existing vault item. Only the owning user's row is affected.
+        public async Task<bool> UpdateVaultItemAsync(VaultItem item)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = @"UPDATE VaultItems
+                        SET AccountName     = @name,
+                            AccountUsername  = @uname,
+                            IV              = @iv,
+                            Tag             = @tag,
+                            CipherText      = @cipher,
+                            Notes           = @notes,
+                            Sha1Hash        = @hash,
+                            IsLeaked        = @leaked,
+                            LastUpdate      = GETDATE()
+                        WHERE Id = @id AND UserId = @uid";
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.Add("@id",     SqlDbType.Int).Value      = item.Id;
+            cmd.Parameters.Add("@uid",    SqlDbType.Int).Value      = item.UserId;
+            cmd.Parameters.Add("@name",   SqlDbType.NVarChar).Value = item.AccountName;
+            cmd.Parameters.Add("@uname",  SqlDbType.NVarChar).Value = (object)item.AccountUsername ?? DBNull.Value;
+            cmd.Parameters.Add("@iv",     SqlDbType.NVarChar).Value = item.IV;
+            cmd.Parameters.Add("@tag",    SqlDbType.NVarChar).Value = item.Tag;
+            cmd.Parameters.Add("@cipher", SqlDbType.NVarChar).Value = item.CipherText;
+            cmd.Parameters.Add("@notes",  SqlDbType.NVarChar).Value = (object)item.Notes ?? DBNull.Value;
+            cmd.Parameters.Add("@hash",   SqlDbType.NVarChar).Value = item.Sha1Hash;
+            cmd.Parameters.Add("@leaked", SqlDbType.Bit).Value      = item.IsLeaked;
+            int rows = await cmd.ExecuteNonQueryAsync();
+            return rows > 0;
+        }
     }
 }

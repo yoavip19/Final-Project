@@ -178,5 +178,154 @@ namespace SecurioBackendFunction.Tests
             Assert.False(result.Success);
             Assert.Equal("Database error.", result.Message);
         }
+
+        // ── UpdateVaultItemAsync — happy path ───────────────────────────────────
+
+        [Fact]
+        public async Task UpdateVaultItem_ValidItem_ReturnsSuccess()
+        {
+            var repoMock = new Mock<IVaultItemRepository>();
+            repoMock.Setup(r => r.UpdateVaultItemAsync(It.IsAny<VaultItem>())).ReturnsAsync(true);
+            var manager = new VaultItemManager(repoMock.Object);
+
+            var item = ValidItem();
+            item.Id = 42;
+            var result = await manager.UpdateVaultItemAsync(item);
+
+            Assert.True(result.Success);
+            Assert.Equal("Vault item updated successfully.", result.Message);
+            Assert.NotNull(result.Data);
+            Assert.Equal(42, result.Data.Id);
+        }
+
+        // ── UpdateVaultItemAsync — validation failures ──────────────────────────
+
+        [Fact]
+        public async Task UpdateVaultItem_ZeroId_ReturnsFail()
+        {
+            var item = ValidItem();
+            item.Id = 0;
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.UpdateVaultItemAsync(item);
+
+            Assert.False(result.Success);
+            Assert.Equal("Item ID is required.", result.Message);
+        }
+
+        [Fact]
+        public async Task UpdateVaultItem_NegativeId_ReturnsFail()
+        {
+            var item = ValidItem();
+            item.Id = -1;
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.UpdateVaultItemAsync(item);
+
+            Assert.False(result.Success);
+            Assert.Equal("Item ID is required.", result.Message);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData(null)]
+        public async Task UpdateVaultItem_MissingAccountName_ReturnsFail(string? accountName)
+        {
+            var item = ValidItem();
+            item.Id = 1;
+            item.AccountName = accountName!;
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.UpdateVaultItemAsync(item);
+
+            Assert.False(result.Success);
+            Assert.Equal("Account name is required.", result.Message);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData(null)]
+        public async Task UpdateVaultItem_MissingCipherText_ReturnsFail(string? cipherText)
+        {
+            var item = ValidItem();
+            item.Id = 1;
+            item.CipherText = cipherText!;
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.UpdateVaultItemAsync(item);
+
+            Assert.False(result.Success);
+            Assert.Equal("CipherText is required.", result.Message);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData(null)]
+        public async Task UpdateVaultItem_MissingIV_ReturnsFail(string? iv)
+        {
+            var item = ValidItem();
+            item.Id = 1;
+            item.IV = iv!;
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.UpdateVaultItemAsync(item);
+
+            Assert.False(result.Success);
+            Assert.Equal("IV is required.", result.Message);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData(null)]
+        public async Task UpdateVaultItem_MissingTag_ReturnsFail(string? tag)
+        {
+            var item = ValidItem();
+            item.Id = 1;
+            item.Tag = tag!;
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.UpdateVaultItemAsync(item);
+
+            Assert.False(result.Success);
+            Assert.Equal("Tag is required.", result.Message);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData(null)]
+        public async Task UpdateVaultItem_MissingHash_ReturnsFail(string? sha1Hash)
+        {
+            var item = ValidItem();
+            item.Id = 1;
+            item.Sha1Hash = sha1Hash!;
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.UpdateVaultItemAsync(item);
+
+            Assert.False(result.Success);
+            Assert.Equal("Sha1Hash is required.", result.Message);
+        }
+
+        // ── UpdateVaultItemAsync — repository failures ──────────────────────────
+
+        [Fact]
+        public async Task UpdateVaultItem_RepositoryReturnsFalse_ReturnsNotFound()
+        {
+            var repoMock = new Mock<IVaultItemRepository>();
+            repoMock.Setup(r => r.UpdateVaultItemAsync(It.IsAny<VaultItem>())).ReturnsAsync(false);
+            var manager = new VaultItemManager(repoMock.Object);
+
+            var item = ValidItem();
+            item.Id = 999;
+            var result = await manager.UpdateVaultItemAsync(item);
+
+            Assert.False(result.Success);
+            Assert.Equal("Item not found or access denied.", result.Message);
+        }
     }
 }

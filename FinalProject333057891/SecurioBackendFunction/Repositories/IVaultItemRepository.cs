@@ -7,5 +7,6 @@ namespace SecurioBackendFunction.Repositories
     public interface IVaultItemRepository
     {
         Task<int> AddVaultItemAsync(VaultItem item);
+        Task<bool> UpdateVaultItemAsync(VaultItem item);
     }
 }

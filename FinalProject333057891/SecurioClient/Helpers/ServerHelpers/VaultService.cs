@@ -22,5 +22,12 @@ namespace SecurioClient.Helpers.ServerHelpers
             var result = await PostAsync<VaultItem>("AddVaultItem", item);
             return (result.Success, result.Message, result.Data);
         }
+
+        // Sends an updated vault item to the server for persistence.
+        public async Task<(bool Success, string Message, VaultItem Data)> UpdateVaultItemAsync(VaultItem item)
+        {
+            var result = await PostAsync<VaultItem>("UpdateVaultItem", item);
+            return (result.Success, result.Message, result.Data);
+        }
     }
 }

@@ -86,7 +86,13 @@ namespace SecurioClient
 
             sheet.EditClicked += (s, e) =>
             {
-                Toast.MakeText(this, $"Edit: {entry.AccountName} — coming soon!", ToastLength.Short).Show();
+                SyncEntryCache();
+                var intent = new Intent(this, typeof(EditPasswordActivity));
+                intent.PutExtra(EditPasswordActivity.ExtraEntryId, entry.Id);
+                intent.PutExtra(EditPasswordActivity.ExtraSiteName, entry.AccountName);
+                intent.PutExtra(EditPasswordActivity.ExtraUsername, entry.AccountUsername);
+                intent.PutExtra(EditPasswordActivity.ExtraNotes, entry.Notes);
+                StartActivityForResult(intent, EditPasswordActivity.RequestCodeEdit);
             };
 
             sheet.DeleteClicked += (s, e) => ConfirmDelete(entry);
@@ -178,6 +184,19 @@ namespace SecurioClient
                     AccountUsername = data.GetStringExtra(AddPasswordActivity.ResultUsername),
                     Notes = data.GetStringExtra(AddPasswordActivity.ResultNotes)
                 });
+
+                RefreshList();
+            }
+            else if (requestCode == EditPasswordActivity.RequestCodeEdit)
+            {
+                int editedId = data.GetIntExtra(EditPasswordActivity.ResultEntryId, 0);
+                var existing = allEntries.FirstOrDefault(e => e.Id == editedId);
+                if (existing != null)
+                {
+                    existing.AccountName = data.GetStringExtra(EditPasswordActivity.ResultSiteName);
+                    existing.AccountUsername = data.GetStringExtra(EditPasswordActivity.ResultUsername);
+                    existing.Notes = data.GetStringExtra(EditPasswordActivity.ResultNotes);
+                }
 
                 RefreshList();
             }
