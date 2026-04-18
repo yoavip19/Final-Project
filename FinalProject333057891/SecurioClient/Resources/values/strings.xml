@@ -83,4 +83,6 @@
     <string name="entry_error_duplicate">An entry with this site name and username already exists</string>
     <string name="entry_saved_success">Password saved successfully</string>
     <string name="entry_updated_success">Password updated successfully</string>
+    <string name="entry_error_save_failed">Unable to save password. Please check your connection and try again.</string>
+    <string name="entry_error_update_failed">Unable to update password. Please check your connection and try again.</string>
 </resources>

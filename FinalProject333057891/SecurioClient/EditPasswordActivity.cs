@@ -253,7 +253,7 @@ namespace SecurioClient
             }
             catch (Exception ex)
             {
-                ShowError(textViewGeneralError, "Unable to update password. Please check your connection and try again.");
+                ShowError(textViewGeneralError, GetString(Resource.String.entry_error_update_failed));
                 System.Diagnostics.Debug.WriteLine($"[EDIT PASSWORD ERROR] {ex.Message}");
             }
             finally

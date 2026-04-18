@@ -226,7 +226,7 @@ namespace SecurioClient
             }
             catch (Exception ex)
             {
-                ShowError(textViewGeneralError, "Unable to save password. Please check your connection and try again.");
+                ShowError(textViewGeneralError, GetString(Resource.String.entry_error_save_failed));
                 System.Diagnostics.Debug.WriteLine($"[ADD PASSWORD ERROR] {ex.Message}");
             }
             finally
