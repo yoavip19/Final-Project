@@ -111,6 +111,7 @@
 
 				<!-- Password -->
 				<com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayoutEntryPassword"
                     style="@style/SignupInputLayoutStyle"
                     app:passwordToggleEnabled="true">
 					<com.google.android.material.textfield.TextInputEditText
@@ -158,6 +159,7 @@
 
 				<!-- Confirm Password -->
 				<com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayoutEntryConfirmPassword"
                     style="@style/SignupInputLayoutStyle"
                     app:passwordToggleEnabled="true">
 					<com.google.android.material.textfield.TextInputEditText

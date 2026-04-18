@@ -55,6 +55,9 @@ namespace SecurioClient
         private TextView textViewTitle;
         private TextView textViewSubtitle;
 
+        private TextInputLayout textInputLayoutPassword;
+        private TextInputLayout textInputLayoutConfirmPassword;
+
         private TextInputEditText editTextSiteName;
         private TextInputEditText editTextUsername;
         private TextInputEditText editTextPassword;
@@ -103,6 +106,9 @@ namespace SecurioClient
             textViewTitle = FindViewById<TextView>(Resource.Id.textViewEntryTitle);
             textViewSubtitle = FindViewById<TextView>(Resource.Id.textViewEntrySubtitle);
 
+            textInputLayoutPassword = FindViewById<TextInputLayout>(Resource.Id.textInputLayoutEntryPassword);
+            textInputLayoutConfirmPassword = FindViewById<TextInputLayout>(Resource.Id.textInputLayoutEntryConfirmPassword);
+
             editTextSiteName = FindViewById<TextInputEditText>(Resource.Id.editTextEntrySiteName);
             editTextUsername = FindViewById<TextInputEditText>(Resource.Id.editTextEntryUsername);
             editTextPassword = FindViewById<TextInputEditText>(Resource.Id.editTextEntryPassword);
@@ -130,8 +136,8 @@ namespace SecurioClient
             buttonSave.Text = GetString(Resource.String.entry_button_update);
 
             // Update hints to make clear that the password field is optional in edit mode.
-            editTextPassword.Hint = GetString(Resource.String.entry_password_edit_hint);
-            editTextConfirmPassword.Hint = GetString(Resource.String.entry_confirm_password_edit_hint);
+            textInputLayoutPassword.Hint = GetString(Resource.String.entry_password_edit_hint);
+            textInputLayoutConfirmPassword.Hint = GetString(Resource.String.entry_confirm_password_edit_hint);
         }
 
         /// <summary>
