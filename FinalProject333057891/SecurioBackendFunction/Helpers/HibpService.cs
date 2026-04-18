@@ -11,11 +11,12 @@ namespace SecurioBackendFunction.Helpers
         public HibpService(HttpClient http) => _http = http;
 
         // Returns true if the given SHA-1 hex hash appears in the HIBP dataset.
+        // sha1Hash must be a 40-character hexadecimal string (case-insensitive).
         // If the HIBP API is unreachable the method returns false (fail-open) so
         // a temporary outage never blocks legitimate user registrations.
         public async Task<bool> IsPasswordPwnedAsync(string sha1Hash)
         {
-            if (string.IsNullOrWhiteSpace(sha1Hash) || sha1Hash.Length < 6)
+            if (string.IsNullOrWhiteSpace(sha1Hash) || sha1Hash.Length != 40)
                 return false;
 
             string prefix = sha1Hash[..5].ToUpperInvariant();
@@ -25,8 +26,8 @@ namespace SecurioBackendFunction.Helpers
             {
                 string body = await _http.GetStringAsync(ApiBase + prefix);
 
-                // Each line in the response is "SUFFIX:COUNT".
-                foreach (string line in body.Split('\n'))
+                // Each line in the response is "SUFFIX:COUNT" (CRLF-terminated).
+                foreach (string line in body.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     int colon = line.IndexOf(':');
                     if (colon < 0) continue;
