@@ -150,6 +150,7 @@ namespace SecurioClient
                 {
                     allEntries.RemoveAll(x => x.Id == entry.Id);
                     SessionHelper.RemoveVaultItem(entry.Id);
+                    SessionHelper.InvalidateWarnings();
                     RefreshList();
                     Toast.MakeText(this, Resource.String.sheet_deleted_toast, ToastLength.Short).Show();
                 }
@@ -169,7 +170,7 @@ namespace SecurioClient
             // Only add the fragment on fresh creation to avoid duplicates on configuration change.
             if (savedInstanceState == null)
             {
-                var fragment = new BottomNavFragment();
+                var fragment = BottomNavFragment.NewInstance("vault");
                 fragment.TabSelected += OnBottomNavTabSelected;
 
                 SupportFragmentManager
@@ -198,8 +199,12 @@ namespace SecurioClient
 
         private void OnBottomNavTabSelected(object sender, string tab)
         {
-            // Currently only the vault tab is implemented; other tabs show a toast.
-            if (tab != "vault")
+            if (tab == "warnings")
+            {
+                var intent = new Intent(this, typeof(WarningsActivity));
+                StartActivity(intent);
+            }
+            else if (tab != "vault")
             {
                 Toast.MakeText(this, $"{char.ToUpper(tab[0])}{tab.Substring(1)} coming soon!", ToastLength.Short).Show();
             }
@@ -233,6 +238,7 @@ namespace SecurioClient
 
                 allEntries.Add(newItem);
                 SessionHelper.AddVaultItem(newItem);
+                SessionHelper.InvalidateWarnings();
                 RefreshList();
             }
             else if (requestCode == EditPasswordActivity.RequestCodeEdit)
@@ -251,6 +257,7 @@ namespace SecurioClient
                     existing.IsLeaked        = data.GetBooleanExtra(EditPasswordActivity.ResultIsLeaked, false);
 
                     SessionHelper.UpdateVaultItem(existing);
+                    SessionHelper.InvalidateWarnings();
                 }
 
                 RefreshList();

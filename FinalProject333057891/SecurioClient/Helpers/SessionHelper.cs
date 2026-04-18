@@ -25,6 +25,10 @@ namespace SecurioClient.Helpers
         // This is the single source of truth for the vault list during a session.
         public static List<VaultItem> CachedVault { get; set; } = new List<VaultItem>();
 
+        // Cached password-risk warning counters.  Computed at login and
+        // invalidated (set to null) whenever the vault contents change.
+        public static WarningsData CachedWarnings { get; set; }
+
         // Indicates if the session is currently active with a valid key.
         public static bool IsAuthenticated => !string.IsNullOrEmpty(SessionVaultKey);
 
@@ -39,8 +43,15 @@ namespace SecurioClient.Helpers
         {
             SessionVaultKey = null;
             CachedVault.Clear();
+            CachedWarnings = null;
 
             GC.Collect();
+        }
+
+        // Clears the cached warnings so they will be recomputed on the next access.
+        public static void InvalidateWarnings()
+        {
+            CachedWarnings = null;
         }
 
         // Adds a vault item to the in-memory cache.

@@ -67,7 +67,7 @@
     <string name="sheet_deleted_toast">Password deleted</string>
     <string name="sheet_delete_error">Failed to delete. Please check your connection and try again.</string>
     <string name="vault_nav_vault">Vault</string>
-    <string name="vault_nav_generator">Generator</string>
+    <string name="vault_nav_warnings">Warnings</string>
     <string name="vault_nav_profile">Profile</string>
 
     <!-- Entry (Add / Edit) page strings -->
@@ -108,4 +108,16 @@
     <string name="view_copied_username">Username copied to clipboard</string>
     <string name="view_copied_password">Password copied to clipboard</string>
     <string name="view_decrypt_error">Unable to decrypt password</string>
+
+    <!-- Warnings page strings -->
+    <string name="warnings_title">Warnings</string>
+    <string name="warnings_subtitle">Password health overview</string>
+    <string name="warnings_leaked_title">Leaked / Breached</string>
+    <string name="warnings_leaked_desc">Passwords found in known data breaches (HIBP)</string>
+    <string name="warnings_weak_title">Weak</string>
+    <string name="warnings_weak_desc">Passwords that don\'t meet complexity requirements</string>
+    <string name="warnings_reused_title">Reused</string>
+    <string name="warnings_reused_desc">Same password used across multiple accounts</string>
+    <string name="warnings_old_title">Old</string>
+    <string name="warnings_old_desc">Passwords not updated in over 90 days</string>
 </resources>

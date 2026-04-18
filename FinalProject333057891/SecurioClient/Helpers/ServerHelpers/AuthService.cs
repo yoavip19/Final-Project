@@ -68,6 +68,10 @@ namespace SecurioClient.Helpers.ServerHelpers
 
             // 4. Fetch the user's vault items and cache them in memory
             await FetchAndCacheVaultAsync();
+
+            // 5. Compute password-health warnings and cache them for the session
+            SessionHelper.CachedWarnings = WarningsHelper.ComputeWarnings(
+                SessionHelper.CachedVault, vaultKey);
         }
 
         // Fetches the user's vault items from the server and stores them in SessionHelper.CachedVault.

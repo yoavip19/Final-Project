@@ -38,9 +38,9 @@
 
     </LinearLayout>
 
-    <!-- Generator tab -->
+    <!-- Warnings tab -->
     <LinearLayout
-        android:id="@+id/navTabGenerator"
+        android:id="@+id/navTabWarnings"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
@@ -51,17 +51,17 @@
         android:background="?android:attr/selectableItemBackgroundBorderless">
 
         <ImageView
-            android:id="@+id/iconNavGenerator"
+            android:id="@+id/iconNavWarnings"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_manage"
-            android:contentDescription="@string/vault_nav_generator" />
+            android:src="@android:drawable/ic_dialog_alert"
+            android:contentDescription="@string/vault_nav_warnings" />
 
         <TextView
-            android:id="@+id/textNavGenerator"
+            android:id="@+id/textNavWarnings"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/vault_nav_generator"
+            android:text="@string/vault_nav_warnings"
             style="@style/VaultBottomNavTextStyle"
             android:textColor="@color/vaultBottomNavUnselected" />
 
