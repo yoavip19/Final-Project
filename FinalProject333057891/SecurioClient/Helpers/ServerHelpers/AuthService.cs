@@ -59,9 +59,20 @@ namespace SecurioClient.Helpers.ServerHelpers
             await StorageHelper.SaveJwt(data.Token);
             await StorageHelper.SaveUsername(data.Username);
 
-            // 2. Start the Session (Derive Key)
+            // 2. Derive the vault key and start the in-memory session
             string vaultKey = EncryptionHelper.DeriveKey(password, salt);
             SessionHelper.StartSession(vaultKey);
+
+            // 3. Persist the vault key so it can be restored after an app restart
+            await StorageHelper.SaveVaultKey(vaultKey);
+        }
+
+        // Asks the server to verify that the stored JWT is still valid and unexpired.
+        // Returns true if the server accepts the token; false if it is missing, invalid, or expired.
+        public async Task<bool> ValidateTokenAsync()
+        {
+            var result = await GetAsync<object>("ValidateToken");
+            return result.Success;
         }
     }
 }

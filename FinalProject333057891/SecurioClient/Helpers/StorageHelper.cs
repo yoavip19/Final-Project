@@ -23,6 +23,7 @@ namespace SecurioClient.Helpers
         private const string KeyUserId = "user_id";
         private const string KeyUsername = "user_name";
         private const string KeyJwt = "jwt_token";
+        private const string KeyVaultKey = "vault_key";
         private const string KeyEmail = "email";
         private const string KeyCreatedAt = "created_at";
         private const string KeyPasswordCount = "password_count";
@@ -64,6 +65,18 @@ namespace SecurioClient.Helpers
         public static async Task<string> GetJwt()
         {
             return await SecureStorage.GetAsync(KeyJwt);
+        }
+
+        // Saves the derived AES vault key to secure storage so the session can be restored after an app restart.
+        public static async Task SaveVaultKey(string vaultKey)
+        {
+            await SecureStorage.SetAsync(KeyVaultKey, vaultKey);
+        }
+
+        // Retrieves the stored AES vault key, returning null if not present.
+        public static async Task<string> GetVaultKey()
+        {
+            return await SecureStorage.GetAsync(KeyVaultKey);
         }
 
         // Persists the full user profile, including history timestamps, to secure local storage.

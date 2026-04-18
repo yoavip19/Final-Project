@@ -4,11 +4,13 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SecurioBackendFunction.Helpers;
 using SecurioBackendFunction.Logic;
 using SecurioBackendFunction.Repositories;
 using SecurioModels;
 using SecurioModels.DataTransferObjects;
 using System.Collections.Generic;
+using System.Linq;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SecurioBackendFunction.ServerFunctions;
@@ -68,6 +70,32 @@ public class AuthFunctions
             return user.Success ? new OkObjectResult(user) : new NotFoundObjectResult(user);
         }
         catch (Exception ex)
+        {
+            return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = "An internal error occurred." });
+        }
+    }
+
+    // Validates an existing JWT token. Returns 200 if valid and unexpired, 401 otherwise.
+    // Used by the client on app startup to decide whether to skip the login screen.
+    [Function("ValidateToken")]
+    public IActionResult ValidateToken([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+    {
+        try
+        {
+            var authHeader = req.Headers["Authorization"].FirstOrDefault();
+            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+                return new UnauthorizedObjectResult(new ServerResponse<object> { Success = false, Message = "Unauthorized." });
+
+            var token = authHeader.Substring("Bearer ".Length);
+            var principal = JwtHelper.ValidateToken(token);
+
+            if (principal == null)
+                return new UnauthorizedObjectResult(new ServerResponse<object> { Success = false, Message = "Token is invalid or expired." });
+
+            int userId = JwtHelper.GetUserIdFromPrincipal(principal);
+            return new OkObjectResult(new ServerResponse<object> { Success = true, Message = "Token is valid.", Data = new { UserId = userId } });
+        }
+        catch (Exception)
         {
             return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = "An internal error occurred." });
         }
