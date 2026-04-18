@@ -119,6 +119,19 @@
                         android:textColor="@color/vaultCardSubtitleText"
                         android:fontFamily="sans-serif"
                         android:layout_marginTop="2dp" />
+
+                    <TextView
+                        android:id="@+id/buttonViewAllLeaked"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/warnings_view_all"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/warningLeakedAccent"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginTop="6dp"
+                        android:padding="4dp"
+                        android:background="?android:attr/selectableItemBackground" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -175,6 +188,19 @@
                         android:textColor="@color/vaultCardSubtitleText"
                         android:fontFamily="sans-serif"
                         android:layout_marginTop="2dp" />
+
+                    <TextView
+                        android:id="@+id/buttonViewAllWeak"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/warnings_view_all"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/warningWeakAccent"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginTop="6dp"
+                        android:padding="4dp"
+                        android:background="?android:attr/selectableItemBackground" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -231,6 +257,19 @@
                         android:textColor="@color/vaultCardSubtitleText"
                         android:fontFamily="sans-serif"
                         android:layout_marginTop="2dp" />
+
+                    <TextView
+                        android:id="@+id/buttonViewAllReused"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/warnings_view_all"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/warningReusedAccent"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginTop="6dp"
+                        android:padding="4dp"
+                        android:background="?android:attr/selectableItemBackground" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -287,6 +326,19 @@
                         android:textColor="@color/vaultCardSubtitleText"
                         android:fontFamily="sans-serif"
                         android:layout_marginTop="2dp" />
+
+                    <TextView
+                        android:id="@+id/buttonViewAllOld"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/warnings_view_all"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/warningOldAccent"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginTop="6dp"
+                        android:padding="4dp"
+                        android:background="?android:attr/selectableItemBackground" />
                 </LinearLayout>
 
             </LinearLayout>

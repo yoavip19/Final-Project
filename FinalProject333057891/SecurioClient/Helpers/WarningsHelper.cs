@@ -118,5 +118,96 @@ namespace SecurioClient.Helpers
                 OldCount = old
             };
         }
+
+        /// <summary>
+        /// Returns the subset of <paramref name="vault"/> items that fall under
+        /// the specified <paramref name="category"/> risk.
+        /// Categories: "leaked", "weak", "reused", "old".
+        /// </summary>
+        public static async Task<List<VaultItem>> GetItemsAtRiskAsync(
+            IList<VaultItem> vault, string vaultKey, string category)
+        {
+            if (vault == null || vault.Count == 0)
+                return new List<VaultItem>();
+
+            switch (category)
+            {
+                case "leaked":
+                    return await GetLeakedItemsAsync(vault);
+
+                case "weak":
+                    return GetWeakItems(vault, vaultKey);
+
+                case "reused":
+                    return GetReusedItems(vault);
+
+                case "old":
+                    return GetOldItems(vault);
+
+                default:
+                    return new List<VaultItem>();
+            }
+        }
+
+        private static async Task<List<VaultItem>> GetLeakedItemsAsync(IList<VaultItem> vault)
+        {
+            var result = new List<VaultItem>();
+            foreach (var item in vault)
+            {
+                if (!string.IsNullOrEmpty(item.Sha1Hash) &&
+                    await HibpClientService.IsPasswordPwnedAsync(item.Sha1Hash))
+                    result.Add(item);
+            }
+            return result;
+        }
+
+        private static List<VaultItem> GetWeakItems(IList<VaultItem> vault, string vaultKey)
+        {
+            var result = new List<VaultItem>();
+            foreach (var item in vault)
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(item.IV) ||
+                        string.IsNullOrEmpty(item.Tag) ||
+                        string.IsNullOrEmpty(item.CipherText))
+                        continue;
+
+                    string plaintext = EncryptionHelper.DecryptAesGcm(
+                        item.IV, item.Tag, item.CipherText, vaultKey);
+
+                    var validationResult = ValidationHelper.ValidatePassword(plaintext);
+                    if (!validationResult.IsValid)
+                        result.Add(item);
+                }
+                catch
+                {
+                    // Skip items that cannot be decrypted.
+                }
+            }
+            return result;
+        }
+
+        private static List<VaultItem> GetReusedItems(IList<VaultItem> vault)
+        {
+            var hashGroups = vault
+                .Where(v => !string.IsNullOrEmpty(v.Sha1Hash))
+                .GroupBy(v => v.Sha1Hash, StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Count() > 1);
+
+            var result = new List<VaultItem>();
+            foreach (var group in hashGroups)
+                result.AddRange(group);
+
+            return result;
+        }
+
+        private static List<VaultItem> GetOldItems(IList<VaultItem> vault)
+        {
+            DateTime oldThreshold = DateTime.UtcNow.AddDays(-OldPasswordDays);
+            return vault
+                .Where(item => item.LastUpdate != default && item.LastUpdate < oldThreshold)
+                .ToList();
+        }
     }
 }

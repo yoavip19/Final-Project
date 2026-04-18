@@ -120,4 +120,13 @@
     <string name="warnings_reused_desc">Same password used across multiple accounts</string>
     <string name="warnings_old_title">Old</string>
     <string name="warnings_old_desc">Passwords not updated in over 90 days</string>
+
+    <!-- Risk detail page strings -->
+    <string name="risk_detail_leaked_subtitle">These passwords were found in known data breaches</string>
+    <string name="risk_detail_weak_subtitle">These passwords don\'t meet complexity requirements</string>
+    <string name="risk_detail_reused_subtitle">These passwords are used across multiple accounts</string>
+    <string name="risk_detail_old_subtitle">These passwords haven\'t been updated in over 90 days</string>
+    <string name="risk_empty_title">All clear!</string>
+    <string name="risk_empty_subtitle">No passwords at risk in this category</string>
+    <string name="warnings_view_all">View All</string>
 </resources>

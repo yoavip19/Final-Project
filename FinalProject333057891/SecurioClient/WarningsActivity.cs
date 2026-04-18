@@ -21,6 +21,11 @@ namespace SecurioClient
         private TextView textViewReusedCount;
         private TextView textViewOldCount;
 
+        private TextView buttonViewAllLeaked;
+        private TextView buttonViewAllWeak;
+        private TextView buttonViewAllReused;
+        private TextView buttonViewAllOld;
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -29,6 +34,7 @@ namespace SecurioClient
 
             InitializeViews();
             SetupBottomNavFragment(savedInstanceState);
+            SetupViewAllButtons();
             _ = DisplayWarningsAsync();
         }
 
@@ -38,6 +44,11 @@ namespace SecurioClient
             textViewWeakCount   = FindViewById<TextView>(Resource.Id.textViewWeakCount);
             textViewReusedCount = FindViewById<TextView>(Resource.Id.textViewReusedCount);
             textViewOldCount    = FindViewById<TextView>(Resource.Id.textViewOldCount);
+
+            buttonViewAllLeaked = FindViewById<TextView>(Resource.Id.buttonViewAllLeaked);
+            buttonViewAllWeak   = FindViewById<TextView>(Resource.Id.buttonViewAllWeak);
+            buttonViewAllReused = FindViewById<TextView>(Resource.Id.buttonViewAllReused);
+            buttonViewAllOld    = FindViewById<TextView>(Resource.Id.buttonViewAllOld);
         }
 
         private void SetupBottomNavFragment(Bundle savedInstanceState)
@@ -52,6 +63,21 @@ namespace SecurioClient
                     .Replace(Resource.Id.frameBottomNav, fragment)
                     .Commit();
             }
+        }
+
+        private void SetupViewAllButtons()
+        {
+            buttonViewAllLeaked.Click += (s, e) => OpenRiskDetail(RiskDetailActivity.CategoryLeaked);
+            buttonViewAllWeak.Click   += (s, e) => OpenRiskDetail(RiskDetailActivity.CategoryWeak);
+            buttonViewAllReused.Click += (s, e) => OpenRiskDetail(RiskDetailActivity.CategoryReused);
+            buttonViewAllOld.Click    += (s, e) => OpenRiskDetail(RiskDetailActivity.CategoryOld);
+        }
+
+        private void OpenRiskDetail(string category)
+        {
+            var intent = new Intent(this, typeof(RiskDetailActivity));
+            intent.PutExtra(RiskDetailActivity.ExtraRiskCategory, category);
+            StartActivity(intent);
         }
 
         private void OnBottomNavTabSelected(object sender, string tab)
