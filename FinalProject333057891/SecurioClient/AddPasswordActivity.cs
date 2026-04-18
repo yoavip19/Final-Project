@@ -29,6 +29,11 @@ namespace SecurioClient
         public const string ResultSiteName = "RESULT_SITE_NAME";
         public const string ResultUsername = "RESULT_USERNAME";
         public const string ResultNotes = "RESULT_NOTES";
+        public const string ResultIV = "RESULT_IV";
+        public const string ResultTag = "RESULT_TAG";
+        public const string ResultCipherText = "RESULT_CIPHER_TEXT";
+        public const string ResultSha1Hash = "RESULT_SHA1_HASH";
+        public const string ResultIsLeaked = "RESULT_IS_LEAKED";
 
         public const int RequestCodeAdd = 1001;
 
@@ -210,6 +215,11 @@ namespace SecurioClient
                     resultIntent.PutExtra(ResultSiteName, siteName);
                     resultIntent.PutExtra(ResultUsername, username);
                     resultIntent.PutExtra(ResultNotes, notes ?? string.Empty);
+                    resultIntent.PutExtra(ResultIV, iv);
+                    resultIntent.PutExtra(ResultTag, tag);
+                    resultIntent.PutExtra(ResultCipherText, cipherText);
+                    resultIntent.PutExtra(ResultSha1Hash, sha1Hash);
+                    resultIntent.PutExtra(ResultIsLeaked, result.Data?.IsLeaked ?? false);
 
                     SetResult(Result.Ok, resultIntent);
 

@@ -65,6 +65,20 @@ namespace SecurioClient.Helpers.ServerHelpers
 
             // 3. Persist the vault key so it can be restored after an app restart
             await StorageHelper.SaveVaultKey(vaultKey);
+
+            // 4. Fetch the user's vault items and cache them in memory
+            await FetchAndCacheVaultAsync();
+        }
+
+        // Fetches the user's vault items from the server and stores them in SessionHelper.CachedVault.
+        public static async Task FetchAndCacheVaultAsync()
+        {
+            var vaultService = new VaultService();
+            var vaultResult = await vaultService.GetVaultItemsAsync();
+            if (vaultResult.Success && vaultResult.Data != null)
+                SessionHelper.CachedVault = vaultResult.Data;
+            else
+                SessionHelper.CachedVault = new System.Collections.Generic.List<SecurioModels.DataTransferObjects.VaultItem>();
         }
 
         // Asks the server to verify that the stored JWT is still valid and unexpired.

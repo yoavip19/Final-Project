@@ -32,6 +32,9 @@ namespace SecurioClient
                     if (!string.IsNullOrEmpty(vaultKey))
                         SessionHelper.StartSession(vaultKey);
 
+                    // Fetch the user's vault items into the in-memory cache.
+                    await AuthService.FetchAndCacheVaultAsync();
+
                     var vaultIntent = new Android.Content.Intent(this, typeof(VaultActivity));
                     vaultIntent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);
                     StartActivity(vaultIntent);

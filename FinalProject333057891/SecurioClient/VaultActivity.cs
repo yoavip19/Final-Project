@@ -6,6 +6,7 @@ using Android.Widget;
 using AndroidX.AppCompat.App;
 using AndroidX.RecyclerView.Widget;
 using SecurioClient.Helpers;
+using SecurioClient.Helpers.ServerHelpers;
 using SecurioModels.DataTransferObjects;
 using System;
 using System.Collections.Generic;
@@ -36,8 +37,8 @@ namespace SecurioClient
             SetupBottomNavFragment(savedInstanceState);
             SetupEventHandlers();
 
-            // Load sample data so the UI is not empty on first launch.
-            LoadSampleData();
+            // Load entries from the in-memory session cache.
+            LoadVaultFromSession();
         }
 
         private void InitializeViews()
@@ -116,6 +117,7 @@ namespace SecurioClient
                 .SetPositiveButton(Resource.String.sheet_delete_confirm_yes, (s, e) =>
                 {
                     allEntries.RemoveAll(x => x.Id == entry.Id);
+                    SessionHelper.RemoveVaultItem(entry.Id);
                     RefreshList();
                     Toast.MakeText(this, Resource.String.sheet_deleted_toast, ToastLength.Short).Show();
                 })
@@ -177,14 +179,21 @@ namespace SecurioClient
 
             if (requestCode == AddPasswordActivity.RequestCodeAdd)
             {
-                allEntries.Add(new VaultItem
+                var newItem = new VaultItem
                 {
-                    Id = data.GetIntExtra(AddPasswordActivity.ResultEntryId, 0),
-                    AccountName = data.GetStringExtra(AddPasswordActivity.ResultSiteName),
-                    AccountUsername = data.GetStringExtra(AddPasswordActivity.ResultUsername),
-                    Notes = data.GetStringExtra(AddPasswordActivity.ResultNotes)
-                });
+                    Id              = data.GetIntExtra(AddPasswordActivity.ResultEntryId, 0),
+                    AccountName     = data.GetStringExtra(AddPasswordActivity.ResultSiteName),
+                    AccountUsername  = data.GetStringExtra(AddPasswordActivity.ResultUsername),
+                    Notes           = data.GetStringExtra(AddPasswordActivity.ResultNotes),
+                    IV              = data.GetStringExtra(AddPasswordActivity.ResultIV),
+                    Tag             = data.GetStringExtra(AddPasswordActivity.ResultTag),
+                    CipherText      = data.GetStringExtra(AddPasswordActivity.ResultCipherText),
+                    Sha1Hash        = data.GetStringExtra(AddPasswordActivity.ResultSha1Hash),
+                    IsLeaked        = data.GetBooleanExtra(AddPasswordActivity.ResultIsLeaked, false)
+                };
 
+                allEntries.Add(newItem);
+                SessionHelper.AddVaultItem(newItem);
                 RefreshList();
             }
             else if (requestCode == EditPasswordActivity.RequestCodeEdit)
@@ -193,9 +202,16 @@ namespace SecurioClient
                 var existing = allEntries.FirstOrDefault(e => e.Id == editedId);
                 if (existing != null)
                 {
-                    existing.AccountName = data.GetStringExtra(EditPasswordActivity.ResultSiteName);
-                    existing.AccountUsername = data.GetStringExtra(EditPasswordActivity.ResultUsername);
-                    existing.Notes = data.GetStringExtra(EditPasswordActivity.ResultNotes);
+                    existing.AccountName     = data.GetStringExtra(EditPasswordActivity.ResultSiteName);
+                    existing.AccountUsername  = data.GetStringExtra(EditPasswordActivity.ResultUsername);
+                    existing.Notes           = data.GetStringExtra(EditPasswordActivity.ResultNotes);
+                    existing.IV              = data.GetStringExtra(EditPasswordActivity.ResultIV);
+                    existing.Tag             = data.GetStringExtra(EditPasswordActivity.ResultTag);
+                    existing.CipherText      = data.GetStringExtra(EditPasswordActivity.ResultCipherText);
+                    existing.Sha1Hash        = data.GetStringExtra(EditPasswordActivity.ResultSha1Hash);
+                    existing.IsLeaked        = data.GetBooleanExtra(EditPasswordActivity.ResultIsLeaked, false);
+
+                    SessionHelper.UpdateVaultItem(existing);
                 }
 
                 RefreshList();
@@ -207,21 +223,12 @@ namespace SecurioClient
         // ──────────────────────────────────────────
 
         /// <summary>
-        /// Populates the RecyclerView with sample password entries for demonstration.
-        /// Replace this with real data loading in the future.
+        /// Loads the vault entries from the in-memory session cache into the local list
+        /// and refreshes the RecyclerView.
         /// </summary>
-        private void LoadSampleData()
+        private void LoadVaultFromSession()
         {
-            allEntries = new List<VaultItem>
-            {
-                new VaultItem { Id = 1, AccountName = "Google",   AccountUsername = "user@gmail.com" },
-                new VaultItem { Id = 2, AccountName = "GitHub",   AccountUsername = "devuser" },
-                new VaultItem { Id = 3, AccountName = "Facebook", AccountUsername = "john.doe@fb.com" },
-                new VaultItem { Id = 4, AccountName = "Twitter",  AccountUsername = "@johndoe" },
-                new VaultItem { Id = 5, AccountName = "Netflix",  AccountUsername = "john@example.com" },
-                new VaultItem { Id = 6, AccountName = "Amazon",   AccountUsername = "shop@example.com" },
-            };
-
+            allEntries = new List<VaultItem>(SessionHelper.CachedVault ?? new List<VaultItem>());
             RefreshList();
         }
 

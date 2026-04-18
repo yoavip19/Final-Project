@@ -7,6 +7,7 @@ using SecurioBackendFunction.Logic;
 using SecurioModels;
 using SecurioModels.DataTransferObjects;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -129,6 +130,48 @@ namespace SecurioBackendFunction.ServerFunctions
             {
                 return new BadRequestObjectResult(
                     new ServerResponse<VaultItem> { Success = false, Message = "An internal error occurred." });
+            }
+        }
+
+        // Returns all vault items for the authenticated user.
+        [Function("GetVaultItems")]
+        public async Task<IActionResult> GetVaultItems(
+            [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+        {
+            try
+            {
+                var authHeader = req.Headers["Authorization"].FirstOrDefault();
+                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+                {
+                    return new UnauthorizedObjectResult(
+                        new ServerResponse<List<VaultItem>> { Success = false, Message = "Unauthorized." });
+                }
+
+                var token = authHeader.Substring("Bearer ".Length);
+                var principal = JwtHelper.ValidateToken(token);
+
+                if (principal == null)
+                {
+                    return new UnauthorizedObjectResult(
+                        new ServerResponse<List<VaultItem>> { Success = false, Message = "Unauthorized." });
+                }
+
+                int userId = JwtHelper.GetUserIdFromPrincipal(principal);
+                if (userId <= 0)
+                {
+                    return new UnauthorizedObjectResult(
+                        new ServerResponse<List<VaultItem>> { Success = false, Message = "Unauthorized." });
+                }
+
+                var result = await _vaultItemManager.GetVaultItemsAsync(userId);
+                return result.Success
+                    ? new OkObjectResult(result)
+                    : new BadRequestObjectResult(result);
+            }
+            catch (Exception)
+            {
+                return new BadRequestObjectResult(
+                    new ServerResponse<List<VaultItem>> { Success = false, Message = "An internal error occurred." });
             }
         }
     }

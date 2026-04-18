@@ -3,6 +3,7 @@ using Xunit;
 using SecurioBackendFunction.Logic;
 using SecurioBackendFunction.Repositories;
 using SecurioModels.DataTransferObjects;
+using System.Collections.Generic;
 
 namespace SecurioBackendFunction.Tests
 {
@@ -326,6 +327,61 @@ namespace SecurioBackendFunction.Tests
 
             Assert.False(result.Success);
             Assert.Equal("Item not found or access denied.", result.Message);
+        }
+
+        // ── GetVaultItemsAsync — happy path ─────────────────────────────────────
+
+        [Fact]
+        public async Task GetVaultItems_ValidUserId_ReturnsSuccess()
+        {
+            var items = new List<VaultItem> { ValidItem(), ValidItem() };
+            var repoMock = new Mock<IVaultItemRepository>();
+            repoMock.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(items);
+            var manager = new VaultItemManager(repoMock.Object);
+
+            var result = await manager.GetVaultItemsAsync(1);
+
+            Assert.True(result.Success);
+            Assert.Equal("Vault items retrieved successfully.", result.Message);
+            Assert.Equal(2, result.Data.Count);
+        }
+
+        [Fact]
+        public async Task GetVaultItems_NoItems_ReturnsEmptyList()
+        {
+            var repoMock = new Mock<IVaultItemRepository>();
+            repoMock.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(new List<VaultItem>());
+            var manager = new VaultItemManager(repoMock.Object);
+
+            var result = await manager.GetVaultItemsAsync(1);
+
+            Assert.True(result.Success);
+            Assert.NotNull(result.Data);
+            Assert.Empty(result.Data);
+        }
+
+        // ── GetVaultItemsAsync — validation failures ────────────────────────────
+
+        [Fact]
+        public async Task GetVaultItems_ZeroUserId_ReturnsFail()
+        {
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.GetVaultItemsAsync(0);
+
+            Assert.False(result.Success);
+            Assert.Equal("Invalid user ID.", result.Message);
+        }
+
+        [Fact]
+        public async Task GetVaultItems_NegativeUserId_ReturnsFail()
+        {
+            var manager = new VaultItemManager(new Mock<IVaultItemRepository>().Object);
+
+            var result = await manager.GetVaultItemsAsync(-1);
+
+            Assert.False(result.Success);
+            Assert.Equal("Invalid user ID.", result.Message);
         }
     }
 }

@@ -1,6 +1,7 @@
 using SecurioBackendFunction.Repositories;
 using SecurioModels;
 using SecurioModels.DataTransferObjects;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SecurioBackendFunction.Logic
@@ -73,6 +74,21 @@ namespace SecurioBackendFunction.Logic
                 Success = true,
                 Message = "Vault item updated successfully.",
                 Data = item
+            };
+        }
+
+        // Retrieves all vault items for the specified user.
+        public async Task<ServerResponse<List<VaultItem>>> GetVaultItemsAsync(int userId)
+        {
+            if (userId <= 0)
+                return new ServerResponse<List<VaultItem>> { Success = false, Message = "Invalid user ID." };
+
+            var items = await _repo.GetVaultItemsByUserIdAsync(userId);
+            return new ServerResponse<List<VaultItem>>
+            {
+                Success = true,
+                Message = "Vault items retrieved successfully.",
+                Data = items
             };
         }
     }

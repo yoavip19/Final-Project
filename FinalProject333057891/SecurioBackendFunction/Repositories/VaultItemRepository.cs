@@ -1,5 +1,7 @@
 using Microsoft.Data.SqlClient;
 using SecurioModels.DataTransferObjects;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 
@@ -61,6 +63,40 @@ namespace SecurioBackendFunction.Repositories
             cmd.Parameters.Add("@leaked", SqlDbType.Bit).Value      = item.IsLeaked;
             int rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
+        }
+
+        // Retrieves all vault items belonging to a specific user.
+        public async Task<List<VaultItem>> GetVaultItemsByUserIdAsync(int userId)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = @"SELECT Id, UserId, AccountName, AccountUsername, IV, Tag, CipherText, Notes, Sha1Hash, IsLeaked, LastUpdate
+                        FROM VaultItems
+                        WHERE UserId = @uid
+                        ORDER BY LastUpdate DESC";
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
+
+            var items = new List<VaultItem>();
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                items.Add(new VaultItem
+                {
+                    Id              = reader.GetInt32(reader.GetOrdinal("Id")),
+                    UserId          = reader.GetInt32(reader.GetOrdinal("UserId")),
+                    AccountName     = reader.IsDBNull(reader.GetOrdinal("AccountName")) ? null : reader.GetString(reader.GetOrdinal("AccountName")),
+                    AccountUsername = reader.IsDBNull(reader.GetOrdinal("AccountUsername")) ? null : reader.GetString(reader.GetOrdinal("AccountUsername")),
+                    IV              = reader.IsDBNull(reader.GetOrdinal("IV")) ? null : reader.GetString(reader.GetOrdinal("IV")),
+                    Tag             = reader.IsDBNull(reader.GetOrdinal("Tag")) ? null : reader.GetString(reader.GetOrdinal("Tag")),
+                    CipherText      = reader.IsDBNull(reader.GetOrdinal("CipherText")) ? null : reader.GetString(reader.GetOrdinal("CipherText")),
+                    Notes           = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes")),
+                    Sha1Hash        = reader.IsDBNull(reader.GetOrdinal("Sha1Hash")) ? null : reader.GetString(reader.GetOrdinal("Sha1Hash")),
+                    IsLeaked        = reader.GetBoolean(reader.GetOrdinal("IsLeaked")),
+                    LastUpdate      = reader.GetDateTime(reader.GetOrdinal("LastUpdate"))
+                });
+            }
+            return items;
         }
     }
 }

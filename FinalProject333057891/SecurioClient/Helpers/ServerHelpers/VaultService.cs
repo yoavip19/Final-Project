@@ -29,5 +29,12 @@ namespace SecurioClient.Helpers.ServerHelpers
             var result = await PostAsync<VaultItem>("UpdateVaultItem", item);
             return (result.Success, result.Message, result.Data);
         }
+
+        // Retrieves all vault items for the authenticated user.
+        public async Task<(bool Success, string Message, List<VaultItem> Data)> GetVaultItemsAsync()
+        {
+            var result = await GetAsync<List<VaultItem>>("GetVaultItems");
+            return (result.Success, result.Message, result.Data);
+        }
     }
 }

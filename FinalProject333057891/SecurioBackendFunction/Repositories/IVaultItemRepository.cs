@@ -1,4 +1,5 @@
 using SecurioModels.DataTransferObjects;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SecurioBackendFunction.Repositories
@@ -8,5 +9,6 @@ namespace SecurioBackendFunction.Repositories
     {
         Task<int> AddVaultItemAsync(VaultItem item);
         Task<bool> UpdateVaultItemAsync(VaultItem item);
+        Task<List<VaultItem>> GetVaultItemsByUserIdAsync(int userId);
     }
 }
