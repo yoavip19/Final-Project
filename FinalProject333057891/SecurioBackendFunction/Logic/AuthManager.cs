@@ -1,6 +1,6 @@
-﻿using SecurioBackendFunction.Repositories;
+﻿using SecurioBackendFunction.Helpers;
+using SecurioBackendFunction.Repositories;
 using SecurioModels;
-using SecurioModels.DataTransferObjects;
 using SecurioModels.DataTransferObjects;
 using System;
 using System.Collections.Generic;
@@ -13,11 +13,30 @@ namespace SecurioBackendFunction.Logic
     public class AuthManager
     {
         private readonly IUserRepository _repo;
-        public AuthManager(IUserRepository repo) => _repo = repo;
+        private readonly IHibpService _hibp;
+
+        public AuthManager(IUserRepository repo, IHibpService hibp)
+        {
+            _repo = repo;
+            _hibp = hibp;
+        }
 
         // Registers user and generates a token immediately for a seamless UI transition.
+        // If a PasswordSha1Hash is provided it is checked against the HIBP Pwned Passwords
+        // dataset before the account is created.
         public async Task<ServerResponse<AuthData>> RegisterAsync(User user)
         {
+            if (!string.IsNullOrWhiteSpace(user.PasswordSha1Hash))
+            {
+                bool isPwned = await _hibp.IsPasswordPwnedAsync(user.PasswordSha1Hash);
+                if (isPwned)
+                    return new ServerResponse<AuthData>
+                    {
+                        Success = false,
+                        Message = "Password has been found in a data breach. Please choose a different password."
+                    };
+            }
+
             if (await _repo.EmailExistsAsync(user.Email))
                 return new ServerResponse<AuthData> { Success = false, Message = "Email already registered." };
 
