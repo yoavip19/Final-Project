@@ -108,4 +108,5 @@
     <string name="view_copied_username">Username copied to clipboard</string>
     <string name="view_copied_password">Password copied to clipboard</string>
     <string name="view_decrypt_error">Unable to decrypt password</string>
+    <string name="view_label_last_changed">Last changed</string>
 </resources>

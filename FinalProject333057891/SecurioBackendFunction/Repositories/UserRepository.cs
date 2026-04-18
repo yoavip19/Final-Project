@@ -102,5 +102,15 @@ namespace SecurioBackendFunction.Repositories
             }
             return null;
         }
+        // Updates the LastLogin timestamp for the given user to the current UTC time.
+        public async Task UpdateLastLoginAsync(int userId)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = "UPDATE Users SET LastLogin = GETDATE() WHERE Id = @uid";
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
+            await cmd.ExecuteNonQueryAsync();
+        }
     }
 }

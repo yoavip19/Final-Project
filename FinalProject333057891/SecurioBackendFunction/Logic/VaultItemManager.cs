@@ -69,6 +69,7 @@ namespace SecurioBackendFunction.Logic
             if (!updated)
                 return new ServerResponse<VaultItem> { Success = false, Message = "Item not found or access denied." };
 
+            item.LastUpdate = DateTime.UtcNow;
             return new ServerResponse<VaultItem>
             {
                 Success = true,

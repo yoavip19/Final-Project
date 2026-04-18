@@ -65,6 +65,7 @@ namespace SecurioBackendFunction.Logic
                 return new ServerResponse<AuthData> { Success = false, Message = "Invalid email or password." };
 
             string token = Helpers.JwtHelper.GenerateJwtToken(user.Id, user.Username);
+            await _repo.UpdateLastLoginAsync(user.Id);
             return new ServerResponse<AuthData>
             {
                 Success = true,

@@ -22,6 +22,7 @@ namespace SecurioClient
         public const string ExtraIV = "EXTRA_IV";
         public const string ExtraTag = "EXTRA_TAG";
         public const string ExtraCipherText = "EXTRA_CIPHER_TEXT";
+        public const string ExtraLastUpdate = "EXTRA_LAST_UPDATE";
 
         // ── Views ──────────────────────────────────────────────
         private ImageView imageViewBack;
@@ -29,6 +30,7 @@ namespace SecurioClient
         private TextView textViewUsername;
         private TextView textViewPassword;
         private TextView textViewNotes;
+        private TextView textViewLastChanged;
         private ImageView buttonCopyUsername;
         private ImageView buttonTogglePassword;
         private ImageView buttonCopyPassword;
@@ -59,6 +61,7 @@ namespace SecurioClient
             textViewUsername = FindViewById<TextView>(Resource.Id.textViewViewUsername);
             textViewPassword = FindViewById<TextView>(Resource.Id.textViewViewPassword);
             textViewNotes = FindViewById<TextView>(Resource.Id.textViewViewNotes);
+            textViewLastChanged = FindViewById<TextView>(Resource.Id.textViewViewLastChanged);
             buttonCopyUsername = FindViewById<ImageView>(Resource.Id.buttonCopyUsername);
             buttonTogglePassword = FindViewById<ImageView>(Resource.Id.buttonTogglePassword);
             buttonCopyPassword = FindViewById<ImageView>(Resource.Id.buttonCopyPassword);
@@ -75,6 +78,18 @@ namespace SecurioClient
             textViewNotes.Text = string.IsNullOrWhiteSpace(notes)
                 ? GetString(Resource.String.view_no_notes)
                 : notes;
+
+            // Display "Last changed" date.
+            long lastUpdateTicks = Intent.GetLongExtra(ExtraLastUpdate, 0L);
+            if (lastUpdateTicks > 0)
+            {
+                var lastUpdate = new DateTime(lastUpdateTicks, DateTimeKind.Utc).ToLocalTime();
+                textViewLastChanged.Text = lastUpdate.ToString("MMM d, yyyy 'at' h:mm tt");
+            }
+            else
+            {
+                textViewLastChanged.Text = "—";
+            }
 
             // Decrypt the password.
             string iv = Intent.GetStringExtra(ExtraIV) ?? string.Empty;
