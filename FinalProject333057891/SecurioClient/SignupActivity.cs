@@ -185,7 +185,7 @@ namespace SecurioClient
                 // Compute SHA-1 of the plaintext password BEFORE key derivation.
                 // This hash is only used for the HIBP breach check on the server
                 // and is never persisted to the database.
-                string passwordSha1Hash  = EncryptionHelper.ComputeSha1Hash(password);
+                string passwordSha1Hash = EncryptionHelper.ComputeSha1Hash(password);
 
                 string authSalt       = EncryptionHelper.GenerateSalt();
                 string encryptionSalt = EncryptionHelper.GenerateSalt();
