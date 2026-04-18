@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecurioModels", "SecurioMod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecurioBackendFunction.Tests", "SecurioBackendFunction.Tests\SecurioBackendFunction.Tests.csproj", "{B5C8E7D1-3A4F-4E2B-9C6D-1F8A2E3B7D5C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecurioClient.Tests", "SecurioClient.Tests\SecurioClient.Tests.csproj", "{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,18 @@ Global
 		{B5C8E7D1-3A4F-4E2B-9C6D-1F8A2E3B7D5C}.Release|x64.Build.0 = Release|Any CPU
 		{B5C8E7D1-3A4F-4E2B-9C6D-1F8A2E3B7D5C}.Release|x86.ActiveCfg = Release|Any CPU
 		{B5C8E7D1-3A4F-4E2B-9C6D-1F8A2E3B7D5C}.Release|x86.Build.0 = Release|Any CPU
+		{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}.Debug|x64.Build.0 = Debug|Any CPU
+		{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}.Debug|x86.Build.0 = Debug|Any CPU
+		{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}.Release|x64.ActiveCfg = Release|Any CPU
+		{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}.Release|x64.Build.0 = Release|Any CPU
+		{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}.Release|x86.ActiveCfg = Release|Any CPU
+		{C3A1F2B4-5D6E-4A7B-8C9D-2E0F1A3B4C5D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
