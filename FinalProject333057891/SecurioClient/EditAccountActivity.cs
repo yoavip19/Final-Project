@@ -1,0 +1,392 @@
+using Android.App;
+using Android.Content;
+using Android.OS;
+using Android.Views;
+using Android.Widget;
+using AndroidX.AppCompat.App;
+using Google.Android.Material.Button;
+using Google.Android.Material.TextField;
+using SecurioClient.Helpers;
+using SecurioClient.Helpers.ServerHelpers;
+using SecurioModels;
+using SecurioModels.DataTransferObjects;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace SecurioClient
+{
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
+    public class EditAccountActivity : AppCompatActivity
+    {
+        // Request code used when launching this activity from ProfileActivity.
+        public const int RequestCodeEditAccount = 2001;
+        // Result key indicating the profile was updated.
+        public const string ResultUpdated = "AccountUpdated";
+
+        private TextInputEditText editTextUsername;
+        private TextInputEditText editTextEmail;
+        private TextInputEditText editTextCurrentPassword;
+        private TextInputEditText editTextNewPassword;
+        private TextInputEditText editTextConfirmNewPassword;
+        private MaterialButton buttonSave;
+        private MaterialButton buttonGeneratePassword;
+        private TextView textViewUsernameError;
+        private TextView textViewEmailError;
+        private TextView textViewCurrentPasswordError;
+        private TextView textViewNewPasswordError;
+        private ProgressBar progressBarPasswordStrength;
+        private TextView textViewPasswordHint;
+        private TextView textViewConfirmNewPasswordError;
+        private TextView textViewGeneralError;
+        private ProgressBar progressBarEditAccount;
+
+        // The current values loaded from the profile.
+        private string originalUsername;
+        private string originalEmail;
+
+        protected override async void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            Xamarin.Essentials.Platform.Init(this, savedInstanceState);
+            SetContentView(Resource.Layout.activity_edit_account);
+
+            InitializeViews();
+            SetupEventHandlers();
+            await LoadCurrentProfileAsync();
+        }
+
+        private void InitializeViews()
+        {
+            editTextUsername            = FindViewById<TextInputEditText>(Resource.Id.editTextEditUsername);
+            editTextEmail               = FindViewById<TextInputEditText>(Resource.Id.editTextEditEmail);
+            editTextCurrentPassword     = FindViewById<TextInputEditText>(Resource.Id.editTextCurrentPassword);
+            editTextNewPassword         = FindViewById<TextInputEditText>(Resource.Id.editTextNewPassword);
+            editTextConfirmNewPassword  = FindViewById<TextInputEditText>(Resource.Id.editTextConfirmNewPassword);
+            buttonSave                  = FindViewById<MaterialButton>(Resource.Id.buttonEditSave);
+            buttonGeneratePassword      = FindViewById<MaterialButton>(Resource.Id.buttonEditGeneratePassword);
+            textViewUsernameError       = FindViewById<TextView>(Resource.Id.textViewEditUsernameError);
+            textViewEmailError          = FindViewById<TextView>(Resource.Id.textViewEditEmailError);
+            textViewCurrentPasswordError = FindViewById<TextView>(Resource.Id.textViewCurrentPasswordError);
+            textViewNewPasswordError    = FindViewById<TextView>(Resource.Id.textViewNewPasswordError);
+            progressBarPasswordStrength = FindViewById<ProgressBar>(Resource.Id.progressBarEditPasswordStrength);
+            textViewPasswordHint        = FindViewById<TextView>(Resource.Id.textViewEditPasswordHint);
+            textViewConfirmNewPasswordError = FindViewById<TextView>(Resource.Id.textViewConfirmNewPasswordError);
+            textViewGeneralError        = FindViewById<TextView>(Resource.Id.textViewEditGeneralError);
+            progressBarEditAccount      = FindViewById<ProgressBar>(Resource.Id.progressBarEditAccount);
+        }
+
+        private void SetupEventHandlers()
+        {
+            buttonSave.Click += async (sender, e) => await OnSaveClicked();
+
+            buttonGeneratePassword.Click += (sender, e) =>
+            {
+                string generated = ValidationHelper.GenerateStrongPassword();
+                editTextNewPassword.Text = generated;
+            };
+
+            // Real-time validation — reuses the same ValidationHelper as signup (DRY).
+            editTextUsername.AddTextChangedListener(new SimpleTextWatcher(_ =>
+            {
+                var result = ValidationHelper.ValidateUsername(editTextUsername.Text?.Trim());
+                if (!result.IsValid) FormUiHelper.ShowError(textViewUsernameError, result.ErrorMessage);
+                else                 FormUiHelper.HideError(textViewUsernameError);
+            }));
+
+            editTextEmail.AddTextChangedListener(new SimpleTextWatcher(_ =>
+            {
+                var result = ValidationHelper.ValidateEmail(editTextEmail.Text?.Trim());
+                if (!result.IsValid) FormUiHelper.ShowError(textViewEmailError, result.ErrorMessage);
+                else                 FormUiHelper.HideError(textViewEmailError);
+            }));
+
+            editTextNewPassword.AddTextChangedListener(new SimpleTextWatcher(text =>
+            {
+                FormUiHelper.UpdatePasswordStrengthIndicator(
+                    text, progressBarPasswordStrength, textViewPasswordHint, textViewNewPasswordError, Resources);
+
+                if (!string.IsNullOrEmpty(editTextConfirmNewPassword.Text))
+                {
+                    var matchResult = ValidationHelper.ValidatePasswordsMatch(text, editTextConfirmNewPassword.Text);
+                    if (!matchResult.IsValid) FormUiHelper.ShowError(textViewConfirmNewPasswordError, matchResult.ErrorMessage);
+                    else                      FormUiHelper.HideError(textViewConfirmNewPasswordError);
+                }
+            }));
+
+            editTextConfirmNewPassword.AddTextChangedListener(new SimpleTextWatcher(_ =>
+            {
+                var result = ValidationHelper.ValidatePasswordsMatch(
+                    editTextNewPassword.Text, editTextConfirmNewPassword.Text);
+                if (!result.IsValid) FormUiHelper.ShowError(textViewConfirmNewPasswordError, result.ErrorMessage);
+                else                 FormUiHelper.HideError(textViewConfirmNewPasswordError);
+            }));
+        }
+
+        // Loads the current username and email from the server (or cache) and pre-fills the fields.
+        private async Task LoadCurrentProfileAsync()
+        {
+            try
+            {
+                var profileService = new ProfileService();
+                var result = await profileService.GetProfileAsync();
+
+                if (result.Success && result.Data != null)
+                {
+                    originalUsername = result.Data.Username;
+                    originalEmail = result.Data.Email;
+                }
+                else
+                {
+                    var cached = await StorageHelper.GetCachedProfileAsync();
+                    if (cached != null)
+                    {
+                        originalUsername = cached.Username;
+                        originalEmail = cached.Email;
+                    }
+                }
+            }
+            catch
+            {
+                var cached = await StorageHelper.GetCachedProfileAsync();
+                if (cached != null)
+                {
+                    originalUsername = cached.Username;
+                    originalEmail = cached.Email;
+                }
+            }
+
+            editTextUsername.Text = originalUsername ?? "";
+            editTextEmail.Text = originalEmail ?? "";
+        }
+
+        private async Task OnSaveClicked()
+        {
+            ClearErrors();
+
+            string username        = editTextUsername.Text?.Trim();
+            string email           = editTextEmail.Text?.Trim();
+            string currentPassword = editTextCurrentPassword.Text;
+            string newPassword     = editTextNewPassword.Text;
+            string confirmPassword = editTextConfirmNewPassword.Text;
+
+            // Determine if the user is changing their master password.
+            bool isChangingPassword = !string.IsNullOrEmpty(currentPassword) ||
+                                     !string.IsNullOrEmpty(newPassword) ||
+                                     !string.IsNullOrEmpty(confirmPassword);
+
+            if (!ValidateInputs(username, email, currentPassword, newPassword, confirmPassword, isChangingPassword))
+                return;
+
+            SetLoadingState(true);
+
+            try
+            {
+                var request = new UpdateAccountRequest
+                {
+                    Username = username,
+                    Email = email,
+                    PasswordChanged = isChangingPassword
+                };
+
+                if (isChangingPassword)
+                {
+                    // Verify the current password by deriving the auth key and comparing locally.
+                    // We fetch the user's salts from the server to derive the current key.
+                    var authService = new AuthService();
+                    var saltResult = await new BaseServiceProxy().GetSaltsAsync(email);
+
+                    // If salts aren't available for the current email (e.g., email changed), use original email.
+                    if (!saltResult.Success)
+                        saltResult = await new BaseServiceProxy().GetSaltsAsync(originalEmail);
+
+                    if (!saltResult.Success)
+                    {
+                        ShowGeneralError("Unable to verify current password. Please try again.");
+                        return;
+                    }
+
+                    string currentAuthKey = EncryptionHelper.DeriveKey(currentPassword, saltResult.Data.AuthSalt);
+                    string currentVaultKey = EncryptionHelper.DeriveKey(currentPassword, saltResult.Data.EncryptionSalt);
+
+                    // Verify the current vault key matches the session key.
+                    if (currentVaultKey != SessionHelper.SessionVaultKey)
+                    {
+                        FormUiHelper.ShowError(textViewCurrentPasswordError, GetString(Resource.String.edit_account_current_password_wrong));
+                        return;
+                    }
+
+                    // Generate new salts and derive new keys.
+                    string newAuthSalt       = EncryptionHelper.GenerateSalt();
+                    string newEncryptionSalt = EncryptionHelper.GenerateSalt();
+                    string newMasterPasswordKey = EncryptionHelper.DeriveKey(newPassword, newAuthSalt);
+                    string newVaultKey       = EncryptionHelper.DeriveKey(newPassword, newEncryptionSalt);
+
+                    request.MasterPasswordKey = newMasterPasswordKey;
+                    request.AuthSalt          = newAuthSalt;
+                    request.EncryptionSalt    = newEncryptionSalt;
+                    // Compute SHA-1 of the plaintext new password for the HIBP breach check.
+                    // Same pattern as signup — never stored, discarded after server validation.
+                    request.PasswordSha1Hash  = EncryptionHelper.ComputeSha1Hash(newPassword);
+
+                    // Re-encrypt all vault items with the new key.
+                    string oldVaultKey = SessionHelper.SessionVaultKey;
+                    var reEncryptedItems = new List<VaultItem>();
+
+                    foreach (var item in SessionHelper.CachedVault)
+                    {
+                        // Decrypt with old key
+                        string plaintext = EncryptionHelper.DecryptAesGcm(
+                            item.IV, item.Tag, item.CipherText, oldVaultKey);
+
+                        // Re-encrypt with new key
+                        var (newIV, newTag, newCipherText) = EncryptionHelper.EncryptAesGcm(plaintext, newVaultKey);
+
+                        reEncryptedItems.Add(new VaultItem
+                        {
+                            Id         = item.Id,
+                            IV         = newIV,
+                            Tag        = newTag,
+                            CipherText = newCipherText
+                        });
+                    }
+
+                    request.VaultItems = reEncryptedItems;
+
+                    // Send the update to the server.
+                    var profileService = new ProfileService();
+                    var result = await profileService.UpdateAccountAsync(request);
+
+                    if (result.Success)
+                    {
+                        // Update the session with the new vault key.
+                        SessionHelper.StartSession(newVaultKey);
+                        await StorageHelper.SaveVaultKey(newVaultKey);
+                        await StorageHelper.SaveUsername(username);
+
+                        // Update the cached vault items with the new encryption.
+                        for (int i = 0; i < SessionHelper.CachedVault.Count; i++)
+                        {
+                            var cached = SessionHelper.CachedVault[i];
+                            var reenc  = reEncryptedItems.Find(r => r.Id == cached.Id);
+                            if (reenc != null)
+                            {
+                                cached.IV         = reenc.IV;
+                                cached.Tag        = reenc.Tag;
+                                cached.CipherText = reenc.CipherText;
+                            }
+                        }
+
+                        SessionHelper.InvalidateWarnings();
+
+                        Toast.MakeText(this, Resource.String.edit_account_success, ToastLength.Short).Show();
+                        SetResult(Result.Ok, new Intent().PutExtra(ResultUpdated, true));
+                        Finish();
+                    }
+                    else
+                    {
+                        ShowGeneralError(result.Message);
+                    }
+                }
+                else
+                {
+                    // Username/email only change — no re-encryption needed.
+                    var profileService = new ProfileService();
+                    var result = await profileService.UpdateAccountAsync(request);
+
+                    if (result.Success)
+                    {
+                        await StorageHelper.SaveUsername(username);
+
+                        Toast.MakeText(this, Resource.String.edit_account_success, ToastLength.Short).Show();
+                        SetResult(Result.Ok, new Intent().PutExtra(ResultUpdated, true));
+                        Finish();
+                    }
+                    else
+                    {
+                        ShowGeneralError(result.Message);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowGeneralError(GetString(Resource.String.edit_account_error));
+                System.Diagnostics.Debug.WriteLine($"[EDIT ACCOUNT ERROR] {ex.Message}");
+            }
+            finally
+            {
+                SetLoadingState(false);
+            }
+        }
+
+        private bool ValidateInputs(string username, string email,
+            string currentPassword, string newPassword, string confirmPassword,
+            bool isChangingPassword)
+        {
+            bool isValid = true;
+
+            var usernameResult = ValidationHelper.ValidateUsername(username);
+            if (!usernameResult.IsValid) { FormUiHelper.ShowError(textViewUsernameError, usernameResult.ErrorMessage); isValid = false; }
+
+            var emailResult = ValidationHelper.ValidateEmail(email);
+            if (!emailResult.IsValid) { FormUiHelper.ShowError(textViewEmailError, emailResult.ErrorMessage); isValid = false; }
+
+            if (isChangingPassword)
+            {
+                if (string.IsNullOrEmpty(currentPassword))
+                {
+                    FormUiHelper.ShowError(textViewCurrentPasswordError, "Current password is required to change your master password.");
+                    isValid = false;
+                }
+
+                var passwordResult = ValidationHelper.ValidatePassword(newPassword);
+                if (!passwordResult.IsValid) { FormUiHelper.ShowError(textViewNewPasswordError, passwordResult.ErrorMessage); isValid = false; }
+
+                var confirmResult = ValidationHelper.ValidatePasswordsMatch(newPassword, confirmPassword);
+                if (!confirmResult.IsValid) { FormUiHelper.ShowError(textViewConfirmNewPasswordError, confirmResult.ErrorMessage); isValid = false; }
+            }
+
+            return isValid;
+        }
+
+        // ── UI helpers delegating to the shared FormUiHelper (DRY) ──
+
+        private void ShowGeneralError(string message)
+        {
+            textViewGeneralError.Text = message;
+            textViewGeneralError.Visibility = ViewStates.Visible;
+        }
+
+        private void ClearErrors()
+        {
+            FormUiHelper.HideError(textViewUsernameError);
+            FormUiHelper.HideError(textViewEmailError);
+            FormUiHelper.HideError(textViewCurrentPasswordError);
+            FormUiHelper.HideError(textViewNewPasswordError);
+            FormUiHelper.HideError(textViewConfirmNewPasswordError);
+            FormUiHelper.HideError(textViewGeneralError);
+        }
+
+        private void SetLoadingState(bool isLoading)
+        {
+            progressBarEditAccount.Visibility = isLoading ? ViewStates.Visible : ViewStates.Gone;
+            buttonSave.Enabled               = !isLoading;
+            buttonGeneratePassword.Enabled   = !isLoading;
+            editTextUsername.Enabled          = !isLoading;
+            editTextEmail.Enabled             = !isLoading;
+            editTextCurrentPassword.Enabled   = !isLoading;
+            editTextNewPassword.Enabled       = !isLoading;
+            editTextConfirmNewPassword.Enabled = !isLoading;
+        }
+    }
+
+    // Lightweight proxy so EditAccountActivity can call GetSalts without going through the
+    // full AuthService login flow. Follows the same BaseService pattern.
+    internal class BaseServiceProxy : BaseService
+    {
+        public async Task<ServerResponse<SaltData>> GetSaltsAsync(string email)
+        {
+            return await PostAsync<SaltData>("GetSalts", new { Email = email });
+        }
+    }
+}

@@ -31,6 +31,12 @@ namespace SecurioClient.Helpers.ServerHelpers
             return response;
         }
 
+        // Sends the updated account details (and optionally re-encrypted vault items) to the server.
+        public async Task<ServerResponse<object>> UpdateAccountAsync(UpdateAccountRequest request)
+        {
+            return await PostAsync<object>("UpdateUser", request);
+        }
+
         // Permanently deletes the user account and all associated vault items on the server.
         public async Task<ServerResponse<object>> DeleteAccountAsync()
         {

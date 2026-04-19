@@ -154,4 +154,20 @@
     <string name="profile_deleted_toast">Account deleted successfully</string>
     <string name="profile_delete_error">Failed to delete account. Please try again.</string>
     <string name="profile_load_error">Unable to load profile. Showing cached data.</string>
+    <!-- Edit Account page strings -->
+    <string name="edit_account_title">Edit Account</string>
+    <string name="edit_account_subtitle">Update your credentials</string>
+    <string name="edit_account_username_hint">Username</string>
+    <string name="edit_account_email_hint">Email</string>
+    <string name="edit_account_current_password_hint">Current Master Password</string>
+    <string name="edit_account_new_password_hint">New Master Password</string>
+    <string name="edit_account_confirm_password_hint">Confirm New Master Password</string>
+    <string name="edit_account_generate_password">🎲 Generate strong password</string>
+    <string name="edit_account_button_save">Save Changes</string>
+    <string name="edit_account_password_section_title">Change Master Password (optional)</string>
+    <string name="edit_account_success">Account updated successfully.</string>
+    <string name="edit_account_error">Unable to update account. Please check your connection and try again.</string>
+    <string name="edit_account_current_password_wrong">Current password is incorrect.</string>
+    <string name="edit_account_password_breached">This password was found in a data breach. Please choose a different password.</string>
+    <string name="edit_account_reencrypt_progress">Re-encrypting vault…</string>
 </resources>

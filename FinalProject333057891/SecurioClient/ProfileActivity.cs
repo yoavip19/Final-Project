@@ -72,8 +72,8 @@ namespace SecurioClient
         {
             buttonProfileEdit.Click += (sender, e) =>
             {
-                // TODO: Navigate to an Edit Credentials activity when implemented
-                Toast.MakeText(this, "Edit Credentials coming soon!", ToastLength.Short).Show();
+                var intent = new Intent(this, typeof(EditAccountActivity));
+                StartActivityForResult(intent, EditAccountActivity.RequestCodeEditAccount);
             };
 
             buttonProfileLogout.Click += (sender, e) => ConfirmLogout();
@@ -82,6 +82,19 @@ namespace SecurioClient
 
         private void OnBottomNavTabSelected(object sender, string tab)
             => BottomNavHelper.Navigate(this, tab, "profile");
+
+        protected override async void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+
+            if (requestCode == EditAccountActivity.RequestCodeEditAccount
+                && resultCode == Result.Ok
+                && data?.GetBooleanExtra(EditAccountActivity.ResultUpdated, false) == true)
+            {
+                // Refresh the displayed profile after a successful account edit.
+                await LoadProfileAsync();
+            }
+        }
 
         private async Task LoadProfileAsync()
         {

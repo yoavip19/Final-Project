@@ -112,5 +112,42 @@ namespace SecurioBackendFunction.Repositories
             int rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
         }
+
+        // Bulk-updates the encryption fields (IV, Tag, CipherText) for all vault items
+        // belonging to the given user. Used when the master password changes and all
+        // passwords must be re-encrypted with the new key.
+        public async Task<bool> BulkUpdateVaultItemsAsync(List<VaultItem> items, int userId)
+        {
+            if (items == null || items.Count == 0) return true;
+
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            using var transaction = conn.BeginTransaction();
+
+            try
+            {
+                foreach (var item in items)
+                {
+                    var sql = @"UPDATE VaultItems
+                                SET IV = @iv, Tag = @tag, CipherText = @cipher
+                                WHERE Id = @id AND UserId = @uid";
+                    using var cmd = new SqlCommand(sql, conn, transaction);
+                    cmd.Parameters.Add("@id", SqlDbType.Int).Value = item.Id;
+                    cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
+                    cmd.Parameters.Add("@iv", SqlDbType.NVarChar).Value = item.IV;
+                    cmd.Parameters.Add("@tag", SqlDbType.NVarChar).Value = item.Tag;
+                    cmd.Parameters.Add("@cipher", SqlDbType.NVarChar).Value = item.CipherText;
+                    await cmd.ExecuteNonQueryAsync();
+                }
+
+                transaction.Commit();
+                return true;
+            }
+            catch
+            {
+                transaction.Rollback();
+                return false;
+            }
+        }
     }
 }
