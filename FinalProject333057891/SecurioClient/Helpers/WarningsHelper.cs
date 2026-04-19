@@ -1,0 +1,213 @@
+using SecurioModels.DataTransferObjects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace SecurioClient.Helpers
+{
+    /// <summary>
+    /// Holds the four password-risk counters computed from the vault.
+    /// </summary>
+    public sealed class WarningsData
+    {
+        public int LeakedCount { get; set; }
+        public int WeakCount { get; set; }
+        public int ReusedCount { get; set; }
+        public int OldCount { get; set; }
+    }
+
+    /// <summary>
+    /// Computes password-health warning counters from the in-memory vault.
+    /// Counters are designed to be calculated once at login and cached in
+    /// <see cref="SessionHelper.CachedWarnings"/>; the cache is flushed
+    /// whenever the vault contents change.
+    /// </summary>
+    public static class WarningsHelper
+    {
+        /// <summary>
+        /// Best-practice password age threshold. NIST SP 800-63B does not mandate
+        /// forced rotation, but 90 days is the widely adopted industry standard
+        /// for flagging stale credentials in consumer password managers.
+        /// </summary>
+        private const int OldPasswordDays = 90;
+
+        /// <summary>
+        /// Analyses every item in <paramref name="vault"/> and returns aggregated
+        /// warning counters. Password decryption (needed for the "weak" check)
+        /// uses the provided <paramref name="vaultKey"/>.
+        /// The "leaked" check performs a live HIBP k-anonymity query for each
+        /// password's SHA-1 hash.
+        /// </summary>
+        public static async Task<WarningsData> ComputeWarningsAsync(IList<VaultItem> vault, string vaultKey)
+        {
+            if (vault == null || vault.Count == 0)
+                return new WarningsData();
+
+            int leaked = 0;
+            int weak = 0;
+            int reused = 0;
+            int old = 0;
+
+            DateTime oldThreshold = DateTime.UtcNow.AddDays(-OldPasswordDays);
+
+            // ── Leaked ────────────────────────────────────────
+            // Query HIBP for each password's SHA-1 hash using the k-anonymity
+            // model so only the first 5 characters are ever transmitted.
+            foreach (var item in vault)
+            {
+                if (!string.IsNullOrEmpty(item.Sha1Hash) &&
+                    await HibpClientService.IsPasswordPwnedAsync(item.Sha1Hash))
+                    leaked++;
+            }
+
+            // ── Weak ──────────────────────────────────────────
+            // Decrypt each password and run it through the same
+            // validation rules enforced on the signup page.
+            foreach (var item in vault)
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(item.IV) ||
+                        string.IsNullOrEmpty(item.Tag) ||
+                        string.IsNullOrEmpty(item.CipherText))
+                        continue;
+
+                    string plaintext = EncryptionHelper.DecryptAesGcm(
+                        item.IV, item.Tag, item.CipherText, vaultKey);
+
+                    var result = ValidationHelper.ValidatePassword(plaintext);
+                    if (!result.IsValid)
+                        weak++;
+                }
+                catch
+                {
+                    // If decryption fails for any reason, skip the item.
+                }
+            }
+
+            // ── Reused ────────────────────────────────────────
+            // Two or more items that share the same SHA-1 hash are
+            // reusing the same password.  Every member of such a
+            // group is counted (not just the duplicates).
+            var hashGroups = vault
+                .Where(v => !string.IsNullOrEmpty(v.Sha1Hash))
+                .GroupBy(v => v.Sha1Hash, StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Count() > 1);
+
+            foreach (var group in hashGroups)
+                reused += group.Count();
+
+            // ── Old ───────────────────────────────────────────
+            // Only passwords with a known LastUpdate that is older than
+            // the threshold are flagged.  Items whose LastUpdate has never
+            // been set (DateTime.MinValue / default) are skipped — they
+            // are typically newly created entries whose server-assigned
+            // timestamp has not yet been propagated to the local cache.
+            foreach (var item in vault)
+            {
+                if (item.LastUpdate != default && item.LastUpdate < oldThreshold)
+                    old++;
+            }
+
+            return new WarningsData
+            {
+                LeakedCount = leaked,
+                WeakCount = weak,
+                ReusedCount = reused,
+                OldCount = old
+            };
+        }
+
+        /// <summary>
+        /// Returns the subset of <paramref name="vault"/> items that fall under
+        /// the specified <paramref name="category"/> risk.
+        /// Categories: "leaked", "weak", "reused", "old".
+        /// </summary>
+        public static async Task<List<VaultItem>> GetItemsAtRiskAsync(
+            IList<VaultItem> vault, string vaultKey, string category)
+        {
+            if (vault == null || vault.Count == 0)
+                return new List<VaultItem>();
+
+            switch (category)
+            {
+                case "leaked":
+                    return await GetLeakedItemsAsync(vault);
+
+                case "weak":
+                    return GetWeakItems(vault, vaultKey);
+
+                case "reused":
+                    return GetReusedItems(vault);
+
+                case "old":
+                    return GetOldItems(vault);
+
+                default:
+                    return new List<VaultItem>();
+            }
+        }
+
+        private static async Task<List<VaultItem>> GetLeakedItemsAsync(IList<VaultItem> vault)
+        {
+            var result = new List<VaultItem>();
+            foreach (var item in vault)
+            {
+                if (!string.IsNullOrEmpty(item.Sha1Hash) &&
+                    await HibpClientService.IsPasswordPwnedAsync(item.Sha1Hash))
+                    result.Add(item);
+            }
+            return result;
+        }
+
+        private static List<VaultItem> GetWeakItems(IList<VaultItem> vault, string vaultKey)
+        {
+            var result = new List<VaultItem>();
+            foreach (var item in vault)
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(item.IV) ||
+                        string.IsNullOrEmpty(item.Tag) ||
+                        string.IsNullOrEmpty(item.CipherText))
+                        continue;
+
+                    string plaintext = EncryptionHelper.DecryptAesGcm(
+                        item.IV, item.Tag, item.CipherText, vaultKey);
+
+                    var validationResult = ValidationHelper.ValidatePassword(plaintext);
+                    if (!validationResult.IsValid)
+                        result.Add(item);
+                }
+                catch
+                {
+                    // Skip items that cannot be decrypted.
+                }
+            }
+            return result;
+        }
+
+        private static List<VaultItem> GetReusedItems(IList<VaultItem> vault)
+        {
+            var hashGroups = vault
+                .Where(v => !string.IsNullOrEmpty(v.Sha1Hash))
+                .GroupBy(v => v.Sha1Hash, StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Count() > 1);
+
+            var result = new List<VaultItem>();
+            foreach (var group in hashGroups)
+                result.AddRange(group);
+
+            return result;
+        }
+
+        private static List<VaultItem> GetOldItems(IList<VaultItem> vault)
+        {
+            DateTime oldThreshold = DateTime.UtcNow.AddDays(-OldPasswordDays);
+            return vault
+                .Where(item => item.LastUpdate != default && item.LastUpdate < oldThreshold)
+                .ToList();
+        }
+    }
+}

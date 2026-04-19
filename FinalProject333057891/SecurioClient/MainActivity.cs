@@ -35,6 +35,13 @@ namespace SecurioClient
                     // Fetch the user's vault items into the in-memory cache.
                     await AuthService.FetchAndCacheVaultAsync();
 
+                    // Compute password-health warnings for the restored session.
+                    if (!string.IsNullOrEmpty(vaultKey))
+                    {
+                        SessionHelper.CachedWarnings = await WarningsHelper.ComputeWarningsAsync(
+                            SessionHelper.CachedVault, vaultKey);
+                    }
+
                     var vaultIntent = new Android.Content.Intent(this, typeof(VaultActivity));
                     vaultIntent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);
                     StartActivity(vaultIntent);

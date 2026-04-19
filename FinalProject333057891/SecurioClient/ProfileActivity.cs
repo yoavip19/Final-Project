@@ -81,20 +81,7 @@ namespace SecurioClient
         }
 
         private void OnBottomNavTabSelected(object sender, string tab)
-        {
-            if (tab == "vault")
-            {
-                var intent = new Intent(this, typeof(VaultActivity));
-                intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
-                StartActivity(intent);
-                Finish();
-            }
-            else if (tab == "generator")
-            {
-                Toast.MakeText(this, "Generator coming soon!", ToastLength.Short).Show();
-            }
-            // "profile" tab — already here, no action needed
-        }
+            => BottomNavHelper.Navigate(this, tab, "profile");
 
         private async Task LoadProfileAsync()
         {

@@ -74,7 +74,11 @@
     <Compile Include="Helpers\SimpleTextWatcher.cs" />
     <Compile Include="Helpers\StorageHelper.cs" />
     <Compile Include="Helpers\EncryptionHelper.cs" />
+    <Compile Include="Helpers\WarningsHelper.cs" />
+    <Compile Include="Helpers\HibpClientService.cs" />
     <Compile Include="Helpers\ValidationHelper.cs" />
+    <Compile Include="Helpers\PasswordEntryActionsHelper.cs" />
+    <Compile Include="Helpers\BottomNavHelper.cs" />
     <Compile Include="LoginActivity.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="PasswordBannerAdapter.cs" />
@@ -83,6 +87,8 @@
     <Compile Include="EditPasswordActivity.cs" />
     <Compile Include="ViewPasswordActivity.cs" />
     <Compile Include="VaultActivity.cs" />
+    <Compile Include="WarningsActivity.cs" />
+    <Compile Include="RiskDetailActivity.cs" />
     <Compile Include="ProfileActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -121,9 +127,15 @@
     <AndroidResource Include="Resources\layout\activity_view_password.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
-    <AndroidResource Include="Resources\layout\activity_profile.xml">
+    <AndroidResource Include="Resources\layout\activity_warnings.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
+    <AndroidResource Include="Resources\layout\activity_risk_detail.xml">
+		<SubType>Designer</SubType>
+	</AndroidResource>
+	<AndroidResource Include="Resources\layout\activity_profile.xml">
+		<SubType>Designer</SubType>
+	</AndroidResource>
     <AndroidResource Include="Resources\drawable\bg_search_bar.xml" />
     <AndroidResource Include="Resources\drawable\bg_icon_circle.xml" />
     <AndroidResource Include="Resources\drawable\bg_bottom_nav.xml" />
@@ -132,6 +144,11 @@
     <AndroidResource Include="Resources\drawable\ic_eye.xml" />
     <AndroidResource Include="Resources\drawable\ic_edit.xml" />
     <AndroidResource Include="Resources\drawable\ic_delete.xml" />
+    <AndroidResource Include="Resources\drawable\bg_warning_card.xml" />
+    <AndroidResource Include="Resources\drawable\bg_warning_circle_leaked.xml" />
+    <AndroidResource Include="Resources\drawable\bg_warning_circle_weak.xml" />
+    <AndroidResource Include="Resources\drawable\bg_warning_circle_reused.xml" />
+    <AndroidResource Include="Resources\drawable\bg_warning_circle_old.xml" />
     <AndroidResource Include="Resources\values\colors.xml" />
     <AndroidResource Include="Resources\values\ic_launcher_background.xml" />
     <AndroidResource Include="Resources\values\strings.xml" />

@@ -6,12 +6,10 @@ using Android.Widget;
 using AndroidX.AppCompat.App;
 using AndroidX.RecyclerView.Widget;
 using SecurioClient.Helpers;
-using SecurioClient.Helpers.ServerHelpers;
 using SecurioModels.DataTransferObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace SecurioClient
 {
@@ -70,99 +68,17 @@ namespace SecurioClient
         {
             var displayed = GetDisplayedEntries();
             if (position >= 0 && position < displayed.Count)
-                ShowOptionsSheet(displayed[position]);
+                PasswordEntryActionsHelper.ShowOptionsSheet(
+                    this,
+                    displayed[position],
+                    SyncEntryCache,
+                    OnEntryDeleted);
         }
 
-        /// <summary>
-        /// Displays the <see cref="PasswordOptionsBottomSheet"/> for the given entry
-        /// and wires up the View, Edit, and Delete callbacks.
-        /// </summary>
-        private void ShowOptionsSheet(VaultItem entry)
+        private void OnEntryDeleted(VaultItem entry)
         {
-            var sheet = PasswordOptionsBottomSheet.NewInstance(entry);
-
-            sheet.ViewClicked += (s, e) =>
-            {
-                var intent = new Intent(this, typeof(ViewPasswordActivity));
-                intent.PutExtra(ViewPasswordActivity.ExtraSiteName, entry.AccountName);
-                intent.PutExtra(ViewPasswordActivity.ExtraUsername, entry.AccountUsername);
-                intent.PutExtra(ViewPasswordActivity.ExtraNotes, entry.Notes);
-                intent.PutExtra(ViewPasswordActivity.ExtraIV, entry.IV);
-                intent.PutExtra(ViewPasswordActivity.ExtraTag, entry.Tag);
-                intent.PutExtra(ViewPasswordActivity.ExtraCipherText, entry.CipherText);
-                intent.PutExtra(ViewPasswordActivity.ExtraLastUpdate, entry.LastUpdate.Ticks);
-                StartActivity(intent);
-            };
-
-            sheet.EditClicked += (s, e) =>
-            {
-                SyncEntryCache();
-                var intent = new Intent(this, typeof(EditPasswordActivity));
-                intent.PutExtra(EditPasswordActivity.ExtraEntryId, entry.Id);
-                intent.PutExtra(EditPasswordActivity.ExtraSiteName, entry.AccountName);
-                intent.PutExtra(EditPasswordActivity.ExtraUsername, entry.AccountUsername);
-                intent.PutExtra(EditPasswordActivity.ExtraNotes, entry.Notes);
-                intent.PutExtra(EditPasswordActivity.ExtraIV, entry.IV);
-                intent.PutExtra(EditPasswordActivity.ExtraTag, entry.Tag);
-                intent.PutExtra(EditPasswordActivity.ExtraCipherText, entry.CipherText);
-                intent.PutExtra(EditPasswordActivity.ExtraSha1Hash, entry.Sha1Hash);
-                intent.PutExtra(EditPasswordActivity.ExtraIsLeaked, entry.IsLeaked);
-                StartActivityForResult(intent, EditPasswordActivity.RequestCodeEdit);
-            };
-
-            sheet.DeleteClicked += (s, e) => ConfirmDelete(entry);
-
-            sheet.Show(SupportFragmentManager, PasswordOptionsBottomSheet.TagName);
-        }
-
-        /// <summary>
-        /// Shows an <see cref="AlertDialog"/> asking the user to confirm deletion of <paramref name="entry"/>.
-        /// On confirmation, removes the entry from the server and then from the local list.
-        /// </summary>
-        private void ConfirmDelete(VaultItem entry)
-        {
-            string message = string.Format(
-                GetString(Resource.String.sheet_delete_confirm_message),
-                entry.AccountName);
-
-            new AndroidX.AppCompat.App.AlertDialog.Builder(this)
-                .SetTitle(Resource.String.sheet_delete_confirm_title)
-                .SetMessage(message)
-                .SetPositiveButton(Resource.String.sheet_delete_confirm_yes, async (s, e) =>
-                {
-                    await DeleteEntryAsync(entry);
-                })
-                .SetNegativeButton(Resource.String.sheet_delete_confirm_no, (s, e) => { })
-                .Show();
-        }
-
-        /// <summary>
-        /// Calls the server to delete <paramref name="entry"/>, then removes it from the
-        /// local list and session cache. Shows an error toast if the server call fails.
-        /// </summary>
-        private async Task DeleteEntryAsync(VaultItem entry)
-        {
-            try
-            {
-                var vaultService = new VaultService();
-                var result = await vaultService.DeleteVaultItemAsync(entry.Id);
-
-                if (result.Success)
-                {
-                    allEntries.RemoveAll(x => x.Id == entry.Id);
-                    SessionHelper.RemoveVaultItem(entry.Id);
-                    RefreshList();
-                    Toast.MakeText(this, Resource.String.sheet_deleted_toast, ToastLength.Short).Show();
-                }
-                else
-                {
-                    Toast.MakeText(this, Resource.String.sheet_delete_error, ToastLength.Long).Show();
-                }
-            }
-            catch (Exception)
-            {
-                Toast.MakeText(this, Resource.String.sheet_delete_error, ToastLength.Long).Show();
-            }
+            allEntries.RemoveAll(x => x.Id == entry.Id);
+            RefreshList();
         }
 
         private void SetupBottomNavFragment(Bundle savedInstanceState)
@@ -170,7 +86,7 @@ namespace SecurioClient
             // Only add the fragment on fresh creation to avoid duplicates on configuration change.
             if (savedInstanceState == null)
             {
-                var fragment = new BottomNavFragment();
+                var fragment = BottomNavFragment.NewInstance("vault");
                 fragment.TabSelected += OnBottomNavTabSelected;
 
                 SupportFragmentManager
@@ -198,19 +114,7 @@ namespace SecurioClient
         }
 
         private void OnBottomNavTabSelected(object sender, string tab)
-        {
-            if (tab == "profile")
-            {
-                var intent = new Intent(this, typeof(ProfileActivity));
-                intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
-                StartActivity(intent);
-                Finish();
-            }
-            else if (tab != "vault")
-            {
-                Toast.MakeText(this, $"{char.ToUpper(tab[0])}{tab.Substring(1)} coming soon!", ToastLength.Short).Show();
-            }
-        }
+            => BottomNavHelper.Navigate(this, tab, "vault");
 
         // ──────────────────────────────────────────
         //  Activity result handling
@@ -235,11 +139,13 @@ namespace SecurioClient
                     Tag             = data.GetStringExtra(AddPasswordActivity.ResultTag),
                     CipherText      = data.GetStringExtra(AddPasswordActivity.ResultCipherText),
                     Sha1Hash        = data.GetStringExtra(AddPasswordActivity.ResultSha1Hash),
-                    IsLeaked        = data.GetBooleanExtra(AddPasswordActivity.ResultIsLeaked, false)
+                    IsLeaked        = data.GetBooleanExtra(AddPasswordActivity.ResultIsLeaked, false),
+                    LastUpdate      = new DateTime(data.GetLongExtra(AddPasswordActivity.ResultLastUpdate, DateTime.UtcNow.Ticks))
                 };
 
                 allEntries.Add(newItem);
                 SessionHelper.AddVaultItem(newItem);
+                SessionHelper.InvalidateWarnings();
                 RefreshList();
             }
             else if (requestCode == EditPasswordActivity.RequestCodeEdit)
@@ -256,12 +162,14 @@ namespace SecurioClient
                     existing.CipherText      = data.GetStringExtra(EditPasswordActivity.ResultCipherText);
                     existing.Sha1Hash        = data.GetStringExtra(EditPasswordActivity.ResultSha1Hash);
                     existing.IsLeaked        = data.GetBooleanExtra(EditPasswordActivity.ResultIsLeaked, false);
+                    existing.LastUpdate      = new DateTime(data.GetLongExtra(EditPasswordActivity.ResultLastUpdate, existing.LastUpdate.Ticks));
 
                     long lastUpdateTicks = data.GetLongExtra(EditPasswordActivity.ResultLastUpdate, 0L);
                     if (lastUpdateTicks > 0)
                         existing.LastUpdate = new DateTime(lastUpdateTicks, DateTimeKind.Utc);
 
                     SessionHelper.UpdateVaultItem(existing);
+                    SessionHelper.InvalidateWarnings();
                 }
 
                 RefreshList();
