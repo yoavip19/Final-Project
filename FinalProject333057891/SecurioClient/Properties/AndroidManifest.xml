@@ -6,10 +6,11 @@
           package="com.companyname.securioclient">
   <uses-sdk android:minSdkVersion="33" android:targetSdkVersion="33" />
   <application android:usesCleartextTraffic="true" android:label="Securio" android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:supportsRtl="true" android:theme="@style/AppTheme">
-    <!-- Disable WorkManager's automatic initialization so that SecurioClientApplication
-         can call WorkManager.Initialize() with our custom WorkerFactory.
-         Without this, the default ContentProvider auto-initializes WorkManager before
-         Application.OnCreate() runs, causing a duplicate-initialization exception. -->
+    <!-- Belt-and-suspenders: remove WorkManager's default auto-initializer.
+         The primary mechanism is SecurioClientApplication implementing Configuration.IProvider,
+         which the auto-initializer uses if present.  This removal is a fallback so that the
+         manual WorkManager.Initialize() call in Application.OnCreate() does not conflict
+         with an already-initialized default instance. -->
     <provider
         android:name="androidx.startup.InitializationProvider"
         android:authorities="com.companyname.securioclient.androidx-startup"

@@ -16,11 +16,10 @@ namespace SecurioClient
         private const string Tag = "PasswordCheckWorker";
         private const string DefaultUsername = "User";
 
-        // How often the check runs in production.
-        // For testing: change to 1 minute (PeriodicWorkRequest minimum is 15 min, so
-        // the actual floor is 15 min — but the intent is documented here).
-        //public const int IntervalHours = 24 // Uncomment for production
-        public const int IntervalMinutes = 1;
+        // WorkManager enforces a minimum periodic interval of 15 minutes.
+        // Setting a value below 15 is silently clamped, so we use the true floor.
+        // For production, change to 24 hours (1440 minutes).
+        public const int IntervalMinutes = 15; // 15 for testing, 1440 for production
 
         public PasswordCheckWorker(Context context, WorkerParameters workerParams)
             : base(context, workerParams)
@@ -29,11 +28,13 @@ namespace SecurioClient
 
         public override Result DoWork()
         {
+            Log.Info(Tag, "DoWork() entered.");
             try
             {
                 // Run the async poll synchronously inside the Worker thread.
                 var task = RunCheckAsync();
                 task.Wait();
+                Log.Info(Tag, "DoWork() completed successfully.");
                 return Result.InvokeSuccess();
             }
             catch (Exception ex)
@@ -95,23 +96,32 @@ namespace SecurioClient
         }
 
         // Enqueues the periodic work request with WorkManager.
-        // Call once at app startup; WorkManager de-duplicates by unique name.
+        // Uses Replace policy to ensure configuration changes are picked up
+        // and any stale work from before the custom WorkerFactory fix is cleared.
         public static void Enqueue(Context context)
         {
             // Create the notification channel early so the first notification works.
             NotificationHelper.CreateChannel(context);
 
+            // Require network connectivity — the worker calls the server.
+            var constraints = new Constraints.Builder()
+                .SetRequiredNetworkType(NetworkType.Connected)
+                .Build();
+
             var request = PeriodicWorkRequest.Builder
-                //.From<PasswordCheckWorker>(TimeSpan.FromHours(IntervalHours)) // Uncomment for production
                 .From<PasswordCheckWorker>(TimeSpan.FromMinutes(IntervalMinutes))
+                .SetConstraints(constraints)
                 .AddTag(Tag)
                 .Build();
 
+            // Replace ensures stale requests (from before the factory fix) are cleared.
             WorkManager.GetInstance(context)
                 .EnqueueUniquePeriodicWork(
                     Tag,
-                    ExistingPeriodicWorkPolicy.Keep,
+                    ExistingPeriodicWorkPolicy.Replace,
                     request);
+
+            Log.Info(Tag, $"Periodic work enqueued (interval={IntervalMinutes}min, policy=Replace).");
         }
     }
 }
