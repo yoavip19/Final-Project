@@ -84,13 +84,15 @@ namespace SecurioClient
         {
             if (tab == "vault")
             {
-                Finish();
+                var intent = new Intent(this, typeof(VaultActivity));
+                StartActivity(intent);
             }
-            else if (tab != "warnings")
+            else if (tab == "profile")
             {
-                Toast.MakeText(this,
-                    $"{char.ToUpper(tab[0])}{tab.Substring(1)} coming soon!",
-                    ToastLength.Short).Show();
+                var intent = new Intent(this, typeof(ProfileActivity));
+                intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
+                StartActivity(intent);
+                Finish();
             }
         }
 

@@ -130,9 +130,11 @@
       <SubType>Designer</SubType>
     </AndroidResource>
     <AndroidResource Include="Resources\layout\activity_risk_detail.xml">
-    <AndroidResource Include="Resources\layout\activity_profile.xml">
-      <SubType>Designer</SubType>
-    </AndroidResource>
+		<SubType>Designer</SubType>
+	</AndroidResource>
+	<AndroidResource Include="Resources\layout\activity_profile.xml">
+		<SubType>Designer</SubType>
+	</AndroidResource>
     <AndroidResource Include="Resources\drawable\bg_search_bar.xml" />
     <AndroidResource Include="Resources\drawable\bg_icon_circle.xml" />
     <AndroidResource Include="Resources\drawable\bg_bottom_nav.xml" />
