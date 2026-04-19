@@ -1,5 +1,6 @@
 using Moq;
 using Xunit;
+using SecurioBackendFunction.Helpers;
 using SecurioBackendFunction.Logic;
 using SecurioBackendFunction.Repositories;
 using SecurioModels.DataTransferObjects;
@@ -13,17 +14,37 @@ namespace SecurioBackendFunction.Tests
     {
         private const int UserId = 42;
 
-        private static User ValidUpdate(bool withPassword = false) => new User
+        // Valid SHA-1 hex string used as a stand-in for a non-leaked password hash.
+        private const string SafeHash  = "AABBCCDDEEFF00112233445566778899AABBCCDD";
+        // Valid SHA-1 hex string used as a stand-in for a leaked password hash.
+        private const string PwnedHash = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709";
+
+        private static User ValidUpdate(bool withPassword = false, string sha1Hash = null) => new User
         {
             Username = "updateduser",
             Email = "updated@example.com",
             MasterPasswordKey = withPassword ? "newkey==" : null,
             AuthSalt = withPassword ? "newsalt==" : null,
-            EncryptionSalt = withPassword ? "newencsalt==" : null
+            EncryptionSalt = withPassword ? "newencsalt==" : null,
+            PasswordSha1Hash = sha1Hash
         };
 
-        private static UserManager Build(Mock<IUserRepository> userRepo, Mock<IVaultItemRepository> vaultRepo = null)
-            => new UserManager(userRepo.Object, (vaultRepo ?? new Mock<IVaultItemRepository>()).Object);
+        private static UserManager Build(
+            Mock<IUserRepository> userRepo,
+            Mock<IVaultItemRepository> vaultRepo = null,
+            Mock<IHibpService> hibp = null)
+        {
+            if (hibp == null)
+            {
+                hibp = new Mock<IHibpService>();
+                // Default: no password is pwned unless the test supplies its own mock.
+                hibp.Setup(h => h.IsPasswordPwnedAsync(It.IsAny<string>())).ReturnsAsync(false);
+            }
+            return new UserManager(
+                userRepo.Object,
+                (vaultRepo ?? new Mock<IVaultItemRepository>()).Object,
+                hibp.Object);
+        }
 
         // ── Username validation ──────────────────────────────────────────────────
 
@@ -145,6 +166,89 @@ namespace SecurioBackendFunction.Tests
 
             Assert.False(result.Success);
             Assert.Contains("EncryptionSalt", result.Message);
+        }
+
+        // ── HIBP breach check ────────────────────────────────────────────────────
+
+        [Fact]
+        public async Task UpdateUserAsync_PwnedPassword_ReturnsFail()
+        {
+            var repo = new Mock<IUserRepository>();
+            var hibp = new Mock<IHibpService>();
+            repo.Setup(r => r.EmailExistsForOtherUserAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(false);
+            hibp.Setup(h => h.IsPasswordPwnedAsync(PwnedHash)).ReturnsAsync(true);
+            var mgr = Build(repo, hibp: hibp);
+
+            var user = ValidUpdate(withPassword: true, sha1Hash: PwnedHash);
+            var result = await mgr.UpdateUserAsync(UserId, user, passwordChanged: true);
+
+            Assert.False(result.Success);
+            Assert.Contains("data breach", result.Message);
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_PwnedPassword_DoesNotCallRepo()
+        {
+            var repo = new Mock<IUserRepository>();
+            var hibp = new Mock<IHibpService>();
+            repo.Setup(r => r.EmailExistsForOtherUserAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(false);
+            hibp.Setup(h => h.IsPasswordPwnedAsync(PwnedHash)).ReturnsAsync(true);
+            var mgr = Build(repo, hibp: hibp);
+
+            var user = ValidUpdate(withPassword: true, sha1Hash: PwnedHash);
+            await mgr.UpdateUserAsync(UserId, user, passwordChanged: true);
+
+            repo.Verify(r => r.UpdateUserAsync(It.IsAny<User>(), It.IsAny<bool>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_SafePassword_PassesHibpAndSucceeds()
+        {
+            var repo = new Mock<IUserRepository>();
+            var hibp = new Mock<IHibpService>();
+            repo.Setup(r => r.EmailExistsForOtherUserAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(false);
+            repo.Setup(r => r.UpdateUserAsync(It.IsAny<User>(), true)).ReturnsAsync(true);
+            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
+            var mgr = Build(repo, hibp: hibp);
+
+            var user = ValidUpdate(withPassword: true, sha1Hash: SafeHash);
+            var result = await mgr.UpdateUserAsync(UserId, user, passwordChanged: true);
+
+            Assert.True(result.Success);
+            hibp.Verify(h => h.IsPasswordPwnedAsync(SafeHash), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_NullPasswordHash_SkipsHibpCheck()
+        {
+            var repo = new Mock<IUserRepository>();
+            var hibp = new Mock<IHibpService>();
+            repo.Setup(r => r.EmailExistsForOtherUserAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(false);
+            repo.Setup(r => r.UpdateUserAsync(It.IsAny<User>(), true)).ReturnsAsync(true);
+            var mgr = Build(repo, hibp: hibp);
+
+            // No hash provided — HIBP check must be skipped entirely.
+            var user = ValidUpdate(withPassword: true, sha1Hash: null);
+            var result = await mgr.UpdateUserAsync(UserId, user, passwordChanged: true);
+
+            Assert.True(result.Success);
+            hibp.Verify(h => h.IsPasswordPwnedAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_EmptyPasswordHash_SkipsHibpCheck()
+        {
+            var repo = new Mock<IUserRepository>();
+            var hibp = new Mock<IHibpService>();
+            repo.Setup(r => r.EmailExistsForOtherUserAsync(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(false);
+            repo.Setup(r => r.UpdateUserAsync(It.IsAny<User>(), true)).ReturnsAsync(true);
+            var mgr = Build(repo, hibp: hibp);
+
+            var user = ValidUpdate(withPassword: true, sha1Hash: "");
+            var result = await mgr.UpdateUserAsync(UserId, user, passwordChanged: true);
+
+            Assert.True(result.Success);
+            hibp.Verify(h => h.IsPasswordPwnedAsync(It.IsAny<string>()), Times.Never);
         }
 
         // ── Successful updates ───────────────────────────────────────────────────

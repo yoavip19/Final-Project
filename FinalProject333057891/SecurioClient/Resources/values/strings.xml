@@ -168,5 +168,6 @@
     <string name="edit_account_success">Account updated successfully.</string>
     <string name="edit_account_error">Unable to update account. Please check your connection and try again.</string>
     <string name="edit_account_current_password_wrong">Current password is incorrect.</string>
+    <string name="edit_account_password_breached">This password was found in a data breach. Please choose a different password.</string>
     <string name="edit_account_reencrypt_progress">Re-encrypting vault…</string>
 </resources>

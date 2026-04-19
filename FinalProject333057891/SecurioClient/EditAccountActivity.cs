@@ -225,6 +225,9 @@ namespace SecurioClient
                     request.MasterPasswordKey = newMasterPasswordKey;
                     request.AuthSalt          = newAuthSalt;
                     request.EncryptionSalt    = newEncryptionSalt;
+                    // Compute SHA-1 of the plaintext new password for the HIBP breach check.
+                    // Same pattern as signup — never stored, discarded after server validation.
+                    request.PasswordSha1Hash  = EncryptionHelper.ComputeSha1Hash(newPassword);
 
                     // Re-encrypt all vault items with the new key.
                     string oldVaultKey = SessionHelper.SessionVaultKey;
