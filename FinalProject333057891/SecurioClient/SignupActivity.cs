@@ -1,5 +1,4 @@
 using Android.App;
-using Android.Content.Res;
 using Android.OS;
 using Android.Text;
 using Android.Views;
@@ -86,27 +85,28 @@ namespace SecurioClient
             editTextUsername.AddTextChangedListener(new SimpleTextWatcher(_ =>
             {
                 var result = ValidationHelper.ValidateUsername(editTextUsername.Text?.Trim());
-                if (!result.IsValid) ShowError(textViewUsernameError, result.ErrorMessage);
-                else                 HideError(textViewUsernameError);
+                if (!result.IsValid) FormUiHelper.ShowError(textViewUsernameError, result.ErrorMessage);
+                else                 FormUiHelper.HideError(textViewUsernameError);
             }));
 
             editTextEmail.AddTextChangedListener(new SimpleTextWatcher(_ =>
             {
                 var result = ValidationHelper.ValidateEmail(editTextEmail.Text?.Trim());
-                if (!result.IsValid) ShowError(textViewEmailError, result.ErrorMessage);
-                else                 HideError(textViewEmailError);
+                if (!result.IsValid) FormUiHelper.ShowError(textViewEmailError, result.ErrorMessage);
+                else                 FormUiHelper.HideError(textViewEmailError);
             }));
 
             editTextPassword.AddTextChangedListener(new SimpleTextWatcher(text =>
             {
-                UpdatePasswordStrengthIndicator(text);
+                FormUiHelper.UpdatePasswordStrengthIndicator(
+                    text, progressBarPasswordStrength, textViewPasswordHint, textViewPasswordError, Resources);
 
                 // Re-validate confirm password if the user has already typed in it.
                 if (!string.IsNullOrEmpty(editTextConfirmPassword.Text))
                 {
                     var matchResult = ValidationHelper.ValidatePasswordsMatch(text, editTextConfirmPassword.Text);
-                    if (!matchResult.IsValid) ShowError(textViewConfirmPasswordError, matchResult.ErrorMessage);
-                    else                      HideError(textViewConfirmPasswordError);
+                    if (!matchResult.IsValid) FormUiHelper.ShowError(textViewConfirmPasswordError, matchResult.ErrorMessage);
+                    else                      FormUiHelper.HideError(textViewConfirmPasswordError);
                 }
             }));
 
@@ -114,56 +114,9 @@ namespace SecurioClient
             {
                 var result = ValidationHelper.ValidatePasswordsMatch(
                     editTextPassword.Text, editTextConfirmPassword.Text);
-                if (!result.IsValid) ShowError(textViewConfirmPasswordError, result.ErrorMessage);
-                else                 HideError(textViewConfirmPasswordError);
+                if (!result.IsValid) FormUiHelper.ShowError(textViewConfirmPasswordError, result.ErrorMessage);
+                else                 FormUiHelper.HideError(textViewConfirmPasswordError);
             }));
-        }
-
-        // Updates the 5-segment strength ProgressBar and the constructive hint label
-        // whenever the password field changes.
-        private void UpdatePasswordStrengthIndicator(string password)
-        {
-            if (string.IsNullOrEmpty(password))
-            {
-                progressBarPasswordStrength.Visibility = ViewStates.Gone;
-                textViewPasswordHint.Visibility = ViewStates.Gone;
-                HideError(textViewPasswordError);
-                return;
-            }
-
-            // Inline validation error (first unmet rule)
-            var passResult = ValidationHelper.ValidatePassword(password);
-            if (!passResult.IsValid) ShowError(textViewPasswordError, passResult.ErrorMessage);
-            else                     HideError(textViewPasswordError);
-
-            // Strength bar — progress = number of criteria met (0-5)
-            int score = ValidationHelper.GetPasswordScore(password);
-            progressBarPasswordStrength.Visibility = ViewStates.Visible;
-            progressBarPasswordStrength.Progress = score;
-            progressBarPasswordStrength.ProgressTintList =
-                ColorStateList.ValueOf(new Android.Graphics.Color(Resources.GetColor(ScoreToColorRes(score))));
-
-            // Constructive hint below the bar
-            string hint = ValidationHelper.GetMissingCriteriaHint(password);
-            textViewPasswordHint.Text = hint;
-            textViewPasswordHint.Visibility = ViewStates.Visible;
-            textViewPasswordHint.SetTextColor(new Android.Graphics.Color(
-                Resources.GetColor(score == 5
-                    ? Resource.Color.passwordStrengthVeryStrong
-                    : Resource.Color.signupHintText)));
-        }
-
-        // Maps a score 1-5 to the matching color resource for the progress bar tint.
-        private static int ScoreToColorRes(int score)
-        {
-            switch (score)
-            {
-                case 1:  return Resource.Color.passwordStrengthWeak;
-                case 2:  return Resource.Color.passwordStrengthPoor;
-                case 3:  return Resource.Color.passwordStrengthFair;
-                case 4:  return Resource.Color.passwordStrengthStrong;
-                default: return Resource.Color.passwordStrengthVeryStrong;
-            }
         }
 
         private async Task OnSignUpClicked()
@@ -232,30 +185,18 @@ namespace SecurioClient
             bool isValid = true;
 
             var usernameResult = ValidationHelper.ValidateUsername(username);
-            if (!usernameResult.IsValid) { ShowError(textViewUsernameError, usernameResult.ErrorMessage); isValid = false; }
+            if (!usernameResult.IsValid) { FormUiHelper.ShowError(textViewUsernameError, usernameResult.ErrorMessage); isValid = false; }
 
             var emailResult = ValidationHelper.ValidateEmail(email);
-            if (!emailResult.IsValid) { ShowError(textViewEmailError, emailResult.ErrorMessage); isValid = false; }
+            if (!emailResult.IsValid) { FormUiHelper.ShowError(textViewEmailError, emailResult.ErrorMessage); isValid = false; }
 
             var passwordResult = ValidationHelper.ValidatePassword(password);
-            if (!passwordResult.IsValid) { ShowError(textViewPasswordError, passwordResult.ErrorMessage); isValid = false; }
+            if (!passwordResult.IsValid) { FormUiHelper.ShowError(textViewPasswordError, passwordResult.ErrorMessage); isValid = false; }
 
             var confirmResult = ValidationHelper.ValidatePasswordsMatch(password, confirmPassword);
-            if (!confirmResult.IsValid) { ShowError(textViewConfirmPasswordError, confirmResult.ErrorMessage); isValid = false; }
+            if (!confirmResult.IsValid) { FormUiHelper.ShowError(textViewConfirmPasswordError, confirmResult.ErrorMessage); isValid = false; }
 
             return isValid;
-        }
-
-        private void ShowError(TextView errorView, string message)
-        {
-            errorView.Text = message;
-            errorView.Visibility = ViewStates.Visible;
-        }
-
-        private void HideError(TextView errorView)
-        {
-            errorView.Text = null;
-            errorView.Visibility = ViewStates.Gone;
         }
 
         private void ShowGeneralError(string message)
@@ -266,11 +207,11 @@ namespace SecurioClient
 
         private void ClearErrors()
         {
-            HideError(textViewUsernameError);
-            HideError(textViewEmailError);
-            HideError(textViewPasswordError);
-            HideError(textViewConfirmPasswordError);
-            HideError(textViewGeneralError);
+            FormUiHelper.HideError(textViewUsernameError);
+            FormUiHelper.HideError(textViewEmailError);
+            FormUiHelper.HideError(textViewPasswordError);
+            FormUiHelper.HideError(textViewConfirmPasswordError);
+            FormUiHelper.HideError(textViewGeneralError);
         }
 
         private void SetLoadingState(bool isLoading)
