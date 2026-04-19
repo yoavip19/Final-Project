@@ -110,19 +110,18 @@ namespace SecurioClient.Helpers
         // Clears session-sensitive data from secure storage while preserving the
         // user ID and username. These two values are kept so the background
         // PasswordCheckWorker can still poll the server after logout.
-        public static async Task ClearSessionAsync()
+        // Items are removed individually to avoid a window where preserved values
+        // are temporarily absent (which would happen with RemoveAll + restore).
+        public static Task ClearSessionAsync()
         {
-            // Preserve values needed by the background worker.
-            int userId = await GetUserId();
-            string username = await GetUsername();
-
-            SecureStorage.RemoveAll();
-
-            // Restore the two values that must survive logout.
-            if (userId > 0)
-                await SaveUserId(userId);
-            if (!string.IsNullOrEmpty(username))
-                await SaveUsername(username);
+            SecureStorage.Remove(KeyJwt);
+            SecureStorage.Remove(KeyVaultKey);
+            SecureStorage.Remove(KeyEmail);
+            SecureStorage.Remove(KeyCreatedAt);
+            SecureStorage.Remove(KeyPasswordCount);
+            SecureStorage.Remove(KeyLastLogin);
+            SecureStorage.Remove(KeyLastPasswordChange);
+            return Task.CompletedTask;
         }
 
         // Clears ALL data from secure storage, including the user ID and username.

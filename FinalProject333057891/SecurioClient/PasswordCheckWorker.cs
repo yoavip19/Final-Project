@@ -14,6 +14,7 @@ namespace SecurioClient
     public class PasswordCheckWorker : Worker
     {
         private const string Tag = "PasswordCheckWorker";
+        private const string DefaultUsername = "User";
 
         // How often the check runs in production.
         // For testing: change to 1 minute (PeriodicWorkRequest minimum is 15 min, so
@@ -62,7 +63,7 @@ namespace SecurioClient
             }
 
             // Retrieve stored username for personalised notification text.
-            string username = await StorageHelper.GetUsername() ?? "User";
+            string username = await StorageHelper.GetUsername() ?? DefaultUsername;
 
             // Fire individual notifications for each category that has issues.
             if (data.BreachedCount > 0)
