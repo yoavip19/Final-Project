@@ -81,20 +81,7 @@ namespace SecurioClient
         }
 
         private void OnBottomNavTabSelected(object sender, string tab)
-        {
-            if (tab == "vault")
-            {
-                var intent = new Intent(this, typeof(VaultActivity));
-                StartActivity(intent);
-            }
-            else if (tab == "profile")
-            {
-                var intent = new Intent(this, typeof(ProfileActivity));
-                intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
-                StartActivity(intent);
-                Finish();
-            }
-        }
+            => BottomNavHelper.Navigate(this, tab, "warnings");
 
         /// <summary>
         /// Reads the cached warnings or recomputes them if the cache was flushed,

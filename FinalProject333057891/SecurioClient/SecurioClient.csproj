@@ -78,6 +78,7 @@
     <Compile Include="Helpers\HibpClientService.cs" />
     <Compile Include="Helpers\ValidationHelper.cs" />
     <Compile Include="Helpers\PasswordEntryActionsHelper.cs" />
+    <Compile Include="Helpers\BottomNavHelper.cs" />
     <Compile Include="LoginActivity.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="PasswordBannerAdapter.cs" />

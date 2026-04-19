@@ -114,20 +114,7 @@ namespace SecurioClient
         }
 
         private void OnBottomNavTabSelected(object sender, string tab)
-        {
-            if (tab == "warnings")
-            {
-                var intent = new Intent(this, typeof(WarningsActivity));
-                StartActivity(intent);
-            }
-            else if (tab == "profile")
-            {
-                var intent = new Intent(this, typeof(ProfileActivity));
-                intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
-                StartActivity(intent);
-                Finish();
-            }
-        }
+            => BottomNavHelper.Navigate(this, tab, "vault");
 
         // ──────────────────────────────────────────
         //  Activity result handling
