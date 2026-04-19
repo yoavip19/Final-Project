@@ -45,6 +45,7 @@ namespace SecurioClient.Helpers
                 intent.PutExtra(ViewPasswordActivity.ExtraIV, entry.IV);
                 intent.PutExtra(ViewPasswordActivity.ExtraTag, entry.Tag);
                 intent.PutExtra(ViewPasswordActivity.ExtraCipherText, entry.CipherText);
+                intent.PutExtra(ViewPasswordActivity.ExtraLastUpdate, entry.LastUpdate.Ticks);
                 activity.StartActivity(intent);
             };
 
