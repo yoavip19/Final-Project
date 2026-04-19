@@ -16,9 +16,6 @@ namespace SecurioClient
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
 
-            // Schedule the periodic background password-health check on every app launch.
-            SchedulePasswordCheck();
-
             // Check whether the user already has a stored JWT and validate it with the server.
             // A valid token means the user is already authenticated and can go straight to the Vault.
             string jwt = await StorageHelper.GetJwt();
@@ -66,13 +63,6 @@ namespace SecurioClient
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-
-        // Registers the periodic password-health check worker.
-        // Called once per app launch; WorkManager de-duplicates by unique name.
-        private void SchedulePasswordCheck()
-        {
-            PasswordCheckWorker.Enqueue(this);
         }
     }
 }

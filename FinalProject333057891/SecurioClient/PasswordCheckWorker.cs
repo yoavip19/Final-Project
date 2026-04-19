@@ -19,8 +19,8 @@ namespace SecurioClient
         // How often the check runs in production.
         // For testing: change to 1 minute (PeriodicWorkRequest minimum is 15 min, so
         // the actual floor is 15 min — but the intent is documented here).
-        public const int IntervalHours = 24;
-        // public const int IntervalMinutes = 1; // Uncomment for testing
+        //public const int IntervalHours = 24 // Uncomment for production
+        public const int IntervalMinutes = 1;
 
         public PasswordCheckWorker(Context context, WorkerParameters workerParams)
             : base(context, workerParams)
@@ -102,8 +102,8 @@ namespace SecurioClient
             NotificationHelper.CreateChannel(context);
 
             var request = PeriodicWorkRequest.Builder
-                .From<PasswordCheckWorker>(TimeSpan.FromHours(IntervalHours))
-                // .From<PasswordCheckWorker>(TimeSpan.FromMinutes(IntervalMinutes)) // Uncomment for testing
+                //.From<PasswordCheckWorker>(TimeSpan.FromHours(IntervalHours)) // Uncomment for production
+                .From<PasswordCheckWorker>(TimeSpan.FromMinutes(IntervalMinutes))
                 .AddTag(Tag)
                 .Build();
 

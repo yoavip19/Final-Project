@@ -38,6 +38,9 @@ namespace SecurioClient
 
             // Load entries from the in-memory session cache.
             LoadVaultFromSession();
+
+            // Schedule the periodic background password-health check on every app launch.
+            SchedulePasswordCheck();
         }
 
         private void InitializeViews()
@@ -241,6 +244,13 @@ namespace SecurioClient
         private void SyncEntryCache()
         {
             VaultEntryCache.Entries = new List<VaultItem>(allEntries);
+        }
+
+        // Registers the periodic password-health check worker.
+        // Called once per app launch; WorkManager de-duplicates by unique name.
+        private void SchedulePasswordCheck()
+        {
+            PasswordCheckWorker.Enqueue(this);
         }
     }
 }
