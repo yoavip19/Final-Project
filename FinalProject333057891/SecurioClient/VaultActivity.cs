@@ -46,9 +46,6 @@ namespace SecurioClient
             // Request notification permission (required at runtime on Android 13+).
             RequestNotificationPermissionIfNeeded();
 
-            // Schedule the periodic background password-health check on every app launch.
-            SchedulePasswordCheck();
-
             // ── TESTING ONLY ─────────────────────────────────────────────────────────
             // Starts a test worker that fires a push notification every ~10 seconds so
             // you can verify that Workers and notifications are working.
@@ -274,11 +271,5 @@ namespace SecurioClient
             }
         }
 
-        // Registers the periodic password-health check worker.
-        // Called once per app launch; WorkManager de-duplicates by unique name.
-        private void SchedulePasswordCheck()
-        {
-            PasswordCheckWorker.Enqueue(this);
-        }
     }
 }

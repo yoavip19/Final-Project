@@ -7,10 +7,9 @@ using System;
 namespace SecurioClient
 {
     // A foreground service that survives the user swiping the app from recents.
-    // It runs the same password-health check as PasswordCheckWorker on a 24-hour
-    // loop and shows a low-priority persistent notification so Android keeps the
-    // process alive.  Started by MainActivity on first launch and by BootReceiver
-    // on every subsequent device reboot.
+    // It runs the password-health check on a 24-hour loop and shows a low-priority
+    // persistent notification so Android keeps the process alive.  Started by
+    // MainActivity on first launch and by BootReceiver on every subsequent device reboot.
     [Service(Exported = false)]
     public class PasswordMonitorService : Service
     {

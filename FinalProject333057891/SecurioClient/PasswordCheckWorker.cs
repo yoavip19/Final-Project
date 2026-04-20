@@ -1,50 +1,19 @@
 using Android.Content;
 using Android.Util;
-using AndroidX.Work;
 using SecurioClient.Helpers;
 using SecurioClient.Helpers.ServerHelpers;
-using System;
 using System.Threading.Tasks;
 
 namespace SecurioClient
 {
-    // A periodic background worker that polls the server for password-health issues
-    // and fires local notifications when problems are found.
-    // Scheduled via AndroidX WorkManager so it runs even when the app is not in the foreground.
-    public class PasswordCheckWorker : Worker
+    // Static helper that performs the password-health check and fires local
+    // notifications for any problems found.  Called by PasswordMonitorService
+    // every 24 hours via its internal Handler loop.
+    public static class PasswordCheckWorker
     {
         private const string Tag = "PasswordCheckWorker";
         private const string DefaultUsername = "User";
 
-        // WorkManager enforces a minimum periodic interval of 15 minutes.
-        // Setting a value below 15 is silently clamped, so we use the true floor.
-        // For production, change to 24 hours (1440 minutes).
-        public const int IntervalMinutes = 15; // 15 for testing, 1440 for production
-
-        public PasswordCheckWorker(Context context, WorkerParameters workerParams)
-            : base(context, workerParams)
-        {
-        }
-
-        public override Result DoWork()
-        {
-            Log.Info(Tag, "DoWork() entered.");
-            try
-            {
-                // Run the async poll synchronously inside the Worker thread.
-                var task = RunCheckAsync(ApplicationContext);
-                task.Wait();
-                Log.Info(Tag, "DoWork() completed successfully.");
-                return Result.InvokeSuccess();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(Tag, $"Password check failed: {ex.Message}");
-                return Result.InvokeRetry();
-            }
-        }
-
-        // Public static so it can be reused by PasswordMonitorService without duplicating logic.
         public static async Task RunCheckAsync(Context context)
         {
             // Retrieve the persisted user ID from secure storage (survives logout).
@@ -94,35 +63,6 @@ namespace SecurioClient
                     "🔑 Master Password Needs Update",
                     $"{username}, your master password hasn't been changed in over 90 days. Consider updating it.");
             }
-        }
-
-        // Enqueues the periodic work request with WorkManager.
-        // Uses Replace policy to ensure configuration changes are picked up
-        // and any stale work from before the custom WorkerFactory fix is cleared.
-        public static void Enqueue(Context context)
-        {
-            // Create the notification channel early so the first notification works.
-            NotificationHelper.CreateChannel(context);
-
-            // Require network connectivity — the worker calls the server.
-            var constraints = new Constraints.Builder()
-                .SetRequiredNetworkType(NetworkType.Connected)
-                .Build();
-
-            var request = PeriodicWorkRequest.Builder
-                .From<PasswordCheckWorker>(TimeSpan.FromMinutes(IntervalMinutes))
-                .SetConstraints(constraints)
-                .AddTag(Tag)
-                .Build();
-
-            // Replace ensures stale requests (from before the factory fix) are cleared.
-            WorkManager.GetInstance(context)
-                .EnqueueUniquePeriodicWork(
-                    Tag,
-                    ExistingPeriodicWorkPolicy.Replace,
-                    request);
-
-            Log.Info(Tag, $"Periodic work enqueued (interval={IntervalMinutes}min, policy=Replace).");
         }
     }
 }

@@ -20,13 +20,6 @@ namespace SecurioClient
             // when the work request is created.
             Log.Info(Tag, $"CreateWorker called: received='{workerClassName}'");
 
-            var passwordCheckName = Java.Lang.Class.FromType(typeof(PasswordCheckWorker)).Name;
-            if (workerClassName == passwordCheckName)
-            {
-                Log.Info(Tag, "Match — creating PasswordCheckWorker instance.");
-                return new PasswordCheckWorker(appContext, workerParameters);
-            }
-
             var testWorkerName = Java.Lang.Class.FromType(typeof(TestNotificationWorker)).Name;
             if (workerClassName == testWorkerName)
             {
