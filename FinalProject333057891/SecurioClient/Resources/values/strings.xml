@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SecurioClient</string>
+    <string name="app_name">Securio</string>
     <string name="action_settings">Settings</string>
 
     <!-- Signup page strings -->

@@ -1,3 +1,4 @@
+using SecurioBackendFunction.Helpers;
 using SecurioBackendFunction.Repositories;
 using SecurioModels;
 using SecurioModels.DataTransferObjects;
@@ -11,8 +12,13 @@ namespace SecurioBackendFunction.Logic
     public class VaultItemManager
     {
         private readonly IVaultItemRepository _repo;
+        private readonly IHibpService _hibp;
 
-        public VaultItemManager(IVaultItemRepository repo) => _repo = repo;
+        public VaultItemManager(IVaultItemRepository repo, IHibpService hibp = null)
+        {
+            _repo = repo;
+            _hibp = hibp;
+        }
 
         // Validates the incoming vault item and persists it to the database.
         public async Task<ServerResponse<VaultItem>> AddVaultItemAsync(VaultItem item)
@@ -31,6 +37,10 @@ namespace SecurioBackendFunction.Logic
 
             if (string.IsNullOrWhiteSpace(item.Sha1Hash))
                 return new ServerResponse<VaultItem> { Success = false, Message = "Sha1Hash is required." };
+
+            // Check HIBP and set the IsLeaked flag before persisting.
+            if (_hibp != null)
+                item.IsLeaked = await _hibp.IsPasswordPwnedAsync(item.Sha1Hash);
 
             int newId = await _repo.AddVaultItemAsync(item);
             if (newId <= 0)
@@ -66,6 +76,10 @@ namespace SecurioBackendFunction.Logic
 
             if (string.IsNullOrWhiteSpace(item.Sha1Hash))
                 return new ServerResponse<VaultItem> { Success = false, Message = "Sha1Hash is required." };
+
+            // When the password was changed, re-check HIBP to update the leaked status.
+            if (item.PasswordChanged && _hibp != null)
+                item.IsLeaked = await _hibp.IsPasswordPwnedAsync(item.Sha1Hash);
 
             bool updated = await _repo.UpdateVaultItemAsync(item);
             if (!updated)
