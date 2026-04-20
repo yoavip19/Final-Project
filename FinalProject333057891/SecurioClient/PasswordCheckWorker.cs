@@ -32,7 +32,7 @@ namespace SecurioClient
             try
             {
                 // Run the async poll synchronously inside the Worker thread.
-                var task = RunCheckAsync();
+                var task = RunCheckAsync(ApplicationContext);
                 task.Wait();
                 Log.Info(Tag, "DoWork() completed successfully.");
                 return Result.InvokeSuccess();
@@ -44,7 +44,8 @@ namespace SecurioClient
             }
         }
 
-        private async Task RunCheckAsync()
+        // Public static so it can be reused by PasswordMonitorService without duplicating logic.
+        public static async Task RunCheckAsync(Context context)
         {
             // Retrieve the persisted user ID from secure storage (survives logout).
             int userId = await StorageHelper.GetUserId();
@@ -70,7 +71,7 @@ namespace SecurioClient
             if (data.BreachedCount > 0)
             {
                 NotificationHelper.Show(
-                    ApplicationContext,
+                    context,
                     NotificationHelper.NotificationIdBreach,
                     "⚠️ Breached Passwords Detected",
                     $"{username}, {data.BreachedCount} of your passwords appeared in known data breaches. Change them now.");
@@ -79,7 +80,7 @@ namespace SecurioClient
             if (data.OldCount > 0)
             {
                 NotificationHelper.Show(
-                    ApplicationContext,
+                    context,
                     NotificationHelper.NotificationIdOld,
                     "🕐 Old Passwords Detected",
                     $"{username}, {data.OldCount} of your passwords haven't been updated in over 90 days.");
@@ -88,7 +89,7 @@ namespace SecurioClient
             if (data.MasterPasswordOld)
             {
                 NotificationHelper.Show(
-                    ApplicationContext,
+                    context,
                     NotificationHelper.NotificationIdMaster,
                     "🔑 Master Password Needs Update",
                     $"{username}, your master password hasn't been changed in over 90 days. Consider updating it.");

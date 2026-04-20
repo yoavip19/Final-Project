@@ -93,6 +93,8 @@
     <Compile Include="RiskDetailActivity.cs" />
     <Compile Include="ProfileActivity.cs" />
     <Compile Include="PasswordCheckWorker.cs" />
+    <Compile Include="PasswordMonitorService.cs" />
+    <Compile Include="BootReceiver.cs" />
     <Compile Include="TestNotificationWorker.cs" />
     <Compile Include="PasswordCheckWorkerFactory.cs" />
     <Compile Include="SecurioClientApplication.cs" />
