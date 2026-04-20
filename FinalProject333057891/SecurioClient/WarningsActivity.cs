@@ -35,6 +35,7 @@ namespace SecurioClient
             InitializeViews();
             SetupBottomNavFragment(savedInstanceState);
             SetupViewAllButtons();
+            DisplayWarnings();
         }
 
         protected override void OnResume()
