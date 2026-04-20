@@ -35,7 +35,7 @@ namespace SecurioClient
             InitializeViews();
             SetupBottomNavFragment(savedInstanceState);
             SetupViewAllButtons();
-            _ = DisplayWarningsAsync();
+            DisplayWarnings();
         }
 
         private void InitializeViews()
@@ -84,17 +84,19 @@ namespace SecurioClient
             => BottomNavHelper.Navigate(this, tab, "warnings");
 
         /// <summary>
-        /// Reads the cached warnings or recomputes them if the cache was flushed,
-        /// then populates the four counter TextViews.
+        /// Reads the cached warnings or recomputes them synchronously (using stored
+        /// IsLeaked flags), then populates the four counter TextViews.
+        /// Because this runs synchronously in OnCreate the correct numbers are always
+        /// visible before the first UI draw — no "0 → real number" flash.
         /// </summary>
-        private async System.Threading.Tasks.Task DisplayWarningsAsync()
+        private void DisplayWarnings()
         {
             var warnings = SessionHelper.CachedWarnings;
 
             if (warnings == null)
             {
-                // Cache was invalidated (vault changed) — recompute with live HIBP check.
-                warnings = await WarningsHelper.ComputeWarningsAsync(
+                // Cache was invalidated (vault changed) — recompute synchronously.
+                warnings = WarningsHelper.ComputeWarningsSync(
                     SessionHelper.CachedVault,
                     SessionHelper.SessionVaultKey);
 

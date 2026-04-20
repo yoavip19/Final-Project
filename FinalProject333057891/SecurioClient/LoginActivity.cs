@@ -71,7 +71,7 @@ namespace SecurioClient
             editTextPassword.AddTextChangedListener(new SimpleTextWatcher(_ =>
             {
                 if (string.IsNullOrEmpty(editTextPassword.Text))
-                    ShowError(textViewPasswordError, GetString(Resource.String.login_error_empty_fields));
+                    ShowError(textViewPasswordError, GetString(Resource.String.login_error_password_required));
                 else
                     HideError(textViewPasswordError);
             }));
@@ -108,7 +108,7 @@ namespace SecurioClient
             }
             catch (Exception ex)
             {
-                ShowGeneralError("Unable to sign in. Please check your connection and try again.");
+                ShowGeneralError(GetString(Resource.String.login_error_sign_in_failed));
                 System.Diagnostics.Debug.WriteLine($"[LOGIN ERROR] {ex.Message}");
             }
             finally
@@ -130,7 +130,7 @@ namespace SecurioClient
 
             if (string.IsNullOrEmpty(password))
             {
-                ShowError(textViewPasswordError, GetString(Resource.String.login_error_empty_fields));
+                ShowError(textViewPasswordError, GetString(Resource.String.login_error_password_required));
                 isValid = false;
             }
 

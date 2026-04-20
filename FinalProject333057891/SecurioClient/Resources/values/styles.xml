@@ -74,7 +74,7 @@
     <style name="SignupGenerateButtonStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">36dp</item>
-        <item name="android:layout_gravity">end</item>
+        <item name="android:layout_gravity">center</item>
         <item name="android:layout_marginBottom">4dp</item>
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">@color/colorAccent</item>

@@ -37,6 +37,7 @@ namespace SecurioBackendFunction.Logic
                 return new ServerResponse<VaultItem> { Success = false, Message = "Database error." };
 
             item.Id = newId;
+            item.LastUpdate = DateTime.UtcNow;
             return new ServerResponse<VaultItem>
             {
                 Success = true,

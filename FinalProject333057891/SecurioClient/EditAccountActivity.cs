@@ -31,6 +31,7 @@ namespace SecurioClient
         private TextInputEditText editTextConfirmNewPassword;
         private MaterialButton buttonSave;
         private MaterialButton buttonGeneratePassword;
+        private ImageView imageViewBack;
         private TextView textViewUsernameError;
         private TextView textViewEmailError;
         private TextView textViewCurrentPasswordError;
@@ -65,6 +66,7 @@ namespace SecurioClient
             editTextConfirmNewPassword  = FindViewById<TextInputEditText>(Resource.Id.editTextConfirmNewPassword);
             buttonSave                  = FindViewById<MaterialButton>(Resource.Id.buttonEditSave);
             buttonGeneratePassword      = FindViewById<MaterialButton>(Resource.Id.buttonEditGeneratePassword);
+            imageViewBack               = FindViewById<ImageView>(Resource.Id.imageViewEditAccountBack);
             textViewUsernameError       = FindViewById<TextView>(Resource.Id.textViewEditUsernameError);
             textViewEmailError          = FindViewById<TextView>(Resource.Id.textViewEditEmailError);
             textViewCurrentPasswordError = FindViewById<TextView>(Resource.Id.textViewCurrentPasswordError);
@@ -78,6 +80,8 @@ namespace SecurioClient
 
         private void SetupEventHandlers()
         {
+            imageViewBack.Click += (sender, e) => Finish();
+
             buttonSave.Click += async (sender, e) => await OnSaveClicked();
 
             buttonGeneratePassword.Click += (sender, e) =>
@@ -202,7 +206,7 @@ namespace SecurioClient
 
                     if (!saltResult.Success)
                     {
-                        ShowGeneralError("Unable to verify current password. Please try again.");
+                        ShowGeneralError(GetString(Resource.String.edit_account_verify_password_failed));
                         return;
                     }
 
@@ -335,7 +339,7 @@ namespace SecurioClient
             {
                 if (string.IsNullOrEmpty(currentPassword))
                 {
-                    FormUiHelper.ShowError(textViewCurrentPasswordError, "Current password is required to change your master password.");
+                    FormUiHelper.ShowError(textViewCurrentPasswordError, GetString(Resource.String.edit_account_current_password_required));
                     isValid = false;
                 }
 

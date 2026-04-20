@@ -33,6 +33,31 @@ namespace SecurioClient.Helpers
         private const int OldPasswordDays = 90;
 
         /// <summary>
+        /// Synchronously computes warning counters from the vault using stored flags
+        /// (no live HIBP network calls). The leaked count uses each item's stored
+        /// <see cref="VaultItem.IsLeaked"/> flag, which is set by the server at
+        /// add/edit time. All other checks are computed locally.
+        /// </summary>
+        public static WarningsData ComputeWarningsSync(IList<VaultItem> vault, string vaultKey)
+        {
+            if (vault == null || vault.Count == 0)
+                return new WarningsData();
+
+            int leaked  = vault.Count(item => item.IsLeaked);
+            int weak    = GetWeakItems(vault, vaultKey).Count;
+            int reused  = GetReusedItems(vault).Count;
+            int old     = GetOldItems(vault).Count;
+
+            return new WarningsData
+            {
+                LeakedCount = leaked,
+                WeakCount   = weak,
+                ReusedCount = reused,
+                OldCount    = old
+            };
+        }
+
+        /// <summary>
         /// Analyses every item in <paramref name="vault"/> and returns aggregated
         /// warning counters. Password decryption (needed for the "weak" check)
         /// uses the provided <paramref name="vaultKey"/>.

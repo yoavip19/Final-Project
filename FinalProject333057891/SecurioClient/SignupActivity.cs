@@ -171,7 +171,7 @@ namespace SecurioClient
             }
             catch (Exception ex)
             {
-                ShowGeneralError("Unable to create account. Please check your connection and try again.");
+                ShowGeneralError(GetString(Resource.String.signup_error_create_failed));
                 System.Diagnostics.Debug.WriteLine($"[SIGNUP ERROR] {ex.Message}");
             }
             finally
