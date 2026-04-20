@@ -190,7 +190,7 @@
                         android:layout_height="wrap_content"
                         android:drawableStart="@android:drawable/ic_menu_edit"
                         android:drawablePadding="8dp"
-                        android:gravity="top" />
+                        android:gravity="center_vertical" />
 				</com.google.android.material.textfield.TextInputLayout>
 
 				<!-- General error (e.g. duplicate entry) -->

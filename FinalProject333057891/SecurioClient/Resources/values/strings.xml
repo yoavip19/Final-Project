@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SecurioClient</string>
+    <string name="app_name">Securio</string>
     <string name="action_settings">Settings</string>
 
     <!-- Signup page strings -->
@@ -170,4 +170,9 @@
     <string name="edit_account_current_password_wrong">Current password is incorrect.</string>
     <string name="edit_account_password_breached">This password was found in a data breach. Please choose a different password.</string>
     <string name="edit_account_reencrypt_progress">Re-encrypting vault…</string>
+    <string name="login_error_password_required">Password is required</string>
+    <string name="login_error_sign_in_failed">Unable to sign in. Please check your connection and try again.</string>
+    <string name="signup_error_create_failed">Unable to create account. Please check your connection and try again.</string>
+    <string name="edit_account_verify_password_failed">Unable to verify current password. Please try again.</string>
+    <string name="edit_account_current_password_required">Current password is required to change your master password.</string>
 </resources>

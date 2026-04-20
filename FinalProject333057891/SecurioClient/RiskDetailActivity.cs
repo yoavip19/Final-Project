@@ -179,7 +179,10 @@ namespace SecurioClient
                     SessionHelper.InvalidateWarnings();
                 }
 
-                RefreshList();
+                // Reload the risk list from the updated vault cache so entries that
+                // are no longer at risk (e.g. a breached password replaced with a
+                // strong one) are removed immediately.
+                _ = LoadRiskEntriesAsync();
             }
         }
 
