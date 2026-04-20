@@ -18,16 +18,23 @@ namespace SecurioClient
         {
             // Use .Name (maps to Java getName()) which is what WorkManager stores
             // when the work request is created.
-            var expectedName = Java.Lang.Class.FromType(typeof(PasswordCheckWorker)).Name;
-            Log.Info(Tag, $"CreateWorker called: received='{workerClassName}', expected='{expectedName}'");
+            Log.Info(Tag, $"CreateWorker called: received='{workerClassName}'");
 
-            if (workerClassName == expectedName)
+            var passwordCheckName = Java.Lang.Class.FromType(typeof(PasswordCheckWorker)).Name;
+            if (workerClassName == passwordCheckName)
             {
                 Log.Info(Tag, "Match — creating PasswordCheckWorker instance.");
                 return new PasswordCheckWorker(appContext, workerParameters);
             }
 
-            Log.Warn(Tag, "No match — delegating to default factory.");
+            var testWorkerName = Java.Lang.Class.FromType(typeof(TestNotificationWorker)).Name;
+            if (workerClassName == testWorkerName)
+            {
+                Log.Info(Tag, "Match — creating TestNotificationWorker instance.");
+                return new TestNotificationWorker(appContext, workerParameters);
+            }
+
+            Log.Warn(Tag, $"No match for '{workerClassName}' — delegating to default factory.");
             return null;
         }
     }
