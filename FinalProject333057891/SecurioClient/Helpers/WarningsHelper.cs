@@ -79,11 +79,16 @@ namespace SecurioClient.Helpers
             // ── Leaked ────────────────────────────────────────
             // Query HIBP for each password's SHA-1 hash using the k-anonymity
             // model so only the first 5 characters are ever transmitted.
+            // The IsLeaked flag on each item is updated so that subsequent
+            // synchronous recomputations (ComputeWarningsSync) stay accurate.
             foreach (var item in vault)
             {
-                if (!string.IsNullOrEmpty(item.Sha1Hash) &&
-                    await HibpClientService.IsPasswordPwnedAsync(item.Sha1Hash))
-                    leaked++;
+                if (string.IsNullOrEmpty(item.Sha1Hash))
+                    continue;
+
+                bool pwned = await HibpClientService.IsPasswordPwnedAsync(item.Sha1Hash);
+                item.IsLeaked = pwned;
+                if (pwned) leaked++;
             }
 
             // ── Weak ──────────────────────────────────────────

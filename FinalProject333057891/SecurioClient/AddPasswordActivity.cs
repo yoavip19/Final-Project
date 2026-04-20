@@ -218,7 +218,8 @@ namespace SecurioClient
                     Tag = tag,
                     CipherText = cipherText,
                     Notes = notes ?? string.Empty,
-                    Sha1Hash = sha1Hash
+                    Sha1Hash = sha1Hash,
+                    IsLeaked = isLeaked
                 };
 
                 var vaultService = new VaultService();
