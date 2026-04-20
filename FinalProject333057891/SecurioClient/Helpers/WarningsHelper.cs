@@ -43,10 +43,10 @@ namespace SecurioClient.Helpers
             if (vault == null || vault.Count == 0)
                 return new WarningsData();
 
-            int leaked  = vault.Count(item => item.IsLeaked);
-            int weak    = GetWeakItems(vault, vaultKey).Count;
-            int reused  = GetReusedItems(vault).Count;
-            int old     = GetOldItems(vault).Count;
+            int leaked = vault.Count(item => item.IsLeaked);
+            int weak = GetWeakItems(vault, vaultKey).Count;
+            int reused = GetReusedItems(vault).Count;
+            int old = GetOldItems(vault).Count;
 
             return new WarningsData
             {

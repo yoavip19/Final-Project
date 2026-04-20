@@ -95,7 +95,9 @@ namespace SecurioClient
 
             if (warnings == null)
             {
-                // Cache was invalidated (vault changed) — recompute synchronously.
+                // Cache was invalidated (vault changed) — recompute synchronously using
+                // stored flags (no network calls), so the correct numbers are always
+                // visible before the first UI draw.
                 warnings = WarningsHelper.ComputeWarningsSync(
                     SessionHelper.CachedVault,
                     SessionHelper.SessionVaultKey);
