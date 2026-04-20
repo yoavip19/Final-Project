@@ -208,6 +208,7 @@ namespace SecurioClient
                 string vaultKey = SessionHelper.SessionVaultKey;
                 var (iv, tag, cipherText) = EncryptionHelper.EncryptAesGcm(password, vaultKey);
                 string sha1Hash = EncryptionHelper.ComputeSha1Hash(password);
+                bool isLeaked = await HibpClientService.IsPasswordPwnedAsync(sha1Hash);
 
                 var vaultItem = new VaultItem
                 {
@@ -235,7 +236,7 @@ namespace SecurioClient
                     resultIntent.PutExtra(ResultTag, tag);
                     resultIntent.PutExtra(ResultCipherText, cipherText);
                     resultIntent.PutExtra(ResultSha1Hash, sha1Hash);
-                    resultIntent.PutExtra(ResultIsLeaked, result.Data?.IsLeaked ?? false);
+                    resultIntent.PutExtra(ResultIsLeaked, result.Data?.IsLeaked ?? isLeaked);
                     resultIntent.PutExtra(ResultLastUpdate, result.Data?.LastUpdate.Ticks ?? DateTime.UtcNow.Ticks);
 
                     SetResult(Result.Ok, resultIntent);

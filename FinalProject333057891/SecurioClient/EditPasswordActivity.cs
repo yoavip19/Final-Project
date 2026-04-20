@@ -290,11 +290,11 @@ namespace SecurioClient
 
                 if (!string.IsNullOrEmpty(password))
                 {
-                    // User entered a new password — encrypt it.
+                    // User entered a new password — encrypt it and check HIBP.
                     string vaultKey = SessionHelper.SessionVaultKey;
                     (iv, tag, cipherText) = EncryptionHelper.EncryptAesGcm(password, vaultKey);
                     sha1Hash = EncryptionHelper.ComputeSha1Hash(password);
-                    isLeaked = false;
+                    isLeaked = await HibpClientService.IsPasswordPwnedAsync(sha1Hash);
                 }
                 else
                 {
