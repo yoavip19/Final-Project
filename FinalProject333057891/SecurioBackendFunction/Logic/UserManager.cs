@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace SecurioBackendFunction.Logic
 {
     // Coordinates the retrieval of user-specific data and account statistics.
@@ -57,6 +56,7 @@ namespace SecurioBackendFunction.Logic
             if (emailTaken)
                 return new ServerResponse<object> { Success = false, Message = "Email is already in use by another account." };
 
+            User oldUser = null;
             if (passwordChanged)
             {
                 if (string.IsNullOrWhiteSpace(updated.MasterPasswordKey))
@@ -79,6 +79,11 @@ namespace SecurioBackendFunction.Logic
                             Message = "Password has been found in a data breach. Please choose a different password."
                         };
                 }
+
+                // Fetch the current user record so we can archive the old password key before overwriting it.
+                oldUser = await _repo.GetUserByIdAsync(userId);
+                if (oldUser == null)
+                    return new ServerResponse<object> { Success = false, Message = "Account not found." };
             }
 
             updated.Id = userId;
@@ -86,6 +91,16 @@ namespace SecurioBackendFunction.Logic
 
             if (!success)
                 return new ServerResponse<object> { Success = false, Message = "Account not found." };
+
+            // When the password changed, save the old key to MasterPasswordHistory so the
+            // no-reuse check can compare against it later.
+            if (passwordChanged && oldUser != null)
+            {
+                DateTime archivedAt = oldUser.LastPasswordUpdate != DateTime.MinValue
+                    ? oldUser.LastPasswordUpdate
+                    : DateTime.UtcNow;
+                await _repo.AddPasswordHistoryAsync(userId, oldUser.MasterPasswordKey, oldUser.AuthSalt, archivedAt);
+            }
 
             // Bulk-update re-encrypted vault items when the master password changes
             if (passwordChanged && reEncryptedItems != null && reEncryptedItems.Count > 0)
@@ -109,6 +124,13 @@ namespace SecurioBackendFunction.Logic
             }
 
             return new ServerResponse<object> { Success = true, Message = "Account deleted successfully." };
+        }
+
+        // Returns the last 4 password-history entries for the user, used by the client for the no-reuse check.
+        public async Task<ServerResponse<List<MasterPasswordHistory>>> GetPasswordHistoryAsync(int userId)
+        {
+            var history = await _repo.GetLastPasswordHistoryAsync(userId, 4);
+            return new ServerResponse<List<MasterPasswordHistory>> { Success = true, Data = history };
         }
     }
 }
