@@ -220,6 +220,31 @@ namespace SecurioClient
                         return;
                     }
 
+                    // No-reuse check: compare new password against the current one and last 4 history entries.
+                    // For each entry (and the current), derive: DeriveKey(newPassword, entry.AuthSalt).
+                    // A match means the password was already used → reject.
+                    string newKeyForReuseCheck = EncryptionHelper.DeriveKey(newPassword, saltResult.Data.AuthSalt);
+                    if (newKeyForReuseCheck == currentAuthKey)
+                    {
+                        FormUiHelper.ShowError(textViewNewPasswordError, GetString(Resource.String.edit_account_password_reused));
+                        return;
+                    }
+
+                    var historyService = new ProfileService();
+                    var historyResult = await historyService.GetPasswordHistoryAsync();
+                    if (historyResult.Success && historyResult.Data != null)
+                    {
+                        foreach (var entry in historyResult.Data)
+                        {
+                            string historicCheck = EncryptionHelper.DeriveKey(newPassword, entry.AuthSalt);
+                            if (historicCheck == entry.PasswordKey)
+                            {
+                                FormUiHelper.ShowError(textViewNewPasswordError, GetString(Resource.String.edit_account_password_reused));
+                                return;
+                            }
+                        }
+                    }
+
                     // Generate new salts and derive new keys.
                     string newAuthSalt       = EncryptionHelper.GenerateSalt();
                     string newEncryptionSalt = EncryptionHelper.GenerateSalt();

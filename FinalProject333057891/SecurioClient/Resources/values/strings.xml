@@ -175,4 +175,5 @@
     <string name="signup_error_create_failed">Unable to create account. Please check your connection and try again.</string>
     <string name="edit_account_verify_password_failed">Unable to verify current password. Please try again.</string>
     <string name="edit_account_current_password_required">Current password is required to change your master password.</string>
+    <string name="edit_account_password_reused">This password has been used recently. Please choose a different one.</string>
 </resources>
