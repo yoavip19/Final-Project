@@ -107,7 +107,25 @@ namespace SecurioClient.Helpers
             };
         }
 
-        // Clears all data from secure storage, effectively logging the user out and removing any sensitive information from the device.
+        // Clears session-sensitive data from secure storage while preserving the
+        // user ID and username. These two values are kept so the background
+        // PasswordCheckWorker can still poll the server after logout.
+        // Items are removed individually to avoid a window where preserved values
+        // are temporarily absent (which would happen with RemoveAll + restore).
+        public static Task ClearSessionAsync()
+        {
+            SecureStorage.Remove(KeyJwt);
+            SecureStorage.Remove(KeyVaultKey);
+            SecureStorage.Remove(KeyEmail);
+            SecureStorage.Remove(KeyCreatedAt);
+            SecureStorage.Remove(KeyPasswordCount);
+            SecureStorage.Remove(KeyLastLogin);
+            SecureStorage.Remove(KeyLastPasswordChange);
+            return Task.CompletedTask;
+        }
+
+        // Clears ALL data from secure storage, including the user ID and username.
+        // Use this only when the account is being deleted.
         public static void ClearAll()
         {
             SecureStorage.RemoveAll();

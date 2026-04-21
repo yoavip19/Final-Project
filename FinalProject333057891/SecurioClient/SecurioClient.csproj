@@ -70,6 +70,7 @@
     <Compile Include="Helpers\ServerHelpers\BaseService.cs" />
     <Compile Include="Helpers\ServerHelpers\ProfileService.cs" />
     <Compile Include="Helpers\ServerHelpers\VaultService.cs" />
+    <Compile Include="Helpers\ServerHelpers\PasswordCheckService.cs" />
     <Compile Include="Helpers\SessionHelper.cs" />
     <Compile Include="Helpers\SimpleTextWatcher.cs" />
     <Compile Include="Helpers\StorageHelper.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="Helpers\FormUiHelper.cs" />
     <Compile Include="Helpers\PasswordEntryActionsHelper.cs" />
     <Compile Include="Helpers\BottomNavHelper.cs" />
+    <Compile Include="Helpers\NotificationHelper.cs" />
     <Compile Include="LoginActivity.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="PasswordBannerAdapter.cs" />
@@ -91,6 +93,10 @@
     <Compile Include="WarningsActivity.cs" />
     <Compile Include="RiskDetailActivity.cs" />
     <Compile Include="ProfileActivity.cs" />
+    <Compile Include="PasswordCheckWorker.cs" />
+    <Compile Include="PasswordMonitorService.cs" />
+    <Compile Include="BootReceiver.cs" />
+    <Compile Include="SecurioClientApplication.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EditAccountActivity.cs" />

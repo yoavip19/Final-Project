@@ -16,6 +16,10 @@ namespace SecurioClient
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
 
+            // Start the password-monitor foreground service so it survives the user
+            // swiping the app from recents.  BootReceiver handles subsequent reboots.
+            StartForegroundService(new Android.Content.Intent(this, typeof(PasswordMonitorService)));
+
             // Check whether the user already has a stored JWT and validate it with the server.
             // A valid token means the user is already authenticated and can go straight to the Vault.
             string jwt = await StorageHelper.GetJwt();
@@ -49,8 +53,9 @@ namespace SecurioClient
                     return;
                 }
 
-                // Token is invalid or expired — clear stale credentials before going to login.
-                StorageHelper.ClearAll();
+                // Token is invalid or expired — clear stale session credentials
+                // while keeping user ID and username for the background worker.
+                await StorageHelper.ClearSessionAsync();
             }
 
             var intent = new Android.Content.Intent(this, typeof(LoginActivity));

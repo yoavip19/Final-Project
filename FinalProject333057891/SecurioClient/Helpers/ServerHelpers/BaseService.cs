@@ -49,7 +49,7 @@ namespace SecurioClient.Helpers
                 var error = JsonConvert.DeserializeObject<ServerResponse<T>>(json);
                 return error ?? new ServerResponse<T> { Success = false, Message = "Server error occurred." };
             }
-            catch (Exception ex)
+            catch
             {
                 // If the internet is down, we return a new instance with the error
                 return new ServerResponse<T> { Success = false, Message = $"Connection failed." };
