@@ -96,6 +96,10 @@ namespace SecurioBackendFunction.Logic
             // no-reuse check can compare against it later.
             if (passwordChanged && oldUser != null)
             {
+                // Use LastPasswordUpdate as the archived timestamp so history entries can be
+                // sorted chronologically.  If the field is missing (e.g. a legacy account that
+                // pre-dates the LastPasswordUpdate column), fall back to the current time so
+                // the INSERT always has a valid date.
                 DateTime archivedAt = oldUser.LastPasswordUpdate != DateTime.MinValue
                     ? oldUser.LastPasswordUpdate
                     : DateTime.UtcNow;
