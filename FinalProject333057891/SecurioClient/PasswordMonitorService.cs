@@ -17,7 +17,7 @@ namespace SecurioClient
         private const int ForegroundNotificationId = 9001;
         private const string ForegroundChannelId = "securio_monitor";
         private const string ForegroundChannelName = "Securio Background Monitor";
-        private const long IntervalMs = 24L * 60 * 60 * 1000; // 24 hours
+        private const long IntervalMs = 10_000; //10 seconds //24L * 60 * 60 * 1000; // 24 hours
 
         private Handler _handler;
         private Java.Lang.Runnable _checkRunnable;
