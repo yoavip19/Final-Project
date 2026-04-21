@@ -45,14 +45,6 @@ namespace SecurioClient
 
             // Request notification permission (required at runtime on Android 13+).
             RequestNotificationPermissionIfNeeded();
-
-            // ── TESTING ONLY ─────────────────────────────────────────────────────────
-            // Starts a test worker that fires a push notification every ~10 seconds so
-            // you can verify that Workers and notifications are working.
-            // Watch logcat: adb logcat -s TestNotificationWorker PCWorkerFactory
-            // To stop: comment out or replace with TestNotificationWorker.Cancel(this).
-            TestNotificationWorker.Enqueue(this);
-            // ── END TESTING ──────────────────────────────────────────────────────────
         }
 
         private void InitializeViews()

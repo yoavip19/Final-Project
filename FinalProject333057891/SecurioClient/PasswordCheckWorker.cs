@@ -63,6 +63,8 @@ namespace SecurioClient
                     "🔑 Master Password Needs Update",
                     $"{username}, your master password hasn't been changed in over 90 days. Consider updating it.");
             }
+
+            Log.Info(Tag, $"Check done — breached={data.BreachedCount}, old={data.OldCount}, masterOld={data.MasterPasswordOld}.");
         }
     }
 }

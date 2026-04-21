@@ -28,6 +28,7 @@ namespace SecurioClient
             _handler = new Handler(Looper.MainLooper);
             _checkRunnable = new Java.Lang.Runnable(async () =>
             {
+                Log.Info(Tag, "Running password-health check...");
                 try
                 {
                     await PasswordCheckWorker.RunCheckAsync(ApplicationContext);
@@ -36,6 +37,7 @@ namespace SecurioClient
                 {
                     Log.Error(Tag, $"Periodic check failed: {ex.Message}");
                 }
+                Log.Info(Tag, $"Check complete. Next check in {IntervalMs / 3_600_000} h.");
                 // Schedule the next iteration only if the service is still alive.
                 _handler?.PostDelayed(_checkRunnable, IntervalMs);
             });
@@ -50,7 +52,7 @@ namespace SecurioClient
             _handler.RemoveCallbacks(_checkRunnable);
             _handler.Post(_checkRunnable);
 
-            Log.Info(Tag, "Service started; first check posted immediately.");
+            Log.Info(Tag, $"PasswordMonitorService started (interval={IntervalMs / 3_600_000} h). Running first check now.");
             return StartCommandResult.Sticky;
         }
 
