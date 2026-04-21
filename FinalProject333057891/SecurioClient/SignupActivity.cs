@@ -155,7 +155,7 @@ namespace SecurioClient
                 };
 
                 var authService = new AuthService();
-                var result = await authService.RegisterAsync(newUser);
+                var result = await authService.RegisterAsync(newUser, password);
 
                 if (result.Success)
                 {

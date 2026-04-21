@@ -10,7 +10,7 @@ namespace SecurioClient.Helpers.ServerHelpers
     // A specialized service that manages identity-related tasks like registering new accounts and verifying credentials.
     public class AuthService : BaseService
     {
-        public async Task<(bool Success, string Message)> RegisterAsync(User newUser)
+        public async Task<(bool Success, string Message)> RegisterAsync(User newUser, string plainTextPassword)
         {
             // 'result' IS the BaseResponse<AuthData>. 
             var result = await PostAsync<AuthData>("RegisterUser", newUser);
@@ -18,7 +18,7 @@ namespace SecurioClient.Helpers.ServerHelpers
             // One Success, One Message. Clean.
             if (result.Success)
             {
-                await SetupAuthenticatedSession(result.Data, newUser.MasterPasswordKey, newUser.EncryptionSalt);
+                await SetupAuthenticatedSession(result.Data, plainTextPassword, newUser.EncryptionSalt);
             }
 
             return (result.Success, result.Message);
