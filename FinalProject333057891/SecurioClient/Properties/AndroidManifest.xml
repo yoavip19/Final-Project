@@ -1,26 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
           android:versionCode="1" 
           android:versionName="1.0" 
           package="com.companyname.securioclient">
   <uses-sdk android:minSdkVersion="33" android:targetSdkVersion="33" />
   <application android:usesCleartextTraffic="true" android:label="Securio" android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:supportsRtl="true" android:theme="@style/AppTheme">
-    <!-- Belt-and-suspenders: remove WorkManager's default auto-initializer.
-         The primary mechanism is SecurioClientApplication implementing Configuration.IProvider,
-         which the auto-initializer uses if present.  This removal is a fallback so that the
-         manual WorkManager.Initialize() call in Application.OnCreate() does not conflict
-         with an already-initialized default instance. -->
-    <provider
-        android:name="androidx.startup.InitializationProvider"
-        android:authorities="com.companyname.securioclient.androidx-startup"
-        android:exported="false"
-        tools:node="merge">
-      <meta-data
-          android:name="androidx.work.WorkManagerInitializer"
-          android:value="androidx.startup"
-          tools:node="remove" />
-    </provider>
     <!-- Foreground service that survives swipe-from-recents and OEM process killers. -->
     <service
         android:name="com.companyname.securioclient.PasswordMonitorService"
