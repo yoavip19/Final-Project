@@ -85,21 +85,21 @@
     <Compile Include="Helpers\BottomNavHelper.cs" />
     <Compile Include="Helpers\NotificationHelper.cs" />
     <Compile Include="Helpers\PasswordCheckDecision.cs" />
-    <Compile Include="LoginActivity.cs" />
-    <Compile Include="MainActivity.cs" />
+    <Compile Include="Activities\LoginActivity.cs" />
+    <Compile Include="Activities\MainActivity.cs" />
     <Compile Include="PasswordBannerAdapter.cs" />
     <Compile Include="BottomNavFragment.cs" />
-    <Compile Include="AddPasswordActivity.cs" />
-    <Compile Include="EditPasswordActivity.cs" />
-    <Compile Include="ViewPasswordActivity.cs" />
-    <Compile Include="VaultActivity.cs" />
-    <Compile Include="WarningsActivity.cs" />
-    <Compile Include="RiskDetailActivity.cs" />
-    <Compile Include="ProfileActivity.cs" />
+    <Compile Include="Activities\AddPasswordActivity.cs" />
+    <Compile Include="Activities\EditPasswordActivity.cs" />
+    <Compile Include="Activities\ViewPasswordActivity.cs" />
+    <Compile Include="Activities\VaultActivity.cs" />
+    <Compile Include="Activities\WarningsActivity.cs" />
+    <Compile Include="Activities\RiskDetailActivity.cs" />
+    <Compile Include="Activities\ProfileActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="EditAccountActivity.cs" />
-    <Compile Include="SignupActivity.cs" />
+    <Compile Include="Activities\EditAccountActivity.cs" />
+    <Compile Include="Activities\SignupActivity.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
