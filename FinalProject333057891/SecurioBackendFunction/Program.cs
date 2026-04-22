@@ -32,5 +32,6 @@ builder.Services.AddScoped<IHibpService, HibpService>();
 builder.Services.AddScoped<UserManager>();
 builder.Services.AddScoped<AuthManager>();
 builder.Services.AddScoped<VaultItemManager>();
+builder.Services.AddScoped<PasswordCheckManager>();
 
 builder.Build().Run();

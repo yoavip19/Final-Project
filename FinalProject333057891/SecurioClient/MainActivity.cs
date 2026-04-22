@@ -42,6 +42,8 @@ namespace SecurioClient
                             SessionHelper.CachedVault, vaultKey);
                     }
 
+                    StartPasswordMonitor(this);
+
                     var vaultIntent = new Android.Content.Intent(this, typeof(VaultActivity));
                     vaultIntent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);
                     StartActivity(vaultIntent);
@@ -62,6 +64,13 @@ namespace SecurioClient
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+        // Starts the PasswordMonitorService as a foreground service if it is not already running.
+        public static void StartPasswordMonitor(Android.Content.Context context)
+        {
+            var serviceIntent = new Android.Content.Intent(context, typeof(PasswordMonitorService));
+            context.StartForegroundService(serviceIntent);
         }
     }
 }

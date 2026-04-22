@@ -96,6 +96,7 @@ namespace SecurioClient
 
                 if (result.Success)
                 {
+                    MainActivity.StartPasswordMonitor(this);
                     var intent = new Android.Content.Intent(this, typeof(VaultActivity));
                     intent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);
                     StartActivity(intent);

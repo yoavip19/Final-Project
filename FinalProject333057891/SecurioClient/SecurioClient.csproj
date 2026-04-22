@@ -66,10 +66,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PasswordOptionsBottomSheet.cs" />
+    <Compile Include="PasswordMonitorService.cs" />
+    <Compile Include="BootReceiver.cs" />
     <Compile Include="Helpers\ServerHelpers\AuthService.cs" />
     <Compile Include="Helpers\ServerHelpers\BaseService.cs" />
     <Compile Include="Helpers\ServerHelpers\ProfileService.cs" />
     <Compile Include="Helpers\ServerHelpers\VaultService.cs" />
+    <Compile Include="Helpers\ServerHelpers\PasswordCheckServerService.cs" />
     <Compile Include="Helpers\SessionHelper.cs" />
     <Compile Include="Helpers\SimpleTextWatcher.cs" />
     <Compile Include="Helpers\StorageHelper.cs" />
@@ -80,6 +83,8 @@
     <Compile Include="Helpers\FormUiHelper.cs" />
     <Compile Include="Helpers\PasswordEntryActionsHelper.cs" />
     <Compile Include="Helpers\BottomNavHelper.cs" />
+    <Compile Include="Helpers\NotificationHelper.cs" />
+    <Compile Include="Helpers\PasswordCheckDecision.cs" />
     <Compile Include="LoginActivity.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="PasswordBannerAdapter.cs" />

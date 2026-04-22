@@ -5,7 +5,25 @@
           package="com.companyname.securioclient">
   <uses-sdk android:minSdkVersion="33" android:targetSdkVersion="33" />
   <application android:usesCleartextTraffic="true" android:label="Securio" android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:supportsRtl="true" android:theme="@style/AppTheme">
+    <!-- Foreground service for 24-hour background password-health monitoring. -->
+    <service
+        android:name="com.companyname.securioclient.PasswordMonitorService"
+        android:exported="false"
+        android:foregroundServiceType="dataSync" />
+    <!-- Restarts the monitor service after reboot or app update. -->
+    <receiver
+        android:name="com.companyname.securioclient.BootReceiver"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+      </intent-filter>
+    </receiver>
   </application>
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-	<uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>

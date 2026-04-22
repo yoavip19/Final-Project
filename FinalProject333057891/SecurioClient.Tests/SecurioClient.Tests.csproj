@@ -25,6 +25,7 @@
   <ItemGroup>
     <Compile Include="..\SecurioClient\Helpers\ValidationHelper.cs" />
     <Compile Include="..\SecurioClient\Helpers\WarningsHelper.cs" />
+    <Compile Include="..\SecurioClient\Helpers\PasswordCheckDecision.cs" />
   </ItemGroup>
 
   <ItemGroup>
