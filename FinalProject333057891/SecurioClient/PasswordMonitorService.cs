@@ -19,7 +19,7 @@ namespace SecurioClient
     [Service(Exported = false)]
     public class PasswordMonitorService : Service
     {
-        private const long IntervalMs = 24 * 60 * 60 * 1000L; // 24 hours
+        private const long IntervalMs = 10000; //10 seconds //24 * 60 * 60 * 1000L; // 24 hours
 
         private Android.OS.Handler _handler;
         private Java.Lang.Runnable _runnable;
