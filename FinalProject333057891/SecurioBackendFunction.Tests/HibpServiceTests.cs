@@ -10,29 +10,23 @@ using SecurioBackendFunction.Helpers;
 
 namespace SecurioBackendFunction.Tests
 {
-    // Unit tests for the concrete HibpService class.
-    // All HTTP calls are intercepted by FakeHttpMessageHandler — no real network access.
-    // Tests cover: input validation, k-anonymity URL construction, response parsing,
-    // case-insensitivity, and fail-open behaviour on network errors.
-    // To run: dotnet test SecurioBackendFunction.Tests/SecurioBackendFunction.Tests.csproj
+    // Unit tests for HibpService — the server-side HIBP k-anonymity checker.
+    // All HTTP calls are intercepted; no real network access occurs.
     public class HibpServiceTests
     {
-        // SHA-1 of the empty string — a well-known leaked hash used as our "pwned" test value.
-        // Prefix sent to HIBP: DA39A   Suffix matched in response: 3EE5E6B4B0D3255BFEF95601890AFD80709
+        // SHA-1 of the empty string — a well-known hash appearing in the HIBP dataset.
         private const string PwnedHash   = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709";
         private const string PwnedPrefix = "DA39A";
         private const string PwnedSuffix = "3EE5E6B4B0D3255BFEF95601890AFD80709";
 
-        // A valid 40-char hex string whose suffix will NOT appear in mock responses.
+        // A valid 40-char hex string whose suffix is absent from mock responses.
         private const string SafeHash    = "AABBCCDDEEFF00112233445566778899AABBCCDD";
 
-        // Builds a HibpService backed by a handler that returns the given body/status code.
-        // Also captures every URL the service tried to request.
-        private static (HibpService service, List<string> requestedUrls) Build(
+        private static (HibpService Service, List<string> RequestedUrls) Build(
             string responseBody, HttpStatusCode status = HttpStatusCode.OK)
         {
             var urls = new List<string>();
-            var handler = new FakeHttpMessageHandler(req =>
+            var handler = new FakeHandler(req =>
             {
                 urls.Add(req.RequestUri!.ToString());
                 return new HttpResponseMessage(status)
@@ -49,20 +43,21 @@ namespace SecurioBackendFunction.Tests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public async Task IsPasswordPwned_NullOrWhitespaceHash_ReturnsFalse(string? hash)
+        public async Task IsPasswordPwned_NullOrWhitespace_ReturnsFalse(string? hash)
         {
-            var (service, _) = Build("");
-            Assert.False(await service.IsPasswordPwnedAsync(hash!));
+            var (svc, _) = Build("");
+            Assert.False(await svc.IsPasswordPwnedAsync(hash!));
         }
 
         [Theory]
-        [InlineData("DA39A3EE5E6B4B0D3255BFEF95601890AFD8070")]    // 39 chars
-        [InlineData("DA39A3EE5E6B4B0D3255BFEF95601890AFD807099")]  // 41 chars
-        [InlineData("DA39A")]                                        // 5 chars
-        public async Task IsPasswordPwned_WrongLengthHash_ReturnsFalse(string hash)
+        [InlineData("DA39A3EE5E6B4B0D3255BFEF95601890AFD8070")]   // 39 chars
+        [InlineData("DA39A3EE5E6B4B0D3255BFEF95601890AFD807099")] // 41 chars
+        [InlineData("DA39A")]                                       // 5 chars
+        [InlineData("GGGG03EE5E6B4B0D3255BFEF95601890AFD80709")]   // non-hex chars
+        public async Task IsPasswordPwned_WrongLength_ReturnsFalse(string hash)
         {
-            var (service, _) = Build("");
-            Assert.False(await service.IsPasswordPwnedAsync(hash));
+            var (svc, _) = Build("");
+            Assert.False(await svc.IsPasswordPwnedAsync(hash));
         }
 
         [Theory]
@@ -72,19 +67,18 @@ namespace SecurioBackendFunction.Tests
         [InlineData("DA39A3EE5E6B4B0D3255BFEF95601890AFD8070")]
         public async Task IsPasswordPwned_InvalidHash_NeverMakesHttpRequest(string? hash)
         {
-            var (service, urls) = Build("");
-            await service.IsPasswordPwnedAsync(hash!);
+            var (svc, urls) = Build("");
+            await svc.IsPasswordPwnedAsync(hash!);
             Assert.Empty(urls);
         }
 
-        // ── k-anonymity: only the 5-char prefix is sent over the network ─────────
+        // ── k-anonymity: only the 5-char prefix is sent ─────────────────────────
 
         [Fact]
         public async Task IsPasswordPwned_UrlContainsOnlyPrefix_NotFullHash()
         {
-            var (service, urls) = Build("");
-            await service.IsPasswordPwnedAsync(PwnedHash);
-
+            var (svc, urls) = Build("");
+            await svc.IsPasswordPwnedAsync(PwnedHash);
             Assert.Single(urls);
             Assert.EndsWith(PwnedPrefix, urls[0]);
             Assert.DoesNotContain(PwnedSuffix, urls[0]);
@@ -93,114 +87,137 @@ namespace SecurioBackendFunction.Tests
         [Fact]
         public async Task IsPasswordPwned_PrefixInUrlIsUppercase()
         {
-            var (service, urls) = Build("");
-            // Provide the hash in lowercase; the prefix sent must still be uppercase.
-            await service.IsPasswordPwnedAsync(PwnedHash.ToLowerInvariant());
-
+            var (svc, urls) = Build("");
+            await svc.IsPasswordPwnedAsync(PwnedHash.ToLowerInvariant());
             Assert.Single(urls);
             Assert.Contains(PwnedPrefix, urls[0]);
         }
 
-        // ── Response parsing: found ──────────────────────────────────────────────
+        [Fact]
+        public async Task IsPasswordPwned_MakesExactlyOneHttpRequest()
+        {
+            var (svc, urls) = Build($"{PwnedSuffix}:1");
+            await svc.IsPasswordPwnedAsync(PwnedHash);
+            Assert.Single(urls);
+        }
+
+        // ── Response parsing: hash found ─────────────────────────────────────────
 
         [Fact]
         public async Task IsPasswordPwned_SuffixPresentInResponse_ReturnsTrue()
         {
             string body = $"AAAAAA:10\r\n{PwnedSuffix}:98765\r\nBBBBBB:3";
-            var (service, _) = Build(body);
-
-            Assert.True(await service.IsPasswordPwnedAsync(PwnedHash));
+            var (svc, _) = Build(body);
+            Assert.True(await svc.IsPasswordPwnedAsync(PwnedHash));
         }
 
         [Fact]
         public async Task IsPasswordPwned_SuffixInResponseLowercase_ReturnsTrue()
         {
-            // Comparison must be case-insensitive regardless of the API response casing.
             string body = PwnedSuffix.ToLowerInvariant() + ":1234";
-            var (service, _) = Build(body);
-
-            Assert.True(await service.IsPasswordPwnedAsync(PwnedHash));
+            var (svc, _) = Build(body);
+            Assert.True(await svc.IsPasswordPwnedAsync(PwnedHash));
         }
 
         [Fact]
         public async Task IsPasswordPwned_HashProvidedLowercase_ReturnsTrue()
         {
             string body = $"{PwnedSuffix}:1";
-            var (service, _) = Build(body);
-
-            // Client may send hash in any case — service must normalise before matching.
-            Assert.True(await service.IsPasswordPwnedAsync(PwnedHash.ToLowerInvariant()));
+            var (svc, _) = Build(body);
+            Assert.True(await svc.IsPasswordPwnedAsync(PwnedHash.ToLowerInvariant()));
         }
 
-        // ── Response parsing: CRLF vs LF ────────────────────────────────────────
+        [Fact]
+        public async Task IsPasswordPwned_SingleLineResponse_ParsedCorrectly()
+        {
+            string body = $"{PwnedSuffix}:1";
+            var (svc, _) = Build(body);
+            Assert.True(await svc.IsPasswordPwnedAsync(PwnedHash));
+        }
+
+        // ── Response parsing: line endings ───────────────────────────────────────
 
         [Fact]
         public async Task IsPasswordPwned_CrlfLineEndings_ParsedCorrectly()
         {
             string body = $"AAAAAA:1\r\n{PwnedSuffix}:999\r\nBBBBBB:2";
-            var (service, _) = Build(body);
-
-            Assert.True(await service.IsPasswordPwnedAsync(PwnedHash));
+            var (svc, _) = Build(body);
+            Assert.True(await svc.IsPasswordPwnedAsync(PwnedHash));
         }
 
         [Fact]
         public async Task IsPasswordPwned_LfOnlyLineEndings_ParsedCorrectly()
         {
             string body = $"AAAAAA:1\n{PwnedSuffix}:999\nBBBBBB:2";
-            var (service, _) = Build(body);
-
-            Assert.True(await service.IsPasswordPwnedAsync(PwnedHash));
+            var (svc, _) = Build(body);
+            Assert.True(await svc.IsPasswordPwnedAsync(PwnedHash));
         }
 
-        // ── Response parsing: not found ──────────────────────────────────────────
+        // ── Response parsing: hash not found ─────────────────────────────────────
 
         [Fact]
-        public async Task IsPasswordPwned_SuffixAbsentFromResponse_ReturnsFalse()
+        public async Task IsPasswordPwned_SuffixAbsent_ReturnsFalse()
         {
             string body = "AAAAAA:5\r\nBBBBBB:3\r\nCCCCCC:1";
-            var (service, _) = Build(body);
-
-            Assert.False(await service.IsPasswordPwnedAsync(SafeHash));
+            var (svc, _) = Build(body);
+            Assert.False(await svc.IsPasswordPwnedAsync(SafeHash));
         }
 
         [Fact]
         public async Task IsPasswordPwned_EmptyApiResponse_ReturnsFalse()
         {
-            var (service, _) = Build("");
-            Assert.False(await service.IsPasswordPwnedAsync(PwnedHash));
+            var (svc, _) = Build("");
+            Assert.False(await svc.IsPasswordPwnedAsync(PwnedHash));
         }
 
-        // ── Fail-open: network/server errors must never block a user ─────────────
+        [Fact]
+        public async Task IsPasswordPwned_ResponseHasLargePwnCount_StillReturnsTrue()
+        {
+            string body = $"{PwnedSuffix}:9999999";
+            var (svc, _) = Build(body);
+            Assert.True(await svc.IsPasswordPwnedAsync(PwnedHash));
+        }
+
+        [Fact]
+        public async Task IsPasswordPwned_ResponseHasZeroCount_StillReturnsTrue()
+        {
+            // Even count of 0 means the suffix matched — counts are not filtered.
+            string body = $"{PwnedSuffix}:0";
+            var (svc, _) = Build(body);
+            Assert.True(await svc.IsPasswordPwnedAsync(PwnedHash));
+        }
+
+        // ── Fail-open behaviour ──────────────────────────────────────────────────
 
         [Fact]
         public async Task IsPasswordPwned_HttpRequestThrows_ReturnsFalse()
         {
-            var handler = new FakeHttpMessageHandler(_ =>
-                throw new HttpRequestException("simulated network failure"));
-            var service = new HibpService(new HttpClient(handler));
-
-            // Must not propagate the exception — should fail open (allow registration).
-            Assert.False(await service.IsPasswordPwnedAsync(PwnedHash));
+            var handler = new FakeHandler(_ => throw new HttpRequestException("network failure"));
+            var svc = new HibpService(new HttpClient(handler));
+            Assert.False(await svc.IsPasswordPwnedAsync(PwnedHash));
         }
 
         [Fact]
         public async Task IsPasswordPwned_ApiReturns500_ReturnsFalse()
         {
-            // GetStringAsync throws on non-2xx; the catch block must handle it gracefully.
-            var (service, _) = Build("Internal Server Error", HttpStatusCode.InternalServerError);
+            var (svc, _) = Build("Internal Server Error", HttpStatusCode.InternalServerError);
+            Assert.False(await svc.IsPasswordPwnedAsync(PwnedHash));
+        }
 
-            Assert.False(await service.IsPasswordPwnedAsync(PwnedHash));
+        [Fact]
+        public async Task IsPasswordPwned_ApiReturns404_ReturnsFalse()
+        {
+            var (svc, _) = Build("Not Found", HttpStatusCode.NotFound);
+            Assert.False(await svc.IsPasswordPwnedAsync(PwnedHash));
         }
 
         // ── Minimal fake HttpMessageHandler ─────────────────────────────────────
 
-        private sealed class FakeHttpMessageHandler : HttpMessageHandler
+        private sealed class FakeHandler : HttpMessageHandler
         {
             private readonly Func<HttpRequestMessage, HttpResponseMessage> _respond;
-
-            public FakeHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> respond)
+            public FakeHandler(Func<HttpRequestMessage, HttpResponseMessage> respond)
                 => _respond = respond;
-
             protected override Task<HttpResponseMessage> SendAsync(
                 HttpRequestMessage request, CancellationToken cancellationToken)
                 => Task.FromResult(_respond(request));

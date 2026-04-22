@@ -14,16 +14,23 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <!--
-    ValidationHelper lives inside the Xamarin.Android project (SecurioClient), which cannot
-    be referenced from a plain net8.0 project.  Because the file has no Android API calls we
-    compile it directly into this test project instead, giving us full coverage without
-    requiring the Android SDK.
+    Android-dependent source files cannot be compiled into a plain net8.0 project.
+    We compile only the pure-.NET helpers directly, and provide pure-.NET stubs for
+    everything that references Android APIs (Javax.Crypto, Android.*, etc.).
   -->
   <ItemGroup>
+    <!-- Pure-.NET helpers from the client project -->
     <Compile Include="..\SecurioClient\Helpers\ValidationHelper.cs" />
+    <Compile Include="..\SecurioClient\Helpers\WarningsHelper.cs" />
+    <Compile Include="..\SecurioClient\Helpers\HibpClientService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SecurioModels\SecurioModels.csproj" />
   </ItemGroup>
 
 </Project>
