@@ -10,11 +10,24 @@ namespace SecurioClient
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
+        private const int RequestCodeNotificationPermission = 1001;
         protected override async void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
+
+            // Android 13+ requires POST_NOTIFICATIONS to be granted at runtime.
+            // Without this grant, all notifications are silently dropped regardless
+            // of the manifest <uses-permission> declaration.
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu &&
+                CheckSelfPermission(Android.Manifest.Permission.PostNotifications)
+                    != Android.Content.PM.Permission.Granted)
+            {
+                RequestPermissions(
+                    new[] { Android.Manifest.Permission.PostNotifications },
+                    RequestCodeNotificationPermission);
+            }
 
             // Check whether the user already has a stored JWT and validate it with the server.
             // A valid token means the user is already authenticated and can go straight to the Vault.
