@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 namespace SecurioClient.Activities
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
+    /// <summary>Activity that provides the login form and authenticates the user.</summary>
     public class LoginActivity : AppCompatActivity
     {
         private TextInputEditText editTextEmail;
@@ -25,6 +26,7 @@ namespace SecurioClient.Activities
         private TextView textViewSignupLink;
         private ProgressBar progressBarLogin;
 
+        /// <summary>Initializes the activity, inflates the layout, and wires up views and handlers.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -35,6 +37,7 @@ namespace SecurioClient.Activities
             SetupEventHandlers();
         }
 
+        /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
         {
             editTextEmail = FindViewById<TextInputEditText>(Resource.Id.editTextLoginEmail);
@@ -47,6 +50,7 @@ namespace SecurioClient.Activities
             progressBarLogin = FindViewById<ProgressBar>(Resource.Id.progressBarLogin);
         }
 
+        /// <summary>Wires up click and text-change event handlers for login form controls.</summary>
         private void SetupEventHandlers()
         {
             buttonLogin.Click += async (sender, e) => await OnLoginClicked();
@@ -77,6 +81,7 @@ namespace SecurioClient.Activities
             }));
         }
 
+        /// <summary>Validates inputs and attempts to log in the user via AuthService.</summary>
         private async Task OnLoginClicked()
         {
             ClearErrors();
@@ -118,6 +123,7 @@ namespace SecurioClient.Activities
             }
         }
 
+        /// <summary>Validates the email and password fields and shows errors for any invalid values.</summary>
         private bool ValidateInputs(string email, string password)
         {
             bool isValid = true;
@@ -138,24 +144,28 @@ namespace SecurioClient.Activities
             return isValid;
         }
 
+        /// <summary>Sets the error text and makes the given error view visible.</summary>
         private void ShowError(TextView errorView, string message)
         {
             errorView.Text = message;
             errorView.Visibility = ViewStates.Visible;
         }
 
+        /// <summary>Clears the error text and hides the given error view.</summary>
         private void HideError(TextView errorView)
         {
             errorView.Text = null;
             errorView.Visibility = ViewStates.Gone;
         }
 
+        /// <summary>Displays the general error message banner.</summary>
         private void ShowGeneralError(string message)
         {
             textViewGeneralError.Text = message;
             textViewGeneralError.Visibility = ViewStates.Visible;
         }
 
+        /// <summary>Hides all field-level and general error messages.</summary>
         private void ClearErrors()
         {
             HideError(textViewEmailError);
@@ -163,6 +173,7 @@ namespace SecurioClient.Activities
             HideError(textViewGeneralError);
         }
 
+        /// <summary>Toggles the loading state, showing the progress bar and disabling form controls.</summary>
         private void SetLoadingState(bool isLoading)
         {
             progressBarLogin.Visibility = isLoading ? ViewStates.Visible : ViewStates.Gone;

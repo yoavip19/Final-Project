@@ -15,6 +15,7 @@ using System.Linq;
 namespace SecurioClient.Activities
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
+    /// <summary>Activity that displays the user's password vault entries with search and management capabilities.</summary>
     public class VaultActivity : AppCompatActivity
     {
         private const int RequestCodeNotificationPermission = 9001;
@@ -29,6 +30,7 @@ namespace SecurioClient.Activities
         private PasswordBannerAdapter adapter;
         private List<VaultItem> allEntries = new List<VaultItem>();
 
+        /// <summary>Initializes the activity, inflates the layout, and loads vault entries from the session cache.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -47,6 +49,7 @@ namespace SecurioClient.Activities
             RequestNotificationPermissionIfNeeded();
         }
 
+        /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
         {
             textViewVaultTitle = FindViewById<TextView>(Resource.Id.textViewVaultTitle);
@@ -56,6 +59,7 @@ namespace SecurioClient.Activities
             layoutVaultEmpty = FindViewById<LinearLayout>(Resource.Id.layoutVaultEmpty);
         }
 
+        /// <summary>Configures the RecyclerView with its adapter and item-click handlers.</summary>
         private void SetupRecyclerView()
         {
             adapter = new PasswordBannerAdapter(allEntries);
@@ -67,10 +71,7 @@ namespace SecurioClient.Activities
             adapter.EditClick += (sender, position) => OnBannerActionAt(position);
         }
 
-        /// <summary>
-        /// Resolves the entry at <paramref name="position"/> in the currently displayed list
-        /// and opens the options bottom sheet for it.
-        /// </summary>
+        /// <summary>Resolves the entry at the given position in the displayed list and opens the options bottom sheet.</summary>
         private void OnBannerActionAt(int position)
         {
             var displayed = GetDisplayedEntries();
@@ -82,12 +83,14 @@ namespace SecurioClient.Activities
                     OnEntryDeleted);
         }
 
+        /// <summary>Removes the deleted entry from the local list and refreshes the RecyclerView.</summary>
         private void OnEntryDeleted(VaultItem entry)
         {
             allEntries.RemoveAll(x => x.Id == entry.Id);
             RefreshList();
         }
 
+        /// <summary>Adds the BottomNavFragment on first creation to avoid duplicate fragments on configuration change.</summary>
         private void SetupBottomNavFragment(Bundle savedInstanceState)
         {
             // Only add the fragment on fresh creation to avoid duplicates on configuration change.
@@ -103,6 +106,7 @@ namespace SecurioClient.Activities
             }
         }
 
+        /// <summary>Wires up the search field and FAB click handlers.</summary>
         private void SetupEventHandlers()
         {
             // Live search filtering
@@ -120,6 +124,7 @@ namespace SecurioClient.Activities
             };
         }
 
+        /// <summary>Delegates bottom navigation tab selection to BottomNavHelper.</summary>
         private void OnBottomNavTabSelected(object sender, string tab)
             => BottomNavHelper.Navigate(this, tab, "vault");
 
@@ -127,6 +132,7 @@ namespace SecurioClient.Activities
         //  Activity result handling
         // ──────────────────────────────────────────
 
+        /// <summary>Handles results from AddPasswordActivity and EditPasswordActivity, updating the local vault list.</summary>
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
@@ -187,16 +193,14 @@ namespace SecurioClient.Activities
         //  Data helpers
         // ──────────────────────────────────────────
 
-        /// <summary>
-        /// Loads the vault entries from the in-memory session cache into the local list
-        /// and refreshes the RecyclerView.
-        /// </summary>
+        /// <summary>Loads vault entries from the in-memory session cache into the local list and refreshes the RecyclerView.</summary>
         private void LoadVaultFromSession()
         {
             allEntries = new List<VaultItem>(SessionHelper.CachedVault ?? new List<VaultItem>());
             RefreshList();
         }
 
+        /// <summary>Filters the displayed entries by the given search query and updates the empty state.</summary>
         private void FilterPasswords(string query)
         {
             if (string.IsNullOrWhiteSpace(query))
@@ -211,6 +215,7 @@ namespace SecurioClient.Activities
             UpdateEmptyState();
         }
 
+        /// <summary>Returns the vault entries whose site name or username contains the given query string.</summary>
         private List<VaultItem> GetFilteredEntries(string query)
         {
             return allEntries
@@ -219,21 +224,21 @@ namespace SecurioClient.Activities
                 .ToList();
         }
 
-        /// <summary>
-        /// Returns the list currently shown in the adapter (filtered or full).
-        /// </summary>
+        /// <summary>Returns the list currently shown in the adapter (filtered or full).</summary>
         private List<VaultItem> GetDisplayedEntries()
         {
             string query = editTextVaultSearch.Text?.Trim();
             return string.IsNullOrWhiteSpace(query) ? allEntries : GetFilteredEntries(query);
         }
 
+        /// <summary>Re-applies the current search filter to refresh the RecyclerView.</summary>
         private void RefreshList()
         {
             string query = editTextVaultSearch.Text?.Trim();
             FilterPasswords(query);
         }
 
+        /// <summary>Toggles the empty-state placeholder and RecyclerView visibility based on adapter item count.</summary>
         private void UpdateEmptyState()
         {
             bool isEmpty = adapter.ItemCount == 0;
@@ -241,17 +246,13 @@ namespace SecurioClient.Activities
             recyclerViewPasswords.Visibility = isEmpty ? ViewStates.Gone : ViewStates.Visible;
         }
 
-        /// <summary>
-        /// Pushes the current entry list into the static cache so that
-        /// entry activities can perform duplicate checking.
-        /// </summary>
+        /// <summary>Pushes the current entry list into the static cache so that entry activities can perform duplicate checking.</summary>
         private void SyncEntryCache()
         {
             VaultEntryCache.Entries = new List<VaultItem>(allEntries);
         }
 
-        // Requests the POST_NOTIFICATIONS runtime permission on Android 13+ (API 33).
-        // Without this, notifications posted by the background worker are silently dropped.
+        /// <summary>Requests the POST_NOTIFICATIONS runtime permission on Android 13+ if not already granted.</summary>
         private void RequestNotificationPermissionIfNeeded()
         {
             if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)

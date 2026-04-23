@@ -179,6 +179,7 @@ namespace SecurioClient.Helpers
             }
         }
 
+        /// <summary>Returns the subset of vault items whose password appears in a known data breach.</summary>
         private static async Task<List<VaultItem>> GetLeakedItemsAsync(IList<VaultItem> vault)
         {
             var result = new List<VaultItem>();
@@ -191,6 +192,7 @@ namespace SecurioClient.Helpers
             return result;
         }
 
+        /// <summary>Returns the subset of vault items that fail the password strength validation.</summary>
         private static List<VaultItem> GetWeakItems(IList<VaultItem> vault, string vaultKey)
         {
             var result = new List<VaultItem>();
@@ -218,6 +220,7 @@ namespace SecurioClient.Helpers
             return result;
         }
 
+        /// <summary>Returns the subset of vault items that share a SHA-1 hash with at least one other item.</summary>
         private static List<VaultItem> GetReusedItems(IList<VaultItem> vault)
         {
             var hashGroups = vault
@@ -232,6 +235,7 @@ namespace SecurioClient.Helpers
             return result;
         }
 
+        /// <summary>Returns the subset of vault items whose password has not been changed in over 90 days.</summary>
         private static List<VaultItem> GetOldItems(IList<VaultItem> vault)
         {
             DateTime oldThreshold = DateTime.UtcNow.AddDays(-OldPasswordDays);

@@ -14,13 +14,13 @@ using static Android.Provider.Settings;
 
 namespace SecurioClient
 {
-    // A utility class used to generate random salts, transform passwords into secure keys, and encrypt vault data using AES-GCM.
+    /// <summary>A utility class for generating salts, deriving secure keys, and encrypting vault data using AES-GCM.</summary>
     public static class EncryptionHelper
     {
         // High iterations make brute-force attacks much harder
-        private const int Iterations = 50; ///600000;
+        private const int Iterations = 600000;
 
-        // Creates a cryptographically strong 32-byte random salt encoded as a Base64 string.
+        /// <summary>Creates a cryptographically strong 32-byte random salt encoded as a Base64 string.</summary>
         public static string GenerateSalt()
         {
             byte[] saltBytes = new byte[32];
@@ -28,7 +28,7 @@ namespace SecurioClient
             return Convert.ToBase64String(saltBytes);
         }
 
-        // Transforms a plaintext password and salt into a secure 256-bit key through multiple hashing iterations.
+        /// <summary>Transforms a plaintext password and salt into a secure 256-bit key through multiple hashing iterations.</summary>
         public static string DeriveKey(string password, string saltBase64)
         {
             byte[] saltBytes = Convert.FromBase64String(saltBase64);
@@ -40,8 +40,7 @@ namespace SecurioClient
             }
         }
 
-        // Encrypts plaintext using AES-GCM with the given Base64-encoded 256-bit key.
-        // Returns the IV, authentication Tag, and CipherText as Base64 strings.
+        /// <summary>Encrypts plaintext using AES-GCM with the given Base64-encoded 256-bit key.</summary>
         public static (string IV, string Tag, string CipherText) EncryptAesGcm(string plaintext, string base64Key)
         {
             byte[] keyBytes = Convert.FromBase64String(base64Key);
@@ -74,8 +73,7 @@ namespace SecurioClient
             );
         }
 
-        // Decrypts AES-GCM encrypted data using the given Base64-encoded 256-bit key.
-        // IV, Tag, and CipherText must all be Base64 strings produced by EncryptAesGcm.
+        /// <summary>Decrypts AES-GCM encrypted data using the given Base64-encoded 256-bit key.</summary>
         public static string DecryptAesGcm(string base64IV, string base64Tag, string base64CipherText, string base64Key)
         {
             byte[] keyBytes = Convert.FromBase64String(base64Key);
@@ -97,7 +95,7 @@ namespace SecurioClient
             return Encoding.UTF8.GetString(plainBytes);
         }
 
-        // Computes an unsalted SHA-1 hash of the input (uppercase hex). Used for HIBP breach checking only.
+        /// <summary>Computes an unsalted SHA-1 hash of the input in uppercase hex, used for HIBP breach checking only.</summary>
         public static string ComputeSha1Hash(string input)
         {
             using (var sha1 = SHA1.Create())

@@ -9,13 +9,14 @@ using System.Text;
 using System.Threading.Tasks;
 namespace SecurioBackendFunction.Logic
 {
-    // Coordinates the retrieval of user-specific data and account statistics.
+    /// <summary>Coordinates the retrieval of user-specific data and account statistics.</summary>
     public class UserManager
     {
         private readonly IUserRepository _repo;
         private readonly IVaultItemRepository _vaultRepo;
         private readonly IHibpService _hibp;
 
+        /// <summary>Initializes a new instance of UserManager.</summary>
         public UserManager(IUserRepository repo, IVaultItemRepository vaultRepo, IHibpService hibp)
         {
             _repo = repo;
@@ -23,7 +24,7 @@ namespace SecurioBackendFunction.Logic
             _hibp = hibp;
         }
 
-        // Fetches the profile and wraps it in a standard ProfileResponse for the API.
+        /// <summary>Fetches the profile and wraps it in a standard response for the API.</summary>
         public async Task<ServerResponse<User>> GetProfileAsync(int userId)
         {
             var user = await _repo.GetUserProfileAsync(userId);
@@ -40,9 +41,7 @@ namespace SecurioBackendFunction.Logic
             };
         }
 
-        // Updates the user's account details (username, email, and optionally master password).
-        // When passwordChanged is true the caller must supply new MasterPasswordKey, AuthSalt and EncryptionSalt,
-        // along with re-encrypted vault items.
+        /// <summary>Updates the user's account details including username, email, and optionally master password.</summary>
         public async Task<ServerResponse<object>> UpdateUserAsync(int userId, User updated, bool passwordChanged, List<VaultItem> reEncryptedItems = null)
         {
             if (string.IsNullOrWhiteSpace(updated.Username))
@@ -117,7 +116,7 @@ namespace SecurioBackendFunction.Logic
             return new ServerResponse<object> { Success = true, Message = "Account updated successfully." };
         }
 
-        // Deletes the user account and all associated vault items (via CASCADE).
+        /// <summary>Deletes the user account and all associated vault items via CASCADE.</summary>
         public async Task<ServerResponse<object>> DeleteUserAsync(int userId)
         {
             bool deleted = await _repo.DeleteUserAsync(userId);
@@ -130,7 +129,7 @@ namespace SecurioBackendFunction.Logic
             return new ServerResponse<object> { Success = true, Message = "Account deleted successfully." };
         }
 
-        // Returns the last 4 password-history entries for the user, used by the client for the no-reuse check.
+        /// <summary>Returns the last 4 password-history entries for the user.</summary>
         public async Task<ServerResponse<List<MasterPasswordHistory>>> GetPasswordHistoryAsync(int userId)
         {
             var history = await _repo.GetLastPasswordHistoryAsync(userId, 4);

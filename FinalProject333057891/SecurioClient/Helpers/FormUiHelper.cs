@@ -4,27 +4,24 @@ using Android.Widget;
 
 namespace SecurioClient.Helpers
 {
-    // Shared UI helpers for form activities that display inline field errors and
-    // password-strength feedback.  Used by SignupActivity and EditAccountActivity
-    // to follow DRY — all validation display logic lives here.
+    /// <summary>Shared UI helpers for form activities that display inline field errors and password-strength feedback.</summary>
     public static class FormUiHelper
     {
-        // Shows an inline error message below a form field.
+        /// <summary>Shows an inline error message below a form field.</summary>
         public static void ShowError(TextView errorView, string message)
         {
             errorView.Text = message;
             errorView.Visibility = ViewStates.Visible;
         }
 
-        // Hides an inline error message.
+        /// <summary>Hides an inline error message.</summary>
         public static void HideError(TextView errorView)
         {
             errorView.Text = null;
             errorView.Visibility = ViewStates.Gone;
         }
 
-        // Updates a 5-segment password-strength ProgressBar and constructive hint label.
-        // Performs inline validation via ValidationHelper.
+        /// <summary>Updates a 5-segment password-strength ProgressBar and constructive hint label.</summary>
         public static void UpdatePasswordStrengthIndicator(
             string password,
             ProgressBar strengthBar,
@@ -62,7 +59,7 @@ namespace SecurioClient.Helpers
                     : Resource.Color.signupHintText)));
         }
 
-        // Maps a cumulative score (1-5) to the matching color resource for the progress bar tint.
+        /// <summary>Maps a cumulative score (1-5) to the matching color resource for the progress bar tint.</summary>
         public static int ScoreToColorRes(int score)
         {
             switch (score)

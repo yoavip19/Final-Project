@@ -14,10 +14,10 @@ using SecurioModels;
 
 namespace SecurioClient.Helpers.ServerHelpers
 {
-    // Manages the retrieval and caching of user profile information.
+    /// <summary>Manages the retrieval and caching of user profile information.</summary>
     public class ProfileService : BaseService
     {
-        // Fetches the full profile stats from the server.
+        /// <summary>Fetches the full profile stats from the server.</summary>
         public async Task<ServerResponse<User>> GetProfileAsync()
         {
             var response = await GetAsync<User>("GetProfile");
@@ -31,21 +31,19 @@ namespace SecurioClient.Helpers.ServerHelpers
             return response;
         }
 
-        // Sends the updated account details (and optionally re-encrypted vault items) to the server.
+        /// <summary>Sends the updated account details and optionally re-encrypted vault items to the server.</summary>
         public async Task<ServerResponse<object>> UpdateAccountAsync(UpdateAccountRequest request)
         {
             return await PostAsync<object>("UpdateUser", request);
         }
 
-        // Permanently deletes the user account and all associated vault items on the server.
+        /// <summary>Permanently deletes the user account and all associated vault items on the server.</summary>
         public async Task<ServerResponse<object>> DeleteAccountAsync()
         {
             return await PostAsync<object>("DeleteUser", new { });
         }
 
-        // Fetches the last 4 master-password history entries for the authenticated user.
-        // The client uses each entry's AuthSalt to derive and compare the new password
-        // for the no-reuse check.
+        /// <summary>Fetches the last 4 master-password history entries for the authenticated user.</summary>
         public async Task<ServerResponse<List<MasterPasswordHistory>>> GetPasswordHistoryAsync()
         {
             return await GetAsync<List<MasterPasswordHistory>>("GetPasswordHistory");

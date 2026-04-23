@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 namespace SecurioClient.Activities
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
+    /// <summary>Activity that allows the user to update their username, email, and optionally their master password.</summary>
     public class EditAccountActivity : AppCompatActivity
     {
         // Request code used when launching this activity from ProfileActivity.
@@ -46,6 +47,7 @@ namespace SecurioClient.Activities
         private string originalUsername;
         private string originalEmail;
 
+        /// <summary>Initializes the activity, inflates the layout, and pre-fills fields with the current profile.</summary>
         protected override async void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -57,6 +59,7 @@ namespace SecurioClient.Activities
             await LoadCurrentProfileAsync();
         }
 
+        /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
         {
             editTextUsername            = FindViewById<TextInputEditText>(Resource.Id.editTextEditUsername);
@@ -78,6 +81,7 @@ namespace SecurioClient.Activities
             progressBarEditAccount      = FindViewById<ProgressBar>(Resource.Id.progressBarEditAccount);
         }
 
+        /// <summary>Wires up click and text-change event handlers for the edit account form controls.</summary>
         private void SetupEventHandlers()
         {
             imageViewBack.Click += (sender, e) => Finish();
@@ -127,7 +131,7 @@ namespace SecurioClient.Activities
             }));
         }
 
-        // Loads the current username and email from the server (or cache) and pre-fills the fields.
+        /// <summary>Loads the current username and email from the server or cache and pre-fills the form fields.</summary>
         private async Task LoadCurrentProfileAsync()
         {
             try
@@ -164,6 +168,7 @@ namespace SecurioClient.Activities
             editTextEmail.Text = originalEmail ?? "";
         }
 
+        /// <summary>Validates inputs, re-encrypts vault items if the password changes, and submits the update.</summary>
         private async Task OnSaveClicked()
         {
             ClearErrors();
@@ -197,7 +202,6 @@ namespace SecurioClient.Activities
                 {
                     // Verify the current password by deriving the auth key and comparing locally.
                     // We fetch the user's salts from the server to derive the current key.
-                    var authService = new AuthService();
                     var saltResult = await new BaseServiceProxy().GetSaltsAsync(email);
 
                     // If salts aren't available for the current email (e.g., email changed), use original email.
@@ -348,6 +352,7 @@ namespace SecurioClient.Activities
             }
         }
 
+        /// <summary>Validates all edit account form fields and shows errors for any invalid values.</summary>
         private bool ValidateInputs(string username, string email,
             string currentPassword, string newPassword, string confirmPassword,
             bool isChangingPassword)
@@ -380,12 +385,14 @@ namespace SecurioClient.Activities
 
         // ── UI helpers delegating to the shared FormUiHelper (DRY) ──
 
+        /// <summary>Displays the general error message banner.</summary>
         private void ShowGeneralError(string message)
         {
             textViewGeneralError.Text = message;
             textViewGeneralError.Visibility = ViewStates.Visible;
         }
 
+        /// <summary>Hides all field-level and general error messages.</summary>
         private void ClearErrors()
         {
             FormUiHelper.HideError(textViewUsernameError);
@@ -396,6 +403,7 @@ namespace SecurioClient.Activities
             FormUiHelper.HideError(textViewGeneralError);
         }
 
+        /// <summary>Toggles the loading state, showing the progress bar and disabling form controls.</summary>
         private void SetLoadingState(bool isLoading)
         {
             progressBarEditAccount.Visibility = isLoading ? ViewStates.Visible : ViewStates.Gone;
@@ -409,10 +417,10 @@ namespace SecurioClient.Activities
         }
     }
 
-    // Lightweight proxy so EditAccountActivity can call GetSalts without going through the
-    // full AuthService login flow. Follows the same BaseService pattern.
+    /// <summary>Lightweight proxy that exposes salt retrieval from BaseService for use in EditAccountActivity.</summary>
     internal class BaseServiceProxy : BaseService
     {
+        /// <summary>Fetches the auth and encryption salts for the given email address.</summary>
         public async Task<ServerResponse<SaltData>> GetSaltsAsync(string email)
         {
             return await PostAsync<SaltData>("GetSalts", new { Email = email });

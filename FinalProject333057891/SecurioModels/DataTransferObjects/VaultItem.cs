@@ -2,9 +2,7 @@ using System;
 
 namespace SecurioModels.DataTransferObjects
 {
-    // VaultItem - The secure data carrier for a stored credential.
-    // IV, Tag, and CipherText are the AES-GCM components of the encrypted password.
-    // Sha1Hash is an unsalted SHA-1 hash of the plaintext password used for HIBP breach checking.
+    /// <summary>The secure data carrier for a stored credential with AES-GCM encryption components.</summary>
     public class VaultItem
     {
         public int Id { get; set; }

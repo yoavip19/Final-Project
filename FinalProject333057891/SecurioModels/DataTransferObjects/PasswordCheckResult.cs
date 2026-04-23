@@ -1,8 +1,6 @@
 namespace SecurioModels.DataTransferObjects
 {
-    // Carries the password-health summary returned by the PasswordCheck endpoint.
-    // The background monitor service (PasswordMonitorService) uses this to decide
-    // whether a local notification should be shown to the user.
+    /// <summary>Carries the password-health summary returned by the PasswordCheck endpoint.</summary>
     public class PasswordCheckResult
     {
         // Number of vault items whose stored password has been found in a data breach.

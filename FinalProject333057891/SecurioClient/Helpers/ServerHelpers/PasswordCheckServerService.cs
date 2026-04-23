@@ -8,16 +8,13 @@ using System.Threading.Tasks;
 
 namespace SecurioClient.Helpers.ServerHelpers
 {
-    // Contacts the backend PasswordCheck endpoint on behalf of the background monitor service.
-    // No JWT is required: the service passes only the stored UserId.
+    /// <summary>Contacts the backend PasswordCheck endpoint on behalf of the background monitor service using only the stored UserId.</summary>
     public static class PasswordCheckServerService
     {
         private static readonly HttpClient _http = new HttpClient();
         private const string Endpoint = "http://10.0.2.2:7071/api/PasswordCheck";
 
-        // Calls POST /api/PasswordCheck with the given userId.
-        // Returns null if the server is unreachable or returns a non-success response,
-        // so the caller can skip notification on transient failures (fail-open).
+        /// <summary>Calls POST /api/PasswordCheck with the given userId; returns null on failure.</summary>
         public static async Task<PasswordCheckResult?> FetchAsync(int userId)
         {
             try

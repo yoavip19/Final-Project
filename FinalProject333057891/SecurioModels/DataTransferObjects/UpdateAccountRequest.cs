@@ -2,9 +2,7 @@ using System.Collections.Generic;
 
 namespace SecurioModels.DataTransferObjects
 {
-    // Carries the data needed for updating a user's account details.
-    // When PasswordChanged is true, MasterPasswordKey, AuthSalt, EncryptionSalt,
-    // and VaultItems (re-encrypted) must be provided.
+    /// <summary>Carries the data needed for updating a user's account details.</summary>
     public class UpdateAccountRequest
     {
         public string Username { get; set; }

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace SecurioClient.Helpers
 {
-    // Classifies how strong a password is across five levels (one per criterion).
+    /// <summary>Classifies how strong a password is across five levels.</summary>
     public enum PasswordStrength
     {
         Weak,       // score 1
@@ -15,24 +15,26 @@ namespace SecurioClient.Helpers
         VeryStrong  // score 5
     }
 
-    // Carries the result of a single field validation.
+    /// <summary>Carries the result of a single field validation.</summary>
     public sealed class ValidationResult
     {
         public bool IsValid { get; }
         public string ErrorMessage { get; }
 
+        /// <summary>Initializes a new instance of ValidationResult.</summary>
         private ValidationResult(bool isValid, string errorMessage)
         {
             IsValid = isValid;
             ErrorMessage = errorMessage;
         }
 
+        /// <summary>Returns a successful validation result.</summary>
         public static ValidationResult Ok() => new ValidationResult(true, null);
+        /// <summary>Returns a failed validation result with the specified error message.</summary>
         public static ValidationResult Fail(string message) => new ValidationResult(false, message);
     }
 
-    // Industry-standard field validation for the Securio signup / login forms.
-    // Rules follow OWASP and NIST SP 800-63B guidance.
+    /// <summary>Industry-standard field validation for the Securio signup and login forms following OWASP and NIST SP 800-63B guidance.</summary>
     public static class ValidationHelper
     {
         // -----------------------------------------------------------------
@@ -238,8 +240,7 @@ namespace SecurioClient.Helpers
             return new string(chars.ToArray());
         }
 
-        // Returns a cryptographically secure random index in [0, max) using
-        // rejection sampling to eliminate modulo bias.
+        /// <summary>Returns a cryptographically secure random index in [0, max) using rejection sampling to eliminate modulo bias.</summary>
         private static int SecureRandomIndex(int max)
         {
             // Largest multiple of max that fits in a uint, used as the rejection threshold.

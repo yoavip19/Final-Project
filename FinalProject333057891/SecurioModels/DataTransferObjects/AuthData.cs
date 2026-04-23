@@ -2,7 +2,7 @@
 
 namespace SecurioModels.DataTransferObjects
 {
-    // AuthResponse - Holds session data (Token, ID, Username) returned after successful login or signup.
+    /// <summary>Holds session data returned after successful login or signup.</summary>
     public class AuthData
     {
         public int UserId { get; set; }

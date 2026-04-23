@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 
 namespace SecurioBackendFunction.Repositories
 {
-    // Manages all direct SQL database interactions for vault-item data.
+    /// <summary>Manages all direct SQL database interactions for vault-item data.</summary>
     public class VaultItemRepository : IVaultItemRepository
     {
         private readonly string _connectionString;
+        /// <summary>Initializes a new instance of VaultItemRepository.</summary>
         public VaultItemRepository(string connectionString) => _connectionString = connectionString;
 
-        // Inserts a new vault item record and returns the newly generated ID.
+        /// <summary>Inserts a new vault item record and returns the newly generated ID.</summary>
         public async Task<int> AddVaultItemAsync(VaultItem item)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -34,7 +35,7 @@ namespace SecurioBackendFunction.Repositories
             return (int)await cmd.ExecuteScalarAsync();
         }
 
-        // Updates an existing vault item. Only the owning user's row is affected.
+        /// <summary>Updates an existing vault item, enforcing ownership via UserId.</summary>
         public async Task<bool> UpdateVaultItemAsync(VaultItem item)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -66,7 +67,7 @@ namespace SecurioBackendFunction.Repositories
             return rows > 0;
         }
 
-        // Retrieves all vault items belonging to a specific user.
+        /// <summary>Retrieves all vault items belonging to a specific user.</summary>
         public async Task<List<VaultItem>> GetVaultItemsByUserIdAsync(int userId)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -100,7 +101,7 @@ namespace SecurioBackendFunction.Repositories
             return items;
         }
 
-        // Deletes a vault item by ID, enforcing ownership via UserId.
+        /// <summary>Deletes a vault item by ID, enforcing ownership via UserId.</summary>
         public async Task<bool> DeleteVaultItemAsync(int itemId, int userId)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -113,9 +114,7 @@ namespace SecurioBackendFunction.Repositories
             return rows > 0;
         }
 
-        // Bulk-updates the encryption fields (IV, Tag, CipherText) for all vault items
-        // belonging to the given user. Used when the master password changes and all
-        // passwords must be re-encrypted with the new key.
+        /// <summary>Bulk-updates the encryption fields for all vault items belonging to the given user.</summary>
         public async Task<bool> BulkUpdateVaultItemsAsync(List<VaultItem> items, int userId)
         {
             if (items == null || items.Count == 0) return true;

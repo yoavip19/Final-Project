@@ -3,21 +3,17 @@ using System.Text;
 
 namespace SecurioClient.Helpers
 {
-    // Pure, platform-independent helper that decides whether the user should be
-    // notified after a PasswordCheck server response, and builds the notification
-    // message text.  Contains no Android API references so it can be compiled and
-    // tested in a plain net8.0 test project.
+    /// <summary>Pure, platform-independent helper that decides whether the user should be notified after a PasswordCheck server response.</summary>
     public static class PasswordCheckDecision
     {
-        // Returns true when at least one password-health issue was detected.
+        /// <summary>Returns true when at least one password-health issue was detected.</summary>
         public static bool ShouldNotify(PasswordCheckResult result)
         {
             if (result == null) return false;
             return result.BreachedCount > 0 || result.OldCount > 0 || result.MasterPasswordOld;
         }
 
-        // Builds a human-readable notification body summarising the issues found.
-        // Returns an empty string when there are no issues (ShouldNotify == false).
+        /// <summary>Builds a human-readable notification body summarising the issues found.</summary>
         public static string BuildMessage(PasswordCheckResult result)
         {
             if (result == null || !ShouldNotify(result))

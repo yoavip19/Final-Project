@@ -17,11 +17,7 @@ using System.Threading.Tasks;
 
 namespace SecurioClient.Activities
 {
-    /// <summary>
-    /// Activity for editing an existing password entry in the vault.
-    /// Reuses the shared <c>activity_entry.xml</c> layout with title/button
-    /// configured for edit mode.
-    /// </summary>
+    /// <summary>Activity for editing an existing password entry in the vault using the shared activity_entry.xml layout.</summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class EditPasswordActivity : AppCompatActivity
     {
@@ -91,6 +87,7 @@ namespace SecurioClient.Activities
 
         // ── Lifecycle ──────────────────────────────────────────
 
+        /// <summary>Initializes the activity, inflates the layout, and sets up views and event handlers.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -107,13 +104,10 @@ namespace SecurioClient.Activities
 
         // ── Setup helpers ──────────────────────────────────────
 
+        /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
         {
             imageViewBack = FindViewById<ImageView>(Resource.Id.imageViewEntryBack);
-            textViewTitle = FindViewById<TextView>(Resource.Id.textViewEntryTitle);
-            textViewSubtitle = FindViewById<TextView>(Resource.Id.textViewEntrySubtitle);
-
-            textInputLayoutPassword = FindViewById<TextInputLayout>(Resource.Id.textInputLayoutEntryPassword);
             textInputLayoutConfirmPassword = FindViewById<TextInputLayout>(Resource.Id.textInputLayoutEntryConfirmPassword);
 
             editTextSiteName = FindViewById<TextInputEditText>(Resource.Id.editTextEntrySiteName);
@@ -136,6 +130,7 @@ namespace SecurioClient.Activities
             progressBar = FindViewById<ProgressBar>(Resource.Id.progressBarEntry);
         }
 
+        /// <summary>Sets the title, subtitle, button label, and hint text for edit mode.</summary>
         private void ConfigureForEditMode()
         {
             textViewTitle.Text = GetString(Resource.String.entry_title_edit);
@@ -147,9 +142,7 @@ namespace SecurioClient.Activities
             textInputLayoutConfirmPassword.Hint = GetString(Resource.String.entry_confirm_password_edit_hint);
         }
 
-        /// <summary>
-        /// Loads the existing vault entries (excluding the current item) for duplicate checking.
-        /// </summary>
+        /// <summary>Loads existing vault entries excluding the current item for duplicate checking.</summary>
         private void PopulateExistingEntries()
         {
             entryId = Intent.GetIntExtra(ExtraEntryId, 0);
@@ -158,11 +151,7 @@ namespace SecurioClient.Activities
                 .ToList();
         }
 
-        /// <summary>
-        /// Pre-fills the form fields with the data passed via the launching Intent.
-        /// The password fields are left blank — the user may enter a new password or leave
-        /// them empty to keep the existing encrypted data unchanged.
-        /// </summary>
+        /// <summary>Pre-fills the form fields with the data passed via the launching Intent.</summary>
         private void PopulateFieldsFromIntent()
         {
             editTextSiteName.Text = Intent.GetStringExtra(ExtraSiteName) ?? string.Empty;
@@ -172,6 +161,7 @@ namespace SecurioClient.Activities
             // Existing encrypted data is carried via ExtraIV/ExtraTag/ExtraCipherText/ExtraSha1Hash.
         }
 
+        /// <summary>Wires up click and text-change event handlers for the entry form controls.</summary>
         private void SetupEventHandlers()
         {
             imageViewBack.Click += (s, e) =>
@@ -232,11 +222,7 @@ namespace SecurioClient.Activities
             }));
         }
 
-        /// <summary>
-        /// Seeds the password field with a masked placeholder to indicate an existing password
-        /// is stored. Clears on focus so the user can type a new value, and restores the
-        /// placeholder if they leave the field without typing anything.
-        /// </summary>
+        /// <summary>Seeds the password field with a masked placeholder and clears it on focus so the user can type a new value.</summary>
         private void ConfigurePasswordPlaceholder()
         {
             _passwordIsPlaceholder = true;
@@ -261,6 +247,7 @@ namespace SecurioClient.Activities
 
         // ── Update logic ───────────────────────────────────────
 
+        /// <summary>Validates inputs, optionally re-encrypts the password, and submits the vault entry update.</summary>
         private async Task OnUpdateClicked()
         {
             ClearErrors();
@@ -364,6 +351,7 @@ namespace SecurioClient.Activities
 
         // ── Validation ─────────────────────────────────────────
 
+        /// <summary>Validates all entry form fields and shows errors for any invalid values.</summary>
         private bool ValidateInputs(string siteName, string username, string password, string confirmPassword)
         {
             bool valid = true;
@@ -404,10 +392,7 @@ namespace SecurioClient.Activities
             return valid;
         }
 
-        /// <summary>
-        /// Returns <c>true</c> when an entry with the same site name AND username
-        /// already exists in the vault (excluding the item currently being edited).
-        /// </summary>
+        /// <summary>Returns true when an entry with the same site name and username already exists in the vault (excluding the item being edited).</summary>
         private bool IsDuplicate(string siteName, string username)
         {
             return existingEntries.Any(e =>
@@ -415,10 +400,7 @@ namespace SecurioClient.Activities
                 && string.Equals(e.AccountUsername, username, StringComparison.OrdinalIgnoreCase));
         }
 
-        /// <summary>
-        /// Shows or hides the confirm password mismatch error during real-time validation.
-        /// Only fires when the confirm field is non-empty.
-        /// </summary>
+        /// <summary>Validates that the confirm password field matches the password field and shows or hides the error accordingly.</summary>
         private void ValidatePasswordsMatch()
         {
             string password = editTextPassword.Text;
@@ -436,6 +418,7 @@ namespace SecurioClient.Activities
 
         // ── Password strength indicator (informational) ────────
 
+        /// <summary>Updates the password strength progress bar and hint text based on the given password.</summary>
         private void UpdatePasswordStrengthIndicator(string password)
         {
             if (string.IsNullOrEmpty(password))
@@ -461,6 +444,7 @@ namespace SecurioClient.Activities
                     : Resource.Color.signupHintText)));
         }
 
+        /// <summary>Maps a password score (1–5) to the corresponding color resource ID.</summary>
         private static int ScoreToColorRes(int score)
         {
             switch (score)
@@ -475,18 +459,21 @@ namespace SecurioClient.Activities
 
         // ── UI helpers ─────────────────────────────────────────
 
+        /// <summary>Sets the error text and makes the given error view visible.</summary>
         private void ShowError(TextView errorView, string message)
         {
             errorView.Text = message;
             errorView.Visibility = ViewStates.Visible;
         }
 
+        /// <summary>Clears the error text and hides the given error view.</summary>
         private void HideError(TextView errorView)
         {
             errorView.Text = null;
             errorView.Visibility = ViewStates.Gone;
         }
 
+        /// <summary>Hides all field-level and general error messages.</summary>
         private void ClearErrors()
         {
             HideError(textViewSiteNameError);
@@ -496,6 +483,7 @@ namespace SecurioClient.Activities
             HideError(textViewGeneralError);
         }
 
+        /// <summary>Toggles the loading state, showing the progress bar and disabling form controls.</summary>
         private void SetLoadingState(bool isLoading)
         {
             progressBar.Visibility = isLoading ? ViewStates.Visible : ViewStates.Gone;

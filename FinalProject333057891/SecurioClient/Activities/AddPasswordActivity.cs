@@ -16,11 +16,7 @@ using System.Threading.Tasks;
 
 namespace SecurioClient.Activities
 {
-    /// <summary>
-    /// Activity for adding a new password entry to the vault.
-    /// Uses the shared <c>activity_entry.xml</c> layout.
-    /// A separate Edit activity will reuse the same XML in the future.
-    /// </summary>
+    /// <summary>Activity for adding a new password entry to the vault using the shared activity_entry.xml layout.</summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class AddPasswordActivity : AppCompatActivity
     {
@@ -67,6 +63,7 @@ namespace SecurioClient.Activities
 
         // ── Lifecycle ──────────────────────────────────────────
 
+        /// <summary>Initializes the activity, inflates the layout, and sets up views and event handlers.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -81,6 +78,7 @@ namespace SecurioClient.Activities
 
         // ── Setup helpers ──────────────────────────────────────
 
+        /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
         {
             imageViewBack = FindViewById<ImageView>(Resource.Id.imageViewEntryBack);
@@ -107,6 +105,7 @@ namespace SecurioClient.Activities
             progressBar = FindViewById<ProgressBar>(Resource.Id.progressBarEntry);
         }
 
+        /// <summary>Sets the title, subtitle, and button label for add mode.</summary>
         private void ConfigureForAddMode()
         {
             textViewTitle.Text = GetString(Resource.String.entry_title_add);
@@ -114,14 +113,13 @@ namespace SecurioClient.Activities
             buttonSave.Text = GetString(Resource.String.entry_button_save);
         }
 
-        /// <summary>
-        /// Loads the existing vault entries so that duplicate-check works.
-        /// </summary>
+        /// <summary>Loads existing vault entries from the cache for duplicate checking.</summary>
         private void PopulateExistingEntries()
         {
             existingEntries = VaultEntryCache.Entries ?? new List<VaultItem>();
         }
 
+        /// <summary>Wires up click and text-change event handlers for the entry form controls.</summary>
         private void SetupEventHandlers()
         {
             imageViewBack.Click += (s, e) =>
@@ -181,6 +179,7 @@ namespace SecurioClient.Activities
 
         // ── Save logic ─────────────────────────────────────────
 
+        /// <summary>Validates inputs, encrypts the password, checks for breaches, and saves the new vault entry.</summary>
         private async Task OnSaveClicked()
         {
             ClearErrors();
@@ -266,6 +265,7 @@ namespace SecurioClient.Activities
 
         // ── Validation ─────────────────────────────────────────
 
+        /// <summary>Validates all entry form fields and shows errors for any invalid values.</summary>
         private bool ValidateInputs(string siteName, string username, string password, string confirmPassword)
         {
             bool valid = true;
@@ -305,10 +305,7 @@ namespace SecurioClient.Activities
             return valid;
         }
 
-        /// <summary>
-        /// Returns <c>true</c> when an entry with the same site name AND username
-        /// already exists in the vault.
-        /// </summary>
+        /// <summary>Returns true when an entry with the same site name and username already exists in the vault.</summary>
         private bool IsDuplicate(string siteName, string username)
         {
             return existingEntries.Any(e =>
@@ -316,10 +313,7 @@ namespace SecurioClient.Activities
                 && string.Equals(e.AccountUsername, username, StringComparison.OrdinalIgnoreCase));
         }
 
-        /// <summary>
-        /// Validates that the confirm password field matches the password field and
-        /// shows or hides the error accordingly. Called during real-time validation.
-        /// </summary>
+        /// <summary>Validates that the confirm password field matches the password field and shows or hides the error accordingly.</summary>
         private void ValidatePasswordsMatch()
         {
             string password = editTextPassword.Text;
@@ -337,6 +331,7 @@ namespace SecurioClient.Activities
 
         // ── Password strength indicator (informational) ────────
 
+        /// <summary>Updates the password strength progress bar and hint text based on the given password.</summary>
         private void UpdatePasswordStrengthIndicator(string password)
         {
             if (string.IsNullOrEmpty(password))
@@ -362,6 +357,7 @@ namespace SecurioClient.Activities
                     : Resource.Color.signupHintText)));
         }
 
+        /// <summary>Maps a password score (1–5) to the corresponding color resource ID.</summary>
         private static int ScoreToColorRes(int score)
         {
             switch (score)
@@ -376,18 +372,21 @@ namespace SecurioClient.Activities
 
         // ── UI helpers ─────────────────────────────────────────
 
+        /// <summary>Sets the error text and makes the given error view visible.</summary>
         private void ShowError(TextView errorView, string message)
         {
             errorView.Text = message;
             errorView.Visibility = ViewStates.Visible;
         }
 
+        /// <summary>Clears the error text and hides the given error view.</summary>
         private void HideError(TextView errorView)
         {
             errorView.Text = null;
             errorView.Visibility = ViewStates.Gone;
         }
 
+        /// <summary>Hides all field-level and general error messages.</summary>
         private void ClearErrors()
         {
             HideError(textViewSiteNameError);
@@ -397,6 +396,7 @@ namespace SecurioClient.Activities
             HideError(textViewGeneralError);
         }
 
+        /// <summary>Toggles the loading state, showing the progress bar and disabling form controls.</summary>
         private void SetLoadingState(bool isLoading)
         {
             progressBar.Visibility = isLoading ? ViewStates.Visible : ViewStates.Gone;
@@ -410,10 +410,7 @@ namespace SecurioClient.Activities
         }
     }
 
-    /// <summary>
-    /// Static cache used to share the current entry list between VaultActivity and
-    /// entry activities (Add / Edit) so duplicate checking works without a database round-trip.
-    /// </summary>
+    /// <summary>Static cache used to share the current entry list between VaultActivity and entry activities for duplicate checking.</summary>
     public static class VaultEntryCache
     {
         public static List<VaultItem> Entries { get; set; } = new List<VaultItem>();

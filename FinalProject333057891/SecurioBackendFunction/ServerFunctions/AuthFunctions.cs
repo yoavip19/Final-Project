@@ -15,16 +15,18 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SecurioBackendFunction.ServerFunctions;
 
+/// <summary>Handles HTTP endpoints for user authentication.</summary>
 public class AuthFunctions
 {
     private readonly AuthManager _authManager;
 
+    /// <summary>Initializes a new instance of AuthFunctions.</summary>
     public AuthFunctions(AuthManager authManager)
     {
         _authManager = authManager;
     }
 
-    // Handles the Register HTTP request and catches any unexpected errors.
+    /// <summary>Handles the Register HTTP request and catches any unexpected errors.</summary>
     [Function("RegisterUser")]
     public async Task<IActionResult> Register([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
     {
@@ -41,7 +43,7 @@ public class AuthFunctions
         }
     }
 
-    // Handles the Login HTTP request and ensures a secure JSON response.
+    /// <summary>Handles the Login HTTP request and ensures a secure JSON response.</summary>
     [Function("VerifyLogin")]
     public async Task<IActionResult> Login([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
     {
@@ -57,7 +59,7 @@ public class AuthFunctions
         }
     }
 
-    // Gets the user's salts (AuthSalt and EncryptionSalt) for the login process. This is a critical step for secure password handling.
+    /// <summary>Gets the user's salts for the login process.</summary>
     [Function("GetSalts")]
     public async Task<IActionResult> GetSalts([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
     {
@@ -75,8 +77,7 @@ public class AuthFunctions
         }
     }
 
-    // Validates an existing JWT token. Returns 200 if valid and unexpired, 401 otherwise.
-    // Used by the client on app startup to decide whether to skip the login screen.
+    /// <summary>Validates an existing JWT token; returns 200 if valid and unexpired, 401 otherwise.</summary>
     [Function("ValidateToken")]
     public IActionResult ValidateToken([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
     {

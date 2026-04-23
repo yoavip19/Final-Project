@@ -7,15 +7,7 @@ using System.Threading.Tasks;
 
 namespace SecurioClient
 {
-    // Foreground service that performs a password-health check once every 24 hours.
-    // Running as a foreground service (START_STICKY) ensures the check survives the
-    // user swiping the app from the recent-apps list.
-    //
-    // Lifecycle:
-    //   1. MainActivity.StartPasswordMonitor() calls StartForegroundService.
-    //   2. BootReceiver restarts the service after device reboot or app update.
-    //   3. OnCreate posts the required persistent foreground notification and
-    //      starts the 24-hour Handler loop.
+    /// <summary>Foreground service that performs a password-health check once every 24 hours.</summary>
     [Service(Exported = false)]
     public class PasswordMonitorService : Service
     {
@@ -24,6 +16,7 @@ namespace SecurioClient
         private Android.OS.Handler _handler;
         private Java.Lang.Runnable _runnable;
 
+        /// <summary>Creates the notification channel, starts the foreground notification, and schedules the first check.</summary>
         public override void OnCreate()
         {
             base.OnCreate();
@@ -40,38 +33,35 @@ namespace SecurioClient
 
             // Run the first check immediately, then repeat every 24 h.
             _handler.Post(_runnable);
-                }
-                Log.Info(Tag, $"Check complete. Next check in {IntervalMs / 3_600_000} h.");
-                // Schedule the next iteration only if the service is still alive.
-                _handler?.PostDelayed(_checkRunnable, IntervalMs);
-            });
         }
 
+        /// <summary>Returns START_STICKY so Android restarts the service if it is killed.</summary>
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
             // START_STICKY ensures Android restarts the service if it is killed.
             return StartCommandResult.Sticky;
         }
 
+        /// <summary>Not a bound service; returns null.</summary>
         public override IBinder OnBind(Intent intent) => null;
 
+        /// <summary>Removes pending callbacks and cleans up when the service is destroyed.</summary>
         public override void OnDestroy()
         {
             _handler?.RemoveCallbacks(_runnable);
             base.OnDestroy();
         }
 
-        // Runs the password-check once and then re-schedules itself for 24 hours later.
+        /// <summary>Runs the password-check once and then re-schedules itself for the next interval.</summary>
         private async Task RunCycleAsync()
         {
             await PerformCheckAsync(this);
             _handler.PostDelayed(_runnable, IntervalMs);
         }
 
-        // Performs a single password-health check and posts a notification when issues are found.
-        // Extracted as an internal static so it can be exercised in integration tests.
+        /// <summary>Performs a single password-health check and posts a notification when issues are found.</summary>
         internal static async Task PerformCheckAsync(Context context)
-                {
+        {
             int userId = await StorageHelper.GetUserId();
             if (userId <= 0) return;
 

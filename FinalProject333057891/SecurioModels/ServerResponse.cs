@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SecurioModels
 {
-    // The standard template for every server response, ensuring a success flag and a descriptive message are always present.
+    /// <summary>The standard template for every server response, ensuring a success flag and message are always present.</summary>
     public class ServerResponse<T>
     {
         public bool Success { get; set; }

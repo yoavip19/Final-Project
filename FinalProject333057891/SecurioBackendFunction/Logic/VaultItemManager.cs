@@ -8,19 +8,20 @@ using System.Threading.Tasks;
 
 namespace SecurioBackendFunction.Logic
 {
-    // Coordinates the storage of encrypted vault items for a given user.
+    /// <summary>Coordinates the storage of encrypted vault items for a given user.</summary>
     public class VaultItemManager
     {
         private readonly IVaultItemRepository _repo;
         private readonly IHibpService _hibp;
 
+        /// <summary>Initializes a new instance of VaultItemManager.</summary>
         public VaultItemManager(IVaultItemRepository repo, IHibpService hibp = null)
         {
             _repo = repo;
             _hibp = hibp;
         }
 
-        // Validates the incoming vault item and persists it to the database.
+        /// <summary>Validates the incoming vault item and persists it to the database.</summary>
         public async Task<ServerResponse<VaultItem>> AddVaultItemAsync(VaultItem item)
         {
             if (string.IsNullOrWhiteSpace(item.AccountName))
@@ -56,7 +57,7 @@ namespace SecurioBackendFunction.Logic
             };
         }
 
-        // Validates the updated vault item and persists the changes to the database.
+        /// <summary>Validates the updated vault item and persists the changes to the database.</summary>
         public async Task<ServerResponse<VaultItem>> UpdateVaultItemAsync(VaultItem item)
         {
             if (item.Id <= 0)
@@ -95,7 +96,7 @@ namespace SecurioBackendFunction.Logic
             };
         }
 
-        // Retrieves all vault items for the specified user.
+        /// <summary>Retrieves all vault items for the specified user.</summary>
         public async Task<ServerResponse<List<VaultItem>>> GetVaultItemsAsync(int userId)
         {
             if (userId <= 0)
@@ -110,7 +111,7 @@ namespace SecurioBackendFunction.Logic
             };
         }
 
-        // Validates the request and permanently deletes the specified vault item from the database.
+        /// <summary>Validates the request and permanently deletes the specified vault item from the database.</summary>
         public async Task<ServerResponse<object>> DeleteVaultItemAsync(int itemId, int userId)
         {
             if (itemId <= 0)

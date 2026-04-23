@@ -4,11 +4,11 @@ using System;
 
 namespace SecurioClient
 {
-    // Custom Application class required by Android.
-    // Password monitoring is handled by PasswordMonitorService (foreground service).
+    /// <summary>Custom Application class that provides Android application-level initialization.</summary>
     [Application]
     public class SecurioClientApplication : Application
     {
+        /// <summary>Initializes a new instance of SecurioClientApplication.</summary>
         public SecurioClientApplication(IntPtr handle, JniHandleOwnership transfer)
             : base(handle, transfer) { }
     }

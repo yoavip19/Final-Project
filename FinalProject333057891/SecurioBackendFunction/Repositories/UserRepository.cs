@@ -23,13 +23,14 @@ using System.Threading.Tasks;
 
 namespace SecurioBackendFunction.Repositories
 {
-    // Manages all direct SQL database interactions for user-related data.
+    /// <summary>Manages all direct SQL database interactions for user-related data.</summary>
     public class UserRepository : IUserRepository
     {
         private readonly string _connectionString;
+        /// <summary>Initializes a new instance of UserRepository.</summary>
         public UserRepository(string connectionString) => _connectionString = connectionString;
 
-        // Checks the database to see if a specific email address is already in use.
+        /// <summary>Checks the database to see if a specific email address is already in use.</summary>
         public async Task<bool> EmailExistsAsync(string email)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -40,7 +41,7 @@ namespace SecurioBackendFunction.Repositories
             return (int)await cmd.ExecuteScalarAsync() > 0;
         }
 
-        // Inserts a new user record and returns the newly generated ID.
+        /// <summary>Inserts a new user record and returns the newly generated ID.</summary>
         public async Task<int> CreateUserAsync(User user)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -57,7 +58,7 @@ namespace SecurioBackendFunction.Repositories
             return (int)await cmd.ExecuteScalarAsync();
         }
 
-        // Retrieves a user record by email for authentication purposes.
+        /// <summary>Retrieves a user record by email for authentication purposes.</summary>
         public async Task<User> GetUserByEmailAsync(string email)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -87,7 +88,7 @@ namespace SecurioBackendFunction.Repositories
         }
 
 
-        // UserRepository.cs - Fully populated profile query
+        /// <summary>Retrieves the fully populated profile for the given user.</summary>
         public async Task<User> GetUserProfileAsync(int userId)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -116,7 +117,7 @@ namespace SecurioBackendFunction.Repositories
             }
             return null;
         }
-        // Updates the LastLogin timestamp for the given user to the current UTC time.
+        /// <summary>Updates the LastLogin timestamp for the given user to the current UTC time.</summary>
         public async Task UpdateLastLoginAsync(int userId)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -127,7 +128,7 @@ namespace SecurioBackendFunction.Repositories
             await cmd.ExecuteNonQueryAsync();
         }
 
-        // Checks whether the email is already used by a different user (excludes the given userId).
+        /// <summary>Checks whether the email is already used by a different user.</summary>
         public async Task<bool> EmailExistsForOtherUserAsync(string email, int excludeUserId)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -139,8 +140,7 @@ namespace SecurioBackendFunction.Repositories
             return (int)await cmd.ExecuteScalarAsync() > 0;
         }
 
-        // Updates the user's profile fields. When passwordChanged is true, also updates
-        // MasterPasswordKey, AuthSalt, EncryptionSalt, and sets LastPasswordUpdate.
+        /// <summary>Updates the user's profile fields, including password fields when passwordChanged is true.</summary>
         public async Task<bool> UpdateUserAsync(User user, bool passwordChanged)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -178,7 +178,7 @@ namespace SecurioBackendFunction.Repositories
             return rows > 0;
         }
 
-        // Deletes the user account. CASCADE on VaultItems removes all associated passwords automatically.
+        /// <summary>Deletes the user account; CASCADE removes all associated vault items automatically.</summary>
         public async Task<bool> DeleteUserAsync(int userId)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -190,7 +190,7 @@ namespace SecurioBackendFunction.Repositories
             return rows > 0;
         }
 
-        // Retrieves a full user record (including password key and salts) by user ID.
+        /// <summary>Retrieves a full user record including password key and salts by user ID.</summary>
         public async Task<User> GetUserByIdAsync(int userId)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -219,7 +219,7 @@ namespace SecurioBackendFunction.Repositories
             return null;
         }
 
-        // Returns the most-recent @count password history entries for the given user, newest first.
+        /// <summary>Returns the most-recent password history entries for the given user, newest first.</summary>
         public async Task<List<MasterPasswordHistory>> GetLastPasswordHistoryAsync(int userId, int count)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -247,7 +247,7 @@ namespace SecurioBackendFunction.Repositories
             return result;
         }
 
-        // Inserts an entry into MasterPasswordHistory to record a password that is no longer active.
+        /// <summary>Inserts an entry into MasterPasswordHistory to record a password that is no longer active.</summary>
         public async Task AddPasswordHistoryAsync(int userId, string passwordKey, string authSalt, DateTime createdAt)
         {
             using var conn = new SqlConnection(_connectionString);

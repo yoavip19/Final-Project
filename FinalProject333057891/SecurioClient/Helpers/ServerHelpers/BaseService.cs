@@ -10,7 +10,7 @@ using SecurioModels.DataTransferObjects;
 
 namespace SecurioClient.Helpers
 {
-    // The central engine for HTTP communication that handles JSON serialization and validates the success of every API call.
+    /// <summary>The central engine for HTTP communication that handles JSON serialization and validates the success of every API call.</summary>
     public abstract class BaseService
     {
         protected static readonly HttpClient Client = new HttpClient();
@@ -18,13 +18,14 @@ namespace SecurioClient.Helpers
         /// Update this to your local or Azure URL
         protected const string BaseUrl = "http://10.0.2.2:7071/api/";
 
+        /// <summary>Initializes a new instance of BaseService.</summary>
         public BaseService()
         {
             if (Client.BaseAddress == null)
                 Client.BaseAddress = new Uri(BaseUrl);
         }
 
-        // This method now returns the specific response object directly.
+        /// <summary>Sends a POST request to the given endpoint and returns a typed server response.</summary>
         protected async Task<ServerResponse<T>> PostAsync<T>(string endpoint, object data)
         {
             try
@@ -56,7 +57,7 @@ namespace SecurioClient.Helpers
             }
         }
 
-        // Generic GET: Returns BaseResponse<T> containing the data
+        /// <summary>Sends a GET request to the given endpoint and returns a typed server response.</summary>
         protected async Task<ServerResponse<T>> GetAsync<T>(string endpoint)
         {
             try
@@ -66,9 +67,6 @@ namespace SecurioClient.Helpers
                 var jwt = await StorageHelper.GetJwt();
                 if (!string.IsNullOrEmpty(jwt))
                     request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {jwt}");
-
-                var fullUrl = new Uri(Client.BaseAddress, endpoint);
-                Console.WriteLine($"QUAKE! DEBUG: Full Request URL: {fullUrl}!!!");
 
                 var response = await Client.SendAsync(request);
                 var json = await response.Content.ReadAsStringAsync();

@@ -8,12 +8,14 @@ using SecurioClient.Helpers.ServerHelpers;
 namespace SecurioClient.Activities
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
+    /// <summary>Entry-point activity that validates the stored JWT and routes to VaultActivity or LoginActivity.</summary>
     public class MainActivity : AppCompatActivity
     {
         private const int RequestCodeNotificationPermission = 1001;
 
         private bool _pendingVaultNavigation = false;
 
+        /// <summary>Initializes the activity, validates the stored JWT, and navigates to the appropriate screen.</summary>
         protected override async void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -75,6 +77,7 @@ namespace SecurioClient.Activities
             }
         }
 
+        /// <summary>Handles the notification permission result and navigates to the destination screen.</summary>
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -91,6 +94,7 @@ namespace SecurioClient.Activities
             }
         }
 
+        /// <summary>Navigates to VaultActivity if a valid session exists, otherwise to LoginActivity.</summary>
         private void NavigateToDest()
         {
             Android.Content.Intent intent;
@@ -108,7 +112,7 @@ namespace SecurioClient.Activities
             Finish();
         }
 
-        // Starts the PasswordMonitorService as a foreground service if it is not already running.
+        /// <summary>Starts the PasswordMonitorService as a foreground service if it is not already running.</summary>
         public static void StartPasswordMonitor(Android.Content.Context context)
         {
             var serviceIntent = new Android.Content.Intent(context, typeof(PasswordMonitorService));
