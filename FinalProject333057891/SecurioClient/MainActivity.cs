@@ -11,15 +11,23 @@ namespace SecurioClient
     public class MainActivity : AppCompatActivity
     {
         private const int RequestCodeNotificationPermission = 1001;
-
-        // Remembers where to navigate once the permission dialog is dismissed.
-        private bool _pendingVaultNavigation = false;
-
         protected override async void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
+
+            // Android 13+ requires POST_NOTIFICATIONS to be granted at runtime.
+            // Without this grant, all notifications are silently dropped regardless
+            // of the manifest <uses-permission> declaration.
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu &&
+                CheckSelfPermission(Android.Manifest.Permission.PostNotifications)
+                    != Android.Content.PM.Permission.Granted)
+            {
+                RequestPermissions(
+                    new[] { Android.Manifest.Permission.PostNotifications },
+                    RequestCodeNotificationPermission);
+            }
 
             // Check whether the user already has a stored JWT and validate it with the server.
             // A valid token means the user is already authenticated and can go straight to the Vault.
@@ -49,62 +57,26 @@ namespace SecurioClient
 
                     StartPasswordMonitor(this);
 
-                    _pendingVaultNavigation = true;
+                    var vaultIntent = new Android.Content.Intent(this, typeof(VaultActivity));
+                    vaultIntent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);
+                    StartActivity(vaultIntent);
+                    Finish();
+                    return;
                 }
-                else
-                {
-                    // Token is invalid or expired — clear stale credentials before going to login.
-                    StorageHelper.ClearAll();
-                }
+
+                // Token is invalid or expired — clear stale credentials before going to login.
+                StorageHelper.ClearAll();
             }
 
-            // Android 13+ requires POST_NOTIFICATIONS to be granted at runtime.
-            // Request the permission here and defer navigation to OnRequestPermissionsResult
-            // so the activity stays alive while the system dialog is visible.
-            // On older Android versions (or if the permission is already granted) navigate immediately.
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu &&
-                CheckSelfPermission(Android.Manifest.Permission.PostNotifications)
-                    != Android.Content.PM.Permission.Granted)
-            {
-                RequestPermissions(
-                    new[] { Android.Manifest.Permission.PostNotifications },
-                    RequestCodeNotificationPermission);
-                // Navigation is deferred to OnRequestPermissionsResult.
-            }
-            else
-            {
-                NavigateToDest();
-            }
+            var intent = new Android.Content.Intent(this, typeof(LoginActivity));
+            StartActivity(intent);
+            Finish();
         }
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-
-            if (requestCode == RequestCodeNotificationPermission)
-            {
-                // Navigate regardless of whether the user granted or denied notifications;
-                // the app must not block on this permission.
-                NavigateToDest();
-            }
-        }
-
-        // Navigates to VaultActivity (authenticated) or LoginActivity (unauthenticated).
-        private void NavigateToDest()
-        {
-            Android.Content.Intent intent;
-            if (_pendingVaultNavigation)
-            {
-                intent = new Android.Content.Intent(this, typeof(VaultActivity));
-                intent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);
-            }
-            else
-            {
-                intent = new Android.Content.Intent(this, typeof(LoginActivity));
-            }
-            StartActivity(intent);
-            Finish();
         }
 
         // Starts the PasswordMonitorService as a foreground service if it is not already running.
