@@ -60,6 +60,11 @@ namespace SecurioClient
                 CheckSelfPermission(Android.Manifest.Permission.PostNotifications)
                     != Android.Content.PM.Permission.Granted)
             {
+                if (ShouldShowRequestPermissionRationale(Android.Manifest.Permission.PostNotifications))
+                {
+                    System.Diagnostics.Debug.WriteLine("[NOTIFICATIONS] Showing POST_NOTIFICATIONS permission prompt after prior denial.");
+                }
+
                 RequestPermissions(
                     new[] { Android.Manifest.Permission.PostNotifications },
                     RequestCodeNotificationPermission);
@@ -77,6 +82,11 @@ namespace SecurioClient
 
             if (requestCode == RequestCodeNotificationPermission)
             {
+                bool granted = grantResults?.Length > 0 &&
+                    grantResults[0] == Android.Content.PM.Permission.Granted;
+                System.Diagnostics.Debug.WriteLine(
+                    $"[NOTIFICATIONS] POST_NOTIFICATIONS permission {(granted ? "granted" : "denied")}.");
+
                 NavigateToDest();
             }
         }
