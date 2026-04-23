@@ -67,9 +67,6 @@ namespace SecurioClient.Helpers
                 if (!string.IsNullOrEmpty(jwt))
                     request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {jwt}");
 
-                var fullUrl = new Uri(Client.BaseAddress, endpoint);
-                Console.WriteLine($"QUAKE! DEBUG: Full Request URL: {fullUrl}!!!");
-
                 var response = await Client.SendAsync(request);
                 var json = await response.Content.ReadAsStringAsync();
 

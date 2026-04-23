@@ -19,12 +19,11 @@ namespace SecurioBackendFunction.Logic
         private readonly IUserRepository _userRepo;
         private readonly IVaultItemRepository _vaultRepo;
 
+        /// <summary>Initializes the manager with the required repository dependencies.</summary>
         public PasswordCheckManager(IUserRepository userRepo, IVaultItemRepository vaultRepo)
         {
             _userRepo  = userRepo;
             _vaultRepo = vaultRepo;
-            _userRepo = userRepo;
-            _hibp = hibp;
         }
 
         // Returns a PasswordCheckResult for the given user, or null when the user is not found.
@@ -45,11 +44,10 @@ namespace SecurioBackendFunction.Logic
             bool masterOld    = (DateTime.UtcNow - user.LastPasswordUpdate).TotalDays > OldPasswordDays;
 
             return new PasswordCheckResult
-                {
-                BreachedCount    = breachedCount,
-                OldCount         = oldCount,
-                    MasterPasswordOld = masterOld
-                }
+            {
+                BreachedCount     = breachedCount,
+                OldCount          = oldCount,
+                MasterPasswordOld = masterOld
             };
         }
     }

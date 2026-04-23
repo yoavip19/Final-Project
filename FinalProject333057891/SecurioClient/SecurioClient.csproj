@@ -73,6 +73,7 @@
     <Compile Include="Helpers\ServerHelpers\ProfileService.cs" />
     <Compile Include="Helpers\ServerHelpers\VaultService.cs" />
     <Compile Include="Helpers\ServerHelpers\PasswordCheckService.cs" />
+    <Compile Include="Helpers\ServerHelpers\PasswordCheckServerService.cs" />
     <Compile Include="Helpers\SessionHelper.cs" />
     <Compile Include="Helpers\SimpleTextWatcher.cs" />
     <Compile Include="Helpers\StorageHelper.cs" />

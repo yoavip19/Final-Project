@@ -72,10 +72,4 @@ namespace SecurioBackendFunction.ServerFunctions
             }
         }
     }
-
-    // Request body for the PasswordCheck endpoint.
-    internal sealed class PasswordCheckRequest
-    {
-        public int UserId { get; set; }
-    }
 }

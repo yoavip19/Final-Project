@@ -197,7 +197,6 @@ namespace SecurioClient.Activities
                 {
                     // Verify the current password by deriving the auth key and comparing locally.
                     // We fetch the user's salts from the server to derive the current key.
-                    var authService = new AuthService();
                     var saltResult = await new BaseServiceProxy().GetSaltsAsync(email);
 
                     // If salts aren't available for the current email (e.g., email changed), use original email.
