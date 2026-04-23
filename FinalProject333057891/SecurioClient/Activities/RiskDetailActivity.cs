@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SecurioClient.Activities
+namespace SecurioClient
 {
     /// <summary>
     /// Displays the list of vault passwords that fall under a specific risk category

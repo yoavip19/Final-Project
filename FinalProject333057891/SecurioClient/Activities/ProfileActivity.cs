@@ -11,7 +11,7 @@ using SecurioModels.DataTransferObjects;
 using System;
 using System.Threading.Tasks;
 
-namespace SecurioClient.Activities
+namespace SecurioClient
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class ProfileActivity : AppCompatActivity

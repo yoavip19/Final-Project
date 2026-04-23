@@ -1,6 +1,5 @@
 using Android.Content;
 using AndroidX.AppCompat.App;
-using SecurioClient.Activities;
 
 namespace SecurioClient.Helpers
 {

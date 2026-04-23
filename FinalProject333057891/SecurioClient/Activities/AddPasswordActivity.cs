@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SecurioClient.Activities
+namespace SecurioClient
 {
     /// <summary>
     /// Activity for adding a new password entry to the vault.

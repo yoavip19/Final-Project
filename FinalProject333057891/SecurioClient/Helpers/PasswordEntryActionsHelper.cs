@@ -5,7 +5,6 @@ using SecurioClient.Helpers.ServerHelpers;
 using SecurioModels.DataTransferObjects;
 using System;
 using System.Threading.Tasks;
-using SecurioClient.Activities;
 
 namespace SecurioClient.Helpers
 {

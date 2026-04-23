@@ -6,7 +6,7 @@ using AndroidX.AppCompat.App;
 using SecurioClient.Helpers;
 using System;
 
-namespace SecurioClient.Activities
+namespace SecurioClient
 {
     /// <summary>
     /// Read-only activity that displays a single vault entry's details.

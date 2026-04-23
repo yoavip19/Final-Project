@@ -5,7 +5,7 @@ using Android.Widget;
 using AndroidX.AppCompat.App;
 using SecurioClient.Helpers;
 
-namespace SecurioClient.Activities
+namespace SecurioClient
 {
     /// <summary>
     /// Displays four password-risk warning cards (Leaked, Weak, Reused, Old)
