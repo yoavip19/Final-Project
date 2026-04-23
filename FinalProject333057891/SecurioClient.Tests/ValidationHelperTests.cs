@@ -3,10 +3,9 @@ using Xunit;
 
 namespace SecurioClient.Tests
 {
-    // Unit tests for ValidationHelper — the client-side field-validation and
-    // password-strength utility.
-    // ValidationHelper is a pure .NET class (no Android APIs) so it compiles and
-    // runs cleanly on any net8.0 host.
+    // Comprehensive unit tests for ValidationHelper — field validation and
+    // password-strength utilities.  ValidationHelper is a pure .NET class compiled
+    // directly into this test project (see SecurioClient.Tests.csproj).
     // To run: dotnet test SecurioClient.Tests/SecurioClient.Tests.csproj
     public class ValidationHelperTests
     {
@@ -65,11 +64,11 @@ namespace SecurioClient.Tests
         }
 
         [Theory]
-        [InlineData("abc")]                // exactly 3 chars — lower boundary
-        [InlineData("Alice")]              // mixed case letters
-        [InlineData("user_123")]           // letters, digits, underscore
-        [InlineData("my-name")]            // letters and hyphen
-        [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")] // exactly 30 chars — upper boundary
+        [InlineData("abc")]                                             // exactly 3 chars — lower boundary
+        [InlineData("Alice")]                                           // mixed case
+        [InlineData("user_123")]                                        // letters + digits + underscore
+        [InlineData("my-name")]                                         // letters + hyphen
+        [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]                  // exactly 30 chars — upper boundary
         public void ValidateUsername_ValidInputs_ReturnsOk(string username)
         {
             var result = ValidationHelper.ValidateUsername(username);
@@ -91,11 +90,11 @@ namespace SecurioClient.Tests
         }
 
         [Theory]
-        [InlineData("notanemail")]           // no @ symbol
-        [InlineData("missing@domain")]       // no TLD
-        [InlineData("@nodomain.com")]        // no local part
-        [InlineData("two@@signs.com")]       // two @ symbols
-        [InlineData("spaces in@email.com")]  // space in local part
+        [InlineData("notanemail")]            // no @ symbol
+        [InlineData("missing@domain")]        // no TLD
+        [InlineData("@nodomain.com")]         // no local part
+        [InlineData("two@@signs.com")]        // two @ symbols
+        [InlineData("spaces in@email.com")]   // space in local part
         public void ValidateEmail_InvalidFormat_ReturnsFail(string email)
         {
             var result = ValidationHelper.ValidateEmail(email);
@@ -167,9 +166,9 @@ namespace SecurioClient.Tests
         }
 
         [Theory]
-        [InlineData("Abcdef1!")]         // exactly 8 chars — lower boundary
-        [InlineData("MyP@ssw0rd!")]      // common strong form
-        [InlineData("X9#aaaaaaaaaaaa")]  // multiple filler chars
+        [InlineData("Abcdef1!")]        // exactly 8 chars — lower boundary
+        [InlineData("MyP@ssw0rd!")]     // common strong form
+        [InlineData("X9#aaaaaaaaaaaa")] // multiple filler chars
         public void ValidatePassword_ValidInputs_ReturnsOk(string password)
         {
             var result = ValidationHelper.ValidatePassword(password);
@@ -206,32 +205,32 @@ namespace SecurioClient.Tests
         [Fact]
         public void ValidatePasswordsMatch_CaseDifference_ReturnsFail()
         {
-            // Matching is case-sensitive (passwords are literals, not identifiers).
+            // Password matching is case-sensitive.
             var result = ValidationHelper.ValidatePasswordsMatch("someP@ss1", "SomeP@ss1");
             Assert.False(result.IsValid);
         }
 
         // ── GetPasswordScore ─────────────────────────────────────────────────────
 
-        [Fact]
-        public void GetPasswordScore_NullOrEmpty_ReturnsZero()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void GetPasswordScore_NullOrEmpty_ReturnsZero(string? password)
         {
-            Assert.Equal(0, ValidationHelper.GetPasswordScore(null!));
-            Assert.Equal(0, ValidationHelper.GetPasswordScore(""));
+            Assert.Equal(0, ValidationHelper.GetPasswordScore(password!));
         }
 
         [Fact]
         public void GetPasswordScore_LowercaseOnly_ReturnsOne()
         {
-            // Criterion: lowercase only (score = 1 because length < 8 fails but lowercase passes)
-            // "ab" — no length, no upper, no digit, no special, but has lowercase → 1
+            // "ab" — below 8-char minimum and no upper/digit/special, but has lowercase → score 1.
             Assert.Equal(1, ValidationHelper.GetPasswordScore("ab"));
         }
 
         [Fact]
         public void GetPasswordScore_LengthAndLowercase_ReturnsTwo()
         {
-            // "abcdefgh" — length ≥ 8 ✓, lowercase ✓, no upper, no digit, no special → 2
+            // "abcdefgh" — meets length criterion ✓ and lowercase criterion ✓ → score 2.
             Assert.Equal(2, ValidationHelper.GetPasswordScore("abcdefgh"));
         }
 
@@ -290,34 +289,36 @@ namespace SecurioClient.Tests
 
         // ── GetMissingCriteriaHint ───────────────────────────────────────────────
 
-        [Fact]
-        public void GetMissingCriteriaHint_NullOrEmpty_ReturnsNull()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void GetMissingCriteriaHint_NullOrEmpty_ReturnsNull(string? password)
         {
-            Assert.Null(ValidationHelper.GetMissingCriteriaHint(null!));
-            Assert.Null(ValidationHelper.GetMissingCriteriaHint(""));
+            Assert.Null(ValidationHelper.GetMissingCriteriaHint(password!));
         }
 
         [Fact]
-        public void GetMissingCriteriaHint_AllMissing_ListsAllFiveItems()
+        public void GetMissingCriteriaHint_SingleChar_ListsAllFiveMissingItems()
         {
-            // A single char satisfies no criterion at all.
+            // "a" satisfies only the lowercase criterion — the other four (length, uppercase,
+            // digit, special char) are missing.
             string hint = ValidationHelper.GetMissingCriteriaHint("a");
             Assert.NotNull(hint);
             Assert.StartsWith("Missing:", hint);
-            Assert.Contains("8+ chars", hint);
-            Assert.Contains("uppercase", hint);
-            Assert.Contains("digit", hint);
+            Assert.Contains("8+ chars",    hint);
+            Assert.Contains("uppercase",   hint);
+            Assert.Contains("digit",       hint);
             Assert.Contains("special char", hint);
         }
 
         [Fact]
         public void GetMissingCriteriaHint_SomeMissing_ListsMissingOnly()
         {
-            // "Abcdefgh" — missing digit and special char.
+            // "Abcdefgh" — missing digit and special char only.
             string hint = ValidationHelper.GetMissingCriteriaHint("Abcdefgh");
-            Assert.Contains("digit", hint);
+            Assert.Contains("digit",       hint);
             Assert.Contains("special char", hint);
-            Assert.DoesNotContain("8+ chars", hint);
+            Assert.DoesNotContain("8+ chars",  hint);
             Assert.DoesNotContain("uppercase", hint);
             Assert.DoesNotContain("lowercase", hint);
         }
@@ -334,34 +335,26 @@ namespace SecurioClient.Tests
         [Fact]
         public void GenerateStrongPassword_DefaultLength_Returns16Chars()
         {
-            string password = ValidationHelper.GenerateStrongPassword();
-            Assert.Equal(16, password.Length);
+            Assert.Equal(16, ValidationHelper.GenerateStrongPassword().Length);
         }
 
         [Fact]
         public void GenerateStrongPassword_CustomLength_ReturnsRequestedLength()
         {
-            string password = ValidationHelper.GenerateStrongPassword(20);
-            Assert.Equal(20, password.Length);
+            Assert.Equal(20, ValidationHelper.GenerateStrongPassword(20).Length);
         }
 
         [Fact]
         public void GenerateStrongPassword_LengthBelow12_ClampsTo12()
         {
-            // Minimum enforced length is 12.
-            string password = ValidationHelper.GenerateStrongPassword(5);
-            Assert.Equal(12, password.Length);
+            Assert.Equal(12, ValidationHelper.GenerateStrongPassword(5).Length);
         }
 
         [Fact]
         public void GenerateStrongPassword_AlwaysScoresFive()
         {
-            // Call multiple times to reduce the chance of a lucky fluke.
             for (int i = 0; i < 20; i++)
-            {
-                string password = ValidationHelper.GenerateStrongPassword();
-                Assert.Equal(5, ValidationHelper.GetPasswordScore(password));
-            }
+                Assert.Equal(5, ValidationHelper.GetPasswordScore(ValidationHelper.GenerateStrongPassword()));
         }
 
         [Fact]
@@ -369,20 +362,31 @@ namespace SecurioClient.Tests
         {
             for (int i = 0; i < 10; i++)
             {
-                string password = ValidationHelper.GenerateStrongPassword();
-                Assert.True(ValidationHelper.ValidatePassword(password).IsValid,
-                    $"Generated password '{password}' failed ValidatePassword.");
+                string pw = ValidationHelper.GenerateStrongPassword();
+                Assert.True(ValidationHelper.ValidatePassword(pw).IsValid,
+                    $"Generated password '{pw}' failed ValidatePassword.");
             }
         }
 
         [Fact]
         public void GenerateStrongPassword_TwoCallsProduceDifferentResults()
         {
-            // The generator must be random — two consecutive calls should almost never match.
-            // (The probability of a collision on a 16-char space is astronomically small.)
+            // The generator must be random; two calls should virtually never match.
             string p1 = ValidationHelper.GenerateStrongPassword();
             string p2 = ValidationHelper.GenerateStrongPassword();
             Assert.NotEqual(p1, p2);
+        }
+
+        [Theory]
+        [InlineData(12)]
+        [InlineData(16)]
+        [InlineData(24)]
+        [InlineData(32)]
+        public void GenerateStrongPassword_VariousLengths_AllPassValidation(int length)
+        {
+            string pw = ValidationHelper.GenerateStrongPassword(length);
+            Assert.Equal(length, pw.Length);
+            Assert.True(ValidationHelper.ValidatePassword(pw).IsValid);
         }
     }
 }

@@ -10,28 +10,28 @@ using SecurioBackendFunction.Helpers;
 
 namespace SecurioBackendFunction.Tests
 {
-    // Unit tests for the concrete HibpService class.
+    // Comprehensive unit tests for HibpService.
     // All HTTP calls are intercepted by FakeHttpMessageHandler — no real network access.
-    // Tests cover: input validation, k-anonymity URL construction, response parsing,
+    // Covers: input validation, k-anonymity URL construction, response parsing,
     // case-insensitivity, and fail-open behaviour on network errors.
     // To run: dotnet test SecurioBackendFunction.Tests/SecurioBackendFunction.Tests.csproj
     public class HibpServiceTests
     {
-        // SHA-1 of the empty string — a well-known leaked hash used as our "pwned" test value.
-        // Prefix sent to HIBP: DA39A   Suffix matched in response: 3EE5E6B4B0D3255BFEF95601890AFD80709
+        // SHA-1 of the empty string — a well-known leaked hash used as our "pwned" fixture.
+        // Prefix sent to HIBP: DA39A  Suffix matched in response: 3EE5E6B4B0D3255BFEF95601890AFD80709
         private const string PwnedHash   = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709";
         private const string PwnedPrefix = "DA39A";
         private const string PwnedSuffix = "3EE5E6B4B0D3255BFEF95601890AFD80709";
 
         // A valid 40-char hex string whose suffix will NOT appear in mock responses.
-        private const string SafeHash    = "AABBCCDDEEFF00112233445566778899AABBCCDD";
+        private const string SafeHash = "AABBCCDDEEFF00112233445566778899AABBCCDD";
 
-        // Builds a HibpService backed by a handler that returns the given body/status code.
+        // Builds a HibpService backed by a handler that returns the given body/status.
         // Also captures every URL the service tried to request.
         private static (HibpService service, List<string> requestedUrls) Build(
             string responseBody, HttpStatusCode status = HttpStatusCode.OK)
         {
-            var urls = new List<string>();
+            var urls    = new List<string>();
             var handler = new FakeHttpMessageHandler(req =>
             {
                 urls.Add(req.RequestUri!.ToString());
@@ -101,24 +101,46 @@ namespace SecurioBackendFunction.Tests
             Assert.Contains(PwnedPrefix, urls[0]);
         }
 
-        // ── Response parsing: found ──────────────────────────────────────────────
+        [Fact]
+        public async Task IsPasswordPwned_OnlyOneRequestPerCheck()
+        {
+            var (service, urls) = Build($"{PwnedSuffix}:1");
+            await service.IsPasswordPwnedAsync(PwnedHash);
+            Assert.Single(urls);
+        }
+
+        // ── Response parsing: found ───────────────────────────────────────────────
 
         [Fact]
         public async Task IsPasswordPwned_SuffixPresentInResponse_ReturnsTrue()
         {
             string body = $"AAAAAA:10\r\n{PwnedSuffix}:98765\r\nBBBBBB:3";
             var (service, _) = Build(body);
+            Assert.True(await service.IsPasswordPwnedAsync(PwnedHash));
+        }
 
+        [Fact]
+        public async Task IsPasswordPwned_SuffixIsFirstLine_ReturnsTrue()
+        {
+            string body = $"{PwnedSuffix}:1\r\nOTHERAA:2";
+            var (service, _) = Build(body);
+            Assert.True(await service.IsPasswordPwnedAsync(PwnedHash));
+        }
+
+        [Fact]
+        public async Task IsPasswordPwned_SuffixIsLastLine_ReturnsTrue()
+        {
+            string body = $"AAAAAAA:1\r\n{PwnedSuffix}:999";
+            var (service, _) = Build(body);
             Assert.True(await service.IsPasswordPwnedAsync(PwnedHash));
         }
 
         [Fact]
         public async Task IsPasswordPwned_SuffixInResponseLowercase_ReturnsTrue()
         {
-            // Comparison must be case-insensitive regardless of the API response casing.
+            // Comparison must be case-insensitive regardless of API response casing.
             string body = PwnedSuffix.ToLowerInvariant() + ":1234";
             var (service, _) = Build(body);
-
             Assert.True(await service.IsPasswordPwnedAsync(PwnedHash));
         }
 
@@ -127,19 +149,17 @@ namespace SecurioBackendFunction.Tests
         {
             string body = $"{PwnedSuffix}:1";
             var (service, _) = Build(body);
-
             // Client may send hash in any case — service must normalise before matching.
             Assert.True(await service.IsPasswordPwnedAsync(PwnedHash.ToLowerInvariant()));
         }
 
-        // ── Response parsing: CRLF vs LF ────────────────────────────────────────
+        // ── Response parsing: CRLF vs LF line endings ────────────────────────────
 
         [Fact]
         public async Task IsPasswordPwned_CrlfLineEndings_ParsedCorrectly()
         {
             string body = $"AAAAAA:1\r\n{PwnedSuffix}:999\r\nBBBBBB:2";
             var (service, _) = Build(body);
-
             Assert.True(await service.IsPasswordPwnedAsync(PwnedHash));
         }
 
@@ -148,18 +168,16 @@ namespace SecurioBackendFunction.Tests
         {
             string body = $"AAAAAA:1\n{PwnedSuffix}:999\nBBBBBB:2";
             var (service, _) = Build(body);
-
             Assert.True(await service.IsPasswordPwnedAsync(PwnedHash));
         }
 
-        // ── Response parsing: not found ──────────────────────────────────────────
+        // ── Response parsing: not found ───────────────────────────────────────────
 
         [Fact]
         public async Task IsPasswordPwned_SuffixAbsentFromResponse_ReturnsFalse()
         {
             string body = "AAAAAA:5\r\nBBBBBB:3\r\nCCCCCC:1";
             var (service, _) = Build(body);
-
             Assert.False(await service.IsPasswordPwnedAsync(SafeHash));
         }
 
@@ -170,7 +188,14 @@ namespace SecurioBackendFunction.Tests
             Assert.False(await service.IsPasswordPwnedAsync(PwnedHash));
         }
 
-        // ── Fail-open: network/server errors must never block a user ─────────────
+        [Fact]
+        public async Task IsPasswordPwned_SingleLineNoMatch_ReturnsFalse()
+        {
+            var (service, _) = Build("AAAAAA:1");
+            Assert.False(await service.IsPasswordPwnedAsync(PwnedHash));
+        }
+
+        // ── Fail-open: network/server errors must never block a user ──────────────
 
         [Fact]
         public async Task IsPasswordPwned_HttpRequestThrows_ReturnsFalse()
@@ -188,11 +213,35 @@ namespace SecurioBackendFunction.Tests
         {
             // GetStringAsync throws on non-2xx; the catch block must handle it gracefully.
             var (service, _) = Build("Internal Server Error", HttpStatusCode.InternalServerError);
-
             Assert.False(await service.IsPasswordPwnedAsync(PwnedHash));
         }
 
-        // ── Minimal fake HttpMessageHandler ─────────────────────────────────────
+        [Fact]
+        public async Task IsPasswordPwned_ApiReturns503_ReturnsFalse()
+        {
+            var (service, _) = Build("Service Unavailable", HttpStatusCode.ServiceUnavailable);
+            Assert.False(await service.IsPasswordPwnedAsync(PwnedHash));
+        }
+
+        // ── Multiple checks are independent ──────────────────────────────────────
+
+        [Fact]
+        public async Task IsPasswordPwned_TwoChecks_FirstPwnedSecondSafe()
+        {
+            // Safe hash suffix derived from SafeHash (chars 5-39)
+            const string safeSuffix = "CCDDEEFF00112233445566778899AABBCCDD";
+
+            string body = $"{PwnedSuffix}:1";
+            var (service, _) = Build(body);
+
+            bool resultPwned = await service.IsPasswordPwnedAsync(PwnedHash);
+            bool resultSafe  = await service.IsPasswordPwnedAsync(SafeHash);
+
+            Assert.True(resultPwned);
+            Assert.False(resultSafe);
+        }
+
+        // ── Minimal fake HttpMessageHandler ──────────────────────────────────────
 
         private sealed class FakeHttpMessageHandler : HttpMessageHandler
         {

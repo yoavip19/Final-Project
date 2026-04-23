@@ -11,7 +11,7 @@ using SecurioClient.Helpers.ServerHelpers;
 using System;
 using System.Threading.Tasks;
 
-namespace SecurioClient
+namespace SecurioClient.Activities
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class LoginActivity : AppCompatActivity
@@ -96,6 +96,7 @@ namespace SecurioClient
 
                 if (result.Success)
                 {
+                    MainActivity.StartPasswordMonitor(this);
                     var intent = new Android.Content.Intent(this, typeof(VaultActivity));
                     intent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);
                     StartActivity(intent);

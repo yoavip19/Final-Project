@@ -17,13 +17,19 @@
   </ItemGroup>
 
   <!--
-    ValidationHelper lives inside the Xamarin.Android project (SecurioClient), which cannot
-    be referenced from a plain net8.0 project.  Because the file has no Android API calls we
-    compile it directly into this test project instead, giving us full coverage without
-    requiring the Android SDK.
+    Several helpers live inside the Xamarin.Android project (SecurioClient), which cannot
+    be referenced from a plain net8.0 project.  Files that contain no Android API calls
+    are compiled directly into this test project.  Android-specific dependencies
+    (EncryptionHelper, HibpClientService) are replaced by the stubs in Stubs/.
   -->
   <ItemGroup>
     <Compile Include="..\SecurioClient\Helpers\ValidationHelper.cs" />
+    <Compile Include="..\SecurioClient\Helpers\WarningsHelper.cs" />
+    <Compile Include="..\SecurioClient\Helpers\PasswordCheckDecision.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SecurioModels\SecurioModels.csproj" />
   </ItemGroup>
 
 </Project>

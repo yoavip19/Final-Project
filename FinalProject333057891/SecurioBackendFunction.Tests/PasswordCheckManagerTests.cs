@@ -6,241 +6,298 @@ using SecurioBackendFunction.Repositories;
 using SecurioModels.DataTransferObjects;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SecurioBackendFunction.Tests
 {
-    // Unit tests for PasswordCheckManager.
-    // All dependencies are mocked — no database or network calls are made.
+    // Comprehensive unit tests for PasswordCheckManager.GetPasswordCheckAsync.
+    // Covers: user not found, empty vault, breached passwords, old passwords,
+    // old master password, and combinations thereof.
+    // All repository dependencies are mocked.
+    // To run: dotnet test SecurioBackendFunction.Tests/SecurioBackendFunction.Tests.csproj
     public class PasswordCheckManagerTests
     {
-        private static VaultItem MakeItem(string sha1, DateTime lastUpdate) => new VaultItem
+        private static PasswordCheckManager Build(
+            Mock<IUserRepository>? userRepo  = null,
+            Mock<IVaultItemRepository>? vault = null)
         {
-            Id = 1,
-            UserId = 1,
-            AccountName = "Site",
-            Sha1Hash = sha1,
-            LastUpdate = lastUpdate
-        };
-
-        private static User MakeUser(DateTime lastPasswordUpdate) => new User
-        {
-            Id = 1,
-            Username = "testuser",
-            Email = "test@example.com",
-            LastPasswordUpdate = lastPasswordUpdate
-        };
-
-        private (Mock<IVaultItemRepository> vaultRepo, Mock<IUserRepository> userRepo, Mock<IHibpService> hibp) CreateMocks()
-        {
-            return (new Mock<IVaultItemRepository>(), new Mock<IUserRepository>(), new Mock<IHibpService>());
+            userRepo ??= new Mock<IUserRepository>();
+            vault    ??= new Mock<IVaultItemRepository>();
+            return new PasswordCheckManager(userRepo.Object, vault.Object);
         }
 
-        // ── Validation ──────────────────────────────────────────────────
-
-        [Theory]
-        [InlineData(0)]
-        [InlineData(-1)]
-        public async Task Check_InvalidUserId_ReturnsFailure(int userId)
+        private static User FreshUser() => new User
         {
-            var (vaultRepo, userRepo, hibp) = CreateMocks();
-            var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
+            Id                  = 1,
+            Username            = "alice",
+            LastPasswordUpdate  = DateTime.UtcNow.AddDays(-10)  // changed 10 days ago — not old
+        };
 
-            var result = await manager.CheckAsync(userId);
+        private static User OldMasterPasswordUser() => new User
+        {
+            Id                  = 1,
+            Username            = "alice",
+            LastPasswordUpdate  = DateTime.UtcNow.AddDays(-100)  // 100 days ago — old
+        };
 
-            Assert.False(result.Success);
-            Assert.Equal("Invalid user ID.", result.Message);
-        }
+        private static VaultItem FreshItem(bool leaked = false) => new VaultItem
+        {
+            Id         = 1,
+            AccountName = "Gmail",
+            IsLeaked   = leaked,
+            LastUpdate = DateTime.UtcNow.AddDays(-5)   // 5 days ago — not old
+        };
 
-        // ── Empty vault ─────────────────────────────────────────────────
+
+        // ── User not found ────────────────────────────────────────────────────────
 
         [Fact]
-        public async Task Check_EmptyVault_ReturnsZeroCounts()
+        public async Task UserNotFound_ReturnsNull()
         {
-            var (vaultRepo, userRepo, hibp) = CreateMocks();
+            var repo = new Mock<IUserRepository>();
+            repo.Setup(r => r.GetUserProfileAsync(99)).ReturnsAsync((User?)null);
+
+            var result = await Build(repo).GetPasswordCheckAsync(99);
+
+            Assert.Null(result);
+        }
+
+
+        [Fact]
+        public async Task EmptyVault_FreshMasterPassword_AllCountersZero()
+        {
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
             vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(new List<VaultItem>());
             userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow));
             var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
 
-            var result = await manager.CheckAsync(1);
+            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
 
-            Assert.True(result.Success);
-            Assert.Equal(0, result.Data.BreachedCount);
-            Assert.Equal(0, result.Data.OldCount);
-            Assert.False(result.Data.MasterPasswordOld);
+            Assert.NotNull(result);
+            Assert.Equal(0, result!.BreachedCount);
+            Assert.Equal(0, result.OldCount);
+            Assert.False(result.MasterPasswordOld);
         }
 
-        // ── Breached passwords ──────────────────────────────────────────
+        // ── BreachedCount ─────────────────────────────────────────────────────────
 
         [Fact]
-        public async Task Check_OneBreachedPassword_ReturnsBreachedCountOne()
+        public async Task OneLeakedItem_BreachedCountIs1()
         {
-            var (vaultRepo, userRepo, hibp) = CreateMocks();
-            var sha1 = "5BAA61E4C9B93F3F0682250B6CF8331B7EE68FD8";
-            var items = new List<VaultItem> { MakeItem(sha1, DateTime.UtcNow) };
-            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(items);
-            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow));
-            hibp.Setup(h => h.IsPasswordPwnedAsync(sha1)).ReturnsAsync(true);
-            var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
+                     .ReturnsAsync(new List<VaultItem> { FreshItem(leaked: true), FreshItem(leaked: false) });
 
-            var result = await manager.CheckAsync(1);
+            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
 
-            Assert.True(result.Success);
-            Assert.Equal(1, result.Data.BreachedCount);
+            Assert.Equal(1, result!.BreachedCount);
         }
 
         [Fact]
-        public async Task Check_NoBreachedPasswords_ReturnsBreachedCountZero()
         {
-            var (vaultRepo, userRepo, hibp) = CreateMocks();
-            var sha1 = "ABCD1234567890ABCD1234567890ABCD12345678";
-            var items = new List<VaultItem> { MakeItem(sha1, DateTime.UtcNow) };
-            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(items);
-            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow));
-            hibp.Setup(h => h.IsPasswordPwnedAsync(sha1)).ReturnsAsync(false);
-            var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
+                     .ReturnsAsync(new List<VaultItem>
+                     {
+                         FreshItem(leaked: true),
+                         FreshItem(leaked: true),
+                         FreshItem(leaked: true),
+                         FreshItem(leaked: false)
+                     });
 
-            var result = await manager.CheckAsync(1);
+            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
 
-            Assert.True(result.Success);
-            Assert.Equal(0, result.Data.BreachedCount);
+            Assert.Equal(3, result!.BreachedCount);
         }
 
         [Fact]
-        public async Task Check_ItemWithEmptySha1_SkipsHibpCheck()
+        public async Task NoLeakedItems_BreachedCountIs0()
         {
-            var (vaultRepo, userRepo, hibp) = CreateMocks();
-            var items = new List<VaultItem> { MakeItem("", DateTime.UtcNow) };
-            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(items);
-            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow));
-            var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
+                     .ReturnsAsync(new List<VaultItem> { FreshItem(false), FreshItem(false) });
 
-            var result = await manager.CheckAsync(1);
+            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
 
-            Assert.True(result.Success);
-            Assert.Equal(0, result.Data.BreachedCount);
-            hibp.Verify(h => h.IsPasswordPwnedAsync(It.IsAny<string>()), Times.Never());
+            Assert.Equal(0, result!.BreachedCount);
         }
 
-        // ── Old passwords ───────────────────────────────────────────────
+        // ── OldCount ──────────────────────────────────────────────────────────────
 
         [Fact]
-        public async Task Check_PasswordOlderThan90Days_ReturnsOldCountOne()
+        public async Task OneOldItem_OldCountIs1()
         {
-            var (vaultRepo, userRepo, hibp) = CreateMocks();
-            var items = new List<VaultItem> { MakeItem("ABCD1234567890ABCD1234567890ABCD12345678", DateTime.UtcNow.AddDays(-100)) };
-            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(items);
-            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow));
-            hibp.Setup(h => h.IsPasswordPwnedAsync(It.IsAny<string>())).ReturnsAsync(false);
-            var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
+                     .ReturnsAsync(new List<VaultItem> { OldItem(), FreshItem() });
 
-            var result = await manager.CheckAsync(1);
+            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
 
-            Assert.True(result.Success);
-            Assert.Equal(1, result.Data.OldCount);
+            Assert.Equal(1, result!.OldCount);
         }
 
         [Fact]
-        public async Task Check_RecentPassword_ReturnsOldCountZero()
+        public async Task FreshItem_ExactlyAt89Days_NotCountedAsOld()
         {
-            var (vaultRepo, userRepo, hibp) = CreateMocks();
-            var items = new List<VaultItem> { MakeItem("ABCD1234567890ABCD1234567890ABCD12345678", DateTime.UtcNow.AddDays(-10)) };
-            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(items);
-            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow));
-            hibp.Setup(h => h.IsPasswordPwnedAsync(It.IsAny<string>())).ReturnsAsync(false);
-            var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
+            var item = new VaultItem
+        {
+                Id         = 3,
+                LastUpdate = DateTime.UtcNow.AddDays(-89),
+                IsLeaked   = false
+            };
 
-            var result = await manager.CheckAsync(1);
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(new List<VaultItem> { item });
 
-            Assert.True(result.Success);
-            Assert.Equal(0, result.Data.OldCount);
+            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
+
+            Assert.Equal(0, result!.OldCount);
         }
 
         [Fact]
-        public async Task Check_PasswordWithDefaultLastUpdate_NotCountedAsOld()
+        public async Task ItemAt91Days_CountedAsOld()
         {
-            var (vaultRepo, userRepo, hibp) = CreateMocks();
-            var items = new List<VaultItem> { MakeItem("ABCD1234567890ABCD1234567890ABCD12345678", default) };
-            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(items);
-            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow));
-            hibp.Setup(h => h.IsPasswordPwnedAsync(It.IsAny<string>())).ReturnsAsync(false);
-            var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
+            var item = new VaultItem
+        {
+                Id         = 4,
+                LastUpdate = DateTime.UtcNow.AddDays(-91),
+                IsLeaked   = false
+            };
 
-            var result = await manager.CheckAsync(1);
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(new List<VaultItem> { item });
 
-            Assert.True(result.Success);
-            Assert.Equal(0, result.Data.OldCount);
+            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
+
+            Assert.Equal(1, result!.OldCount);
         }
 
-        // ── Master password age ─────────────────────────────────────────
+        // ── MasterPasswordOld ─────────────────────────────────────────────────────
 
         [Fact]
-        public async Task Check_MasterPasswordOlderThan90Days_ReturnsMasterOldTrue()
+        public async Task FreshMasterPassword_MasterPasswordOldIsFalse()
         {
-            var (vaultRepo, userRepo, hibp) = CreateMocks();
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(new List<VaultItem>());
+
+            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
+
+            Assert.False(result!.MasterPasswordOld);
+        }
+
+        [Fact]
+        public async Task OldMasterPassword_MasterPasswordOldIsTrue()
+        {
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(OldMasterPasswordUser());
             vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(new List<VaultItem>());
             userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow.AddDays(-100)));
             var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
 
-            var result = await manager.CheckAsync(1);
 
-            Assert.True(result.Success);
-            Assert.True(result.Data.MasterPasswordOld);
+            Assert.True(result!.MasterPasswordOld);
         }
 
         [Fact]
-        public async Task Check_RecentMasterPassword_ReturnsMasterOldFalse()
+        public async Task MasterPasswordAt89Days_NotOld()
         {
-            var (vaultRepo, userRepo, hibp) = CreateMocks();
+            var user = new User
+        {
+                Id                 = 1,
+                LastPasswordUpdate = DateTime.UtcNow.AddDays(-89)
+            };
+
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(user);
             vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(new List<VaultItem>());
             userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow.AddDays(-10)));
             var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
 
-            var result = await manager.CheckAsync(1);
+            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
 
-            Assert.True(result.Success);
-            Assert.False(result.Data.MasterPasswordOld);
+            Assert.False(result!.MasterPasswordOld);
         }
 
         [Fact]
-        public async Task Check_UserNotFound_MasterOldFalse()
+        public async Task MasterPasswordAt91Days_IsOld()
         {
-            var (vaultRepo, userRepo, hibp) = CreateMocks();
+            var user = new User
+        {
+                Id                 = 1,
+                LastPasswordUpdate = DateTime.UtcNow.AddDays(-91)
+            };
+
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(user);
             vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(new List<VaultItem>());
             userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync((User)null);
             var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
 
-            var result = await manager.CheckAsync(1);
+            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
 
-            Assert.True(result.Success);
-            Assert.False(result.Data.MasterPasswordOld);
+            Assert.True(result!.MasterPasswordOld);
         }
 
-        // ── Combined scenario ───────────────────────────────────────────
+        // ── Combined ──────────────────────────────────────────────────────────────
 
         [Fact]
-        public async Task Check_MixedVault_ReturnsCorrectCounts()
+        public async Task AllIssues_AllCountersPopulated()
         {
-            var (vaultRepo, userRepo, hibp) = CreateMocks();
-            var sha1Breached = "5BAA61E4C9B93F3F0682250B6CF8331B7EE68FD8";
-            var sha1Safe     = "ABCD1234567890ABCD1234567890ABCD12345678";
-            var items = new List<VaultItem>
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(OldMasterPasswordUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
+                     .ReturnsAsync(new List<VaultItem>
+                     {
+                         FreshItem(leaked: true),
+                         OldItem(leaked: false),
+                         OldItem(leaked: true)  // both old AND leaked
+                     });
+
+            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
+
+            Assert.Equal(2, result!.BreachedCount);   // 2 leaked items
+            Assert.Equal(2, result.OldCount);          // 2 old items
+            Assert.True(result.MasterPasswordOld);
+        }
+
+        [Fact]
+        public async Task OnlyBreachedCount_OtherCountersZero()
+        {
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
+                     .ReturnsAsync(new List<VaultItem>
             {
-                MakeItem(sha1Breached, DateTime.UtcNow.AddDays(-100)), // breached AND old
-                MakeItem(sha1Safe, DateTime.UtcNow.AddDays(-200)),     // old only
-                MakeItem(sha1Safe, DateTime.UtcNow.AddDays(-5)),       // neither
-            };
-            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(items);
-            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow.AddDays(-91)));
-            hibp.Setup(h => h.IsPasswordPwnedAsync(sha1Breached)).ReturnsAsync(true);
-            hibp.Setup(h => h.IsPasswordPwnedAsync(sha1Safe)).ReturnsAsync(false);
-            var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
+                         FreshItem(leaked: true),
+                         FreshItem(leaked: false)
+                     });
 
-            var result = await manager.CheckAsync(1);
+            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
 
-            Assert.True(result.Success);
-            Assert.Equal(1, result.Data.BreachedCount);
-            Assert.Equal(2, result.Data.OldCount);
-            Assert.True(result.Data.MasterPasswordOld);
+            Assert.Equal(1, result!.BreachedCount);
+            Assert.Equal(0, result.OldCount);
+            Assert.False(result.MasterPasswordOld);
         }
     }
 }

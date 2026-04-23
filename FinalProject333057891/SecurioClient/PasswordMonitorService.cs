@@ -1,41 +1,45 @@
 using Android.App;
 using Android.Content;
 using Android.OS;
-using Android.Util;
-using System;
+using SecurioClient.Helpers;
+using SecurioClient.Helpers.ServerHelpers;
+using System.Threading.Tasks;
 
 namespace SecurioClient
 {
-    // A foreground service that survives the user swiping the app from recents.
-    // It runs the password-health check on a 24-hour loop and shows a low-priority
-    // persistent notification so Android keeps the process alive.  Started by
-    // MainActivity on first launch and by BootReceiver on every subsequent device reboot.
+    // Foreground service that performs a password-health check once every 24 hours.
+    // Running as a foreground service (START_STICKY) ensures the check survives the
+    // user swiping the app from the recent-apps list.
+    //
+    // Lifecycle:
+    //   1. MainActivity.StartPasswordMonitor() calls StartForegroundService.
+    //   2. BootReceiver restarts the service after device reboot or app update.
+    //   3. OnCreate posts the required persistent foreground notification and
+    //      starts the 24-hour Handler loop.
     [Service(Exported = false)]
     public class PasswordMonitorService : Service
     {
-        private const string Tag = "PasswordMonitorService";
-        private const int ForegroundNotificationId = 9001;
-        private const string ForegroundChannelId = "securio_monitor";
-        private const string ForegroundChannelName = "Securio Background Monitor";
-        private const long IntervalMs = 10_000; //10 seconds //24L * 60 * 60 * 1000; // 24 hours
+        private const long IntervalMs = 10000; //10 seconds //24 * 60 * 60 * 1000L; // 24 hours
 
-        private Handler _handler;
-        private Java.Lang.Runnable _checkRunnable;
+        private Android.OS.Handler _handler;
+        private Java.Lang.Runnable _runnable;
 
         public override void OnCreate()
         {
             base.OnCreate();
-            _handler = new Handler(Looper.MainLooper);
-            _checkRunnable = new Java.Lang.Runnable(async () =>
-            {
-                Log.Info(Tag, "Running password-health check...");
-                try
-                {
-                    await PasswordCheckWorker.RunCheckAsync(ApplicationContext);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(Tag, $"Periodic check failed: {ex.Message}");
+
+            NotificationHelper.CreateChannel(this);
+
+            // Show the mandatory persistent notification for foreground services.
+            StartForeground(
+                NotificationHelper.ForegroundNotificationId,
+                NotificationHelper.BuildForegroundNotification(this));
+
+            _handler  = new Android.OS.Handler(Looper.MainLooper);
+            _runnable = new Java.Lang.Runnable(async () => await RunCycleAsync());
+
+            // Run the first check immediately, then repeat every 24 h.
+            _handler.Post(_runnable);
                 }
                 Log.Info(Tag, $"Check complete. Next check in {IntervalMs / 3_600_000} h.");
                 // Schedule the next iteration only if the service is still alive.
@@ -45,14 +49,7 @@ namespace SecurioClient
 
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
-            StartForeground(ForegroundNotificationId, BuildForegroundNotification());
-
-            // Remove any pending callback so restarting the service (e.g. after reboot) doesn't
-            // schedule a second overlapping chain.
-            _handler.RemoveCallbacks(_checkRunnable);
-            _handler.Post(_checkRunnable);
-
-            Log.Info(Tag, $"PasswordMonitorService started (interval={IntervalMs / 3_600_000} h). Running first check now.");
+            // START_STICKY ensures Android restarts the service if it is killed.
             return StartCommandResult.Sticky;
         }
 
@@ -60,36 +57,28 @@ namespace SecurioClient
 
         public override void OnDestroy()
         {
-            _handler?.RemoveCallbacks(_checkRunnable);
+            _handler?.RemoveCallbacks(_runnable);
             base.OnDestroy();
         }
 
-        private Notification BuildForegroundNotification()
+        // Runs the password-check once and then re-schedules itself for 24 hours later.
+        private async Task RunCycleAsync()
         {
-            CreateForegroundChannel();
-            return new Notification.Builder(this, ForegroundChannelId)
-                .SetContentTitle("🔒 Securio")
-                .SetContentText("Protecting your passwords in the background.")
-                .SetSmallIcon(Android.Resource.Drawable.IcDialogInfo)
-                .SetOngoing(true)
-                .Build();
+            await PerformCheckAsync(this);
+            _handler.PostDelayed(_runnable, IntervalMs);
         }
 
-        private void CreateForegroundChannel()
-        {
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
-            {
-                var channel = new NotificationChannel(
-                    ForegroundChannelId,
-                    ForegroundChannelName,
-                    NotificationImportance.Low)
+        // Performs a single password-health check and posts a notification when issues are found.
+        // Extracted as an internal static so it can be exercised in integration tests.
+        internal static async Task PerformCheckAsync(Context context)
                 {
-                    Description = "Shows while Securio monitors your password health in the background."
-                };
+            int userId = await StorageHelper.GetUserId();
+            if (userId <= 0) return;
 
-                var manager = (NotificationManager)GetSystemService(NotificationService);
-                manager?.CreateNotificationChannel(channel);
-            }
+            var result = await PasswordCheckServerService.FetchAsync(userId);
+            if (result == null) return;
+
+            NotificationHelper.PostCheckResult(context, result);
         }
     }
 }
