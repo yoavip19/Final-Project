@@ -44,6 +44,8 @@ namespace SecurioClient.Activities
 
         /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
+        {
+            textViewProfileUsername = FindViewById<TextView>(Resource.Id.textViewProfileUsername);
             textViewProfileEmail = FindViewById<TextView>(Resource.Id.textViewProfileEmail);
             textViewProfileLastLogin = FindViewById<TextView>(Resource.Id.textViewProfileLastLogin);
             textViewProfileLastPasswordChange = FindViewById<TextView>(Resource.Id.textViewProfileLastPasswordChange);

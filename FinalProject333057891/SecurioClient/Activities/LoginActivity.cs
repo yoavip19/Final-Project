@@ -39,6 +39,8 @@ namespace SecurioClient.Activities
 
         /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
+        {
+            editTextEmail = FindViewById<TextInputEditText>(Resource.Id.editTextLoginEmail);
             editTextPassword = FindViewById<TextInputEditText>(Resource.Id.editTextLoginPassword);
             buttonLogin = FindViewById<MaterialButton>(Resource.Id.buttonLogin);
             textViewEmailError = FindViewById<TextView>(Resource.Id.textViewLoginEmailError);

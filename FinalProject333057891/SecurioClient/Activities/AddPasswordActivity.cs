@@ -65,6 +65,13 @@ namespace SecurioClient.Activities
 
         /// <summary>Initializes the activity, inflates the layout, and sets up views and event handlers.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            Xamarin.Essentials.Platform.Init(this, savedInstanceState);
+            SetContentView(Resource.Layout.activity_entry);
+
+            InitializeViews();
+            ConfigureForAddMode();
             PopulateExistingEntries();
             SetupEventHandlers();
         }

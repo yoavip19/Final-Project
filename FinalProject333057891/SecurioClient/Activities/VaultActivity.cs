@@ -51,6 +51,8 @@ namespace SecurioClient.Activities
 
         /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
+        {
+            textViewVaultTitle = FindViewById<TextView>(Resource.Id.textViewVaultTitle);
             textViewVaultSubtitle = FindViewById<TextView>(Resource.Id.textViewVaultSubtitle);
             editTextVaultSearch = FindViewById<EditText>(Resource.Id.editTextVaultSearch);
             recyclerViewPasswords = FindViewById<RecyclerView>(Resource.Id.recyclerViewPasswords);

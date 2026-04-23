@@ -47,6 +47,8 @@ namespace SecurioClient.Activities
 
         /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
+        {
+            editTextUsername         = FindViewById<TextInputEditText>(Resource.Id.editTextUsername);
             editTextEmail            = FindViewById<TextInputEditText>(Resource.Id.editTextEmail);
             editTextPassword         = FindViewById<TextInputEditText>(Resource.Id.editTextPassword);
             editTextConfirmPassword  = FindViewById<TextInputEditText>(Resource.Id.editTextConfirmPassword);
@@ -205,6 +207,8 @@ namespace SecurioClient.Activities
 
         /// <summary>Displays the general error message banner.</summary>
         private void ShowGeneralError(string message)
+        {
+            textViewGeneralError.Text = message;
             textViewGeneralError.Visibility = ViewStates.Visible;
         }
 

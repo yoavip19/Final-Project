@@ -163,6 +163,9 @@ namespace SecurioClient.Activities
 
         /// <summary>Wires up click and text-change event handlers for the entry form controls.</summary>
         private void SetupEventHandlers()
+        {
+            imageViewBack.Click += (s, e) =>
+            {
                 SetResult(Result.Canceled);
                 Finish();
             };
