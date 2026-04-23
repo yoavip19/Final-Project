@@ -76,7 +76,9 @@ namespace SecurioClient
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             if (requestCode == RequestCodeNotificationPermission)
+            {
                 NavigateToDest();
+            }
         }
 
         private void NavigateToDest()
