@@ -1,19 +1,15 @@
 namespace SecurioBackendFunction.Helpers
 {
-    // Checks passwords against the Have I Been Pwned Pwned Passwords API.
-    // Uses the k-anonymity model so the full hash is never sent over the network:
-    // only the first 5 hex characters are transmitted to the HIBP endpoint.
+    /// <summary>Checks passwords against the Have I Been Pwned Pwned Passwords API using the k-anonymity model.</summary>
     public class HibpService : IHibpService
     {
         private readonly HttpClient _http;
         private const string ApiBase = "https://api.pwnedpasswords.com/range/";
 
+        /// <summary>Initializes a new instance of HibpService.</summary>
         public HibpService(HttpClient http) => _http = http;
 
-        // Returns true if the given SHA-1 hex hash appears in the HIBP dataset.
-        // sha1Hash must be a 40-character hexadecimal string (case-insensitive).
-        // If the HIBP API is unreachable the method returns false (fail-open) so
-        // a temporary outage never blocks legitimate user registrations.
+        /// <summary>Returns true if the given SHA-1 hex hash appears in the HIBP dataset.</summary>
         public async Task<bool> IsPasswordPwnedAsync(string sha1Hash)
         {
             if (string.IsNullOrWhiteSpace(sha1Hash) || sha1Hash.Length != 40)

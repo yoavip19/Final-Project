@@ -4,9 +4,7 @@ using Android.Util;
 
 namespace SecurioClient
 {
-    // Receives BOOT_COMPLETED and MY_PACKAGE_REPLACED broadcasts so that the
-    // PasswordMonitorService is automatically restarted after a device reboot or
-    // an app update — without requiring the user to open the app first.
+    /// <summary>Receives BOOT_COMPLETED and MY_PACKAGE_REPLACED broadcasts to restart the PasswordMonitorService after reboot or update.</summary>
     [BroadcastReceiver(
         Exported = true,
         DirectBootAware = false)]
@@ -19,6 +17,7 @@ namespace SecurioClient
     {
         private const string Tag = "BootReceiver";
 
+        /// <summary>Handles the broadcast and starts the PasswordMonitorService as a foreground service.</summary>
         public override void OnReceive(Context context, Intent intent)
         {
             Log.Info(Tag, $"Received broadcast: {intent?.Action}");

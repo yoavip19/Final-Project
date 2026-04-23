@@ -13,31 +13,31 @@ using SecurioModels.DataTransferObjects;
 
 namespace SecurioClient.Helpers.ServerHelpers
 {
-    // Manages vault-item operations against the server, following the same pattern as AuthService.
+    /// <summary>Manages vault-item operations against the server.</summary>
     public class VaultService : BaseService
     {
-        // Sends an encrypted vault item to the server for storage.
+        /// <summary>Sends an encrypted vault item to the server for storage.</summary>
         public async Task<(bool Success, string Message, VaultItem Data)> AddVaultItemAsync(VaultItem item)
         {
             var result = await PostAsync<VaultItem>("AddVaultItem", item);
             return (result.Success, result.Message, result.Data);
         }
 
-        // Sends an updated vault item to the server for persistence.
+        /// <summary>Sends an updated vault item to the server for persistence.</summary>
         public async Task<(bool Success, string Message, VaultItem Data)> UpdateVaultItemAsync(VaultItem item)
         {
             var result = await PostAsync<VaultItem>("UpdateVaultItem", item);
             return (result.Success, result.Message, result.Data);
         }
 
-        // Retrieves all vault items for the authenticated user.
+        /// <summary>Retrieves all vault items for the authenticated user.</summary>
         public async Task<(bool Success, string Message, List<VaultItem> Data)> GetVaultItemsAsync()
         {
             var result = await GetAsync<List<VaultItem>>("GetVaultItems");
             return (result.Success, result.Message, result.Data);
         }
 
-        // Permanently deletes a vault item from the server.
+        /// <summary>Permanently deletes a vault item from the server.</summary>
         public async Task<(bool Success, string Message)> DeleteVaultItemAsync(int itemId)
         {
             var result = await PostAsync<object>("DeleteVaultItem", new { Id = itemId });

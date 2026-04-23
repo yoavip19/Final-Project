@@ -7,9 +7,10 @@ using SecurioModels.DataTransferObjects;
 
 namespace SecurioClient.Helpers.ServerHelpers
 {
-    // A specialized service that manages identity-related tasks like registering new accounts and verifying credentials.
+    /// <summary>A specialized service that manages identity-related tasks like registering new accounts and verifying credentials.</summary>
     public class AuthService : BaseService
     {
+        /// <summary>Registers a new user account and sets up an authenticated session on success.</summary>
         public async Task<(bool Success, string Message)> RegisterAsync(User newUser, string plainTextPassword)
         {
             // 'result' IS the BaseResponse<AuthData>. 
@@ -24,7 +25,7 @@ namespace SecurioClient.Helpers.ServerHelpers
             return (result.Success, result.Message);
         }
 
-        // Validates credentials by first fetching user salts to derive keys locally.
+        /// <summary>Validates credentials by first fetching user salts to derive keys locally.</summary>
         public async Task<(bool Success, string Message)> LoginAsync(string email, string password)
         {
             // 1. Get Salts (Server sends AuthSalt and EncryptionSalt)
@@ -52,6 +53,7 @@ namespace SecurioClient.Helpers.ServerHelpers
             return (authResult.Success, authResult.Message);
         }
 
+        /// <summary>Persists the session credentials, derives the vault key, and warms up the in-memory vault cache.</summary>
         private async Task SetupAuthenticatedSession(AuthData data, string password, string salt)
         {
             // 1. Save to SecureStorage
@@ -74,7 +76,7 @@ namespace SecurioClient.Helpers.ServerHelpers
                 SessionHelper.CachedVault, vaultKey);
         }
 
-        // Fetches the user's vault items from the server and stores them in SessionHelper.CachedVault.
+        /// <summary>Fetches the user's vault items from the server and stores them in SessionHelper.CachedVault.</summary>
         public static async Task FetchAndCacheVaultAsync()
         {
             var vaultService = new VaultService();
@@ -85,8 +87,7 @@ namespace SecurioClient.Helpers.ServerHelpers
                 SessionHelper.CachedVault = new List<VaultItem>();
         }
 
-        // Asks the server to verify that the stored JWT is still valid and unexpired.
-        // Returns true if the server accepts the token; false if it is missing, invalid, or expired.
+        /// <summary>Asks the server to verify that the stored JWT is still valid and unexpired.</summary>
         public async Task<bool> ValidateTokenAsync()
         {
             var result = await GetAsync<object>("ValidateToken");

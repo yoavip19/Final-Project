@@ -11,22 +11,18 @@ using System.Threading.Tasks;
 
 namespace SecurioBackendFunction.ServerFunctions
 {
-    // Exposes the password-health check as an unauthenticated HTTP endpoint.
-    // The client's PasswordMonitorService (foreground service) calls this once per
-    // 24-hour cycle using only the stored UserId — no JWT is required because the
-    // check runs even when the user is not actively logged in.
+    /// <summary>Exposes the password-health check as an unauthenticated HTTP endpoint.</summary>
     public class PasswordCheckFunctions
     {
         private readonly PasswordCheckManager _manager;
 
+        /// <summary>Initializes a new instance of PasswordCheckFunctions.</summary>
         public PasswordCheckFunctions(PasswordCheckManager manager)
         {
             _manager = manager;
         }
 
-        // POST api/PasswordCheck
-        // Body: { "UserId": <int> }
-        // Returns ServerResponse<PasswordCheckResult> with BreachedCount, OldCount, MasterPasswordOld.
+        /// <summary>Runs the password-health check for the specified user.</summary>
         [Function("PasswordCheck")]
         public async Task<IActionResult> PasswordCheck(
             [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)

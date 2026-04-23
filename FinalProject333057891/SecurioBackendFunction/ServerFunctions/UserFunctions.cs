@@ -15,18 +15,18 @@ using System.Threading.Tasks;
 
 namespace SecurioBackendFunction.ServerFunctions
 {
-    // Manages HTTP endpoints for non-authentication user data.
+    /// <summary>Manages HTTP endpoints for non-authentication user data.</summary>
     public class UserFunctions
     {
         private readonly UserManager _userManager;
 
+        /// <summary>Initializes a new instance of UserFunctions.</summary>
         public UserFunctions(UserManager userManager)
         {
             _userManager = userManager;
         }
 
-        // Retrieves the user's statistics and profile details via a GET request.
-        // The user ID is extracted from the validated JWT in the Authorization header.
+        /// <summary>Retrieves the user's statistics and profile details via a GET request.</summary>
         [Function("GetProfile")]
         public async Task<IActionResult> GetProfile(
             [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
@@ -63,7 +63,7 @@ namespace SecurioBackendFunction.ServerFunctions
             }
         }
 
-        // Updates the user's account details (username, email, and optionally master password).
+        /// <summary>Updates the user's account details including username, email, and optionally master password.</summary>
         [Function("UpdateUser")]
         public async Task<IActionResult> UpdateUser(
             [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
@@ -119,8 +119,7 @@ namespace SecurioBackendFunction.ServerFunctions
             }
         }
 
-        // Permanently deletes the user account and all associated vault items.
-        // The user ID is extracted from the validated JWT in the Authorization header.
+        /// <summary>Permanently deletes the user account and all associated vault items.</summary>
         [Function("DeleteUser")]
         public async Task<IActionResult> DeleteUser(
             [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
@@ -156,9 +155,7 @@ namespace SecurioBackendFunction.ServerFunctions
             }
         }
 
-        // Returns the last 4 master-password history entries for the authenticated user.
-        // The client uses these (along with each entry's AuthSalt) to detect password reuse
-        // before submitting a new master password.
+        /// <summary>Returns the last 4 master-password history entries for the authenticated user.</summary>
         [Function("GetPasswordHistory")]
         public async Task<IActionResult> GetPasswordHistory(
             [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)

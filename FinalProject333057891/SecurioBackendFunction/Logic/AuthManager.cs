@@ -10,20 +10,20 @@ using System.Threading.Tasks;
 
 namespace SecurioBackendFunction.Logic
 {
+    /// <summary>Manages authentication logic for user registration and login.</summary>
     public class AuthManager
     {
         private readonly IUserRepository _repo;
         private readonly IHibpService _hibp;
 
+        /// <summary>Initializes a new instance of AuthManager.</summary>
         public AuthManager(IUserRepository repo, IHibpService hibp)
         {
             _repo = repo;
             _hibp = hibp;
         }
 
-        // Registers user and generates a token immediately for a seamless UI transition.
-        // If a PasswordSha1Hash is provided it is checked against the HIBP Pwned Passwords
-        // dataset before the account is created.
+        /// <summary>Registers user and generates a token immediately for a seamless UI transition.</summary>
         public async Task<ServerResponse<AuthData>> RegisterAsync(User user)
         {
             if (!string.IsNullOrWhiteSpace(user.PasswordSha1Hash))
@@ -57,7 +57,7 @@ namespace SecurioBackendFunction.Logic
             };
         }
 
-        // Validates login credentials and returns a session token.
+        /// <summary>Validates login credentials and returns a session token.</summary>
         public async Task<ServerResponse<AuthData>> VerifyLoginAsync(string email, string key)
         {
             var user = await _repo.GetUserByEmailAsync(email);
@@ -79,7 +79,7 @@ namespace SecurioBackendFunction.Logic
             };
         }
 
-        // Retrieves the user's salts for the login process. This is a critical step for secure password handling.
+        /// <summary>Retrieves the user's salts for the login process.</summary>
         public async Task<ServerResponse<SaltData>> GetUserSaltsAsync(string email)
         {
             var user = await _repo.GetUserByEmailAsync(email);

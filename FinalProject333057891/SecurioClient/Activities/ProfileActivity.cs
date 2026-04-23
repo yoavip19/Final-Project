@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 namespace SecurioClient.Activities
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
+    /// <summary>Activity that displays the user's profile information with options to edit, log out, or delete the account.</summary>
     public class ProfileActivity : AppCompatActivity
     {
         private TextView textViewProfileUsername;
@@ -27,6 +28,7 @@ namespace SecurioClient.Activities
         private MaterialButton buttonProfileDelete;
         private ProgressBar progressBarProfile;
 
+        /// <summary>Initializes the activity, inflates the layout, and loads the user profile.</summary>
         protected override async void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -40,9 +42,8 @@ namespace SecurioClient.Activities
             await LoadProfileAsync();
         }
 
+        /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
-        {
-            textViewProfileUsername = FindViewById<TextView>(Resource.Id.textViewProfileUsername);
             textViewProfileEmail = FindViewById<TextView>(Resource.Id.textViewProfileEmail);
             textViewProfileLastLogin = FindViewById<TextView>(Resource.Id.textViewProfileLastLogin);
             textViewProfileLastPasswordChange = FindViewById<TextView>(Resource.Id.textViewProfileLastPasswordChange);
@@ -54,6 +55,7 @@ namespace SecurioClient.Activities
             progressBarProfile = FindViewById<ProgressBar>(Resource.Id.progressBarProfile);
         }
 
+        /// <summary>Adds the BottomNavFragment on first creation to avoid duplicate fragments on configuration change.</summary>
         private void SetupBottomNavFragment(Bundle savedInstanceState)
         {
             if (savedInstanceState == null)
@@ -68,6 +70,7 @@ namespace SecurioClient.Activities
             }
         }
 
+        /// <summary>Wires up click handlers for the edit, logout, and delete account buttons.</summary>
         private void SetupEventHandlers()
         {
             buttonProfileEdit.Click += (sender, e) =>
@@ -80,9 +83,11 @@ namespace SecurioClient.Activities
             buttonProfileDelete.Click += (sender, e) => ConfirmDeleteAccount();
         }
 
+        /// <summary>Delegates bottom navigation tab selection to BottomNavHelper.</summary>
         private void OnBottomNavTabSelected(object sender, string tab)
             => BottomNavHelper.Navigate(this, tab, "profile");
 
+        /// <summary>Reloads the profile after a successful account edit.</summary>
         protected override async void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
@@ -96,6 +101,7 @@ namespace SecurioClient.Activities
             }
         }
 
+        /// <summary>Fetches the user profile from the server and displays it, falling back to cached data on failure.</summary>
         private async Task LoadProfileAsync()
         {
             progressBarProfile.Visibility = ViewStates.Visible;
@@ -142,6 +148,7 @@ namespace SecurioClient.Activities
             }
         }
 
+        /// <summary>Populates the UI text views with the given user profile data.</summary>
         private void DisplayProfile(User profile)
         {
             textViewProfileUsername.Text = profile.Username ?? "—";
@@ -152,6 +159,7 @@ namespace SecurioClient.Activities
             textViewProfilePasswordCount.Text = profile.PasswordCount.ToString();
         }
 
+        /// <summary>Formats a DateTime as a locale-friendly string, returning "—" for the minimum value.</summary>
         private string FormatDate(DateTime date)
         {
             if (date == DateTime.MinValue)
@@ -160,6 +168,7 @@ namespace SecurioClient.Activities
             return date.ToLocalTime().ToString("MMM dd, yyyy  h:mm tt");
         }
 
+        /// <summary>Shows a confirmation dialog before logging out.</summary>
         private void ConfirmLogout()
         {
             new AndroidX.AppCompat.App.AlertDialog.Builder(this)
@@ -173,6 +182,7 @@ namespace SecurioClient.Activities
                 .Show();
         }
 
+        /// <summary>Clears the session and navigates to LoginActivity.</summary>
         private async void PerformLogout()
         {
             SessionHelper.EndSession();
@@ -184,6 +194,7 @@ namespace SecurioClient.Activities
             Finish();
         }
 
+        /// <summary>Shows a confirmation dialog before deleting the account.</summary>
         private void ConfirmDeleteAccount()
         {
             new AndroidX.AppCompat.App.AlertDialog.Builder(this)
@@ -197,6 +208,7 @@ namespace SecurioClient.Activities
                 .Show();
         }
 
+        /// <summary>Calls ProfileService to delete the account and navigates to LoginActivity on success.</summary>
         private async Task DeleteAccountAsync()
         {
             progressBarProfile.Visibility = ViewStates.Visible;

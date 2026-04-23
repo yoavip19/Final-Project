@@ -14,17 +14,18 @@ using System.Threading.Tasks;
 
 namespace SecurioBackendFunction.ServerFunctions
 {
-    // Manages HTTP endpoints for vault-item operations.
+    /// <summary>Manages HTTP endpoints for vault-item operations.</summary>
     public class VaultItemFunctions
     {
         private readonly VaultItemManager _vaultItemManager;
 
+        /// <summary>Initializes a new instance of VaultItemFunctions.</summary>
         public VaultItemFunctions(VaultItemManager vaultItemManager)
         {
             _vaultItemManager = vaultItemManager;
         }
 
-        // Receives an encrypted vault item from the client, validates the session, and stores it.
+        /// <summary>Receives an encrypted vault item from the client, validates the session, and stores it.</summary>
         [Function("AddVaultItem")]
         public async Task<IActionResult> AddVaultItem(
             [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
@@ -79,7 +80,7 @@ namespace SecurioBackendFunction.ServerFunctions
             }
         }
 
-        // Receives an updated vault item from the client, validates the session, and persists the changes.
+        /// <summary>Receives an updated vault item from the client, validates the session, and persists the changes.</summary>
         [Function("UpdateVaultItem")]
         public async Task<IActionResult> UpdateVaultItem(
             [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
@@ -133,7 +134,7 @@ namespace SecurioBackendFunction.ServerFunctions
             }
         }
 
-        // Returns all vault items for the authenticated user.
+        /// <summary>Returns all vault items for the authenticated user.</summary>
         [Function("GetVaultItems")]
         public async Task<IActionResult> GetVaultItems(
             [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
@@ -175,7 +176,7 @@ namespace SecurioBackendFunction.ServerFunctions
             }
         }
 
-        // Permanently deletes a vault item owned by the authenticated user.
+        /// <summary>Permanently deletes a vault item owned by the authenticated user.</summary>
         [Function("DeleteVaultItem")]
         public async Task<IActionResult> DeleteVaultItem(
             [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)

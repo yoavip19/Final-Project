@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 
 namespace SecurioClient
 {
-    // Static helper that performs the password-health check and fires local
-    // notifications for any problems found.  Called by PasswordMonitorService
-    // every 24 hours via its internal Handler loop.
+    /// <summary>Static helper that performs the password-health check and fires local notifications for any problems found.</summary>
     public static class PasswordCheckWorker
     {
         private const string Tag = "PasswordCheckWorker";
         private const string DefaultUsername = "User";
 
+        /// <summary>Runs the password-health check and posts notifications for each category that has issues.</summary>
         public static async Task RunCheckAsync(Context context)
         {
             // Retrieve the persisted user ID from secure storage (survives logout).

@@ -5,9 +5,7 @@ using SecurioModels.DataTransferObjects;
 
 namespace SecurioClient.Helpers
 {
-    // Handles all Android-specific notification operations for the password-monitor service.
-    // The notification-criteria logic (ShouldNotify / BuildMessage) lives in the
-    // platform-independent PasswordCheckDecision helper so it can be unit-tested.
+    /// <summary>Handles all Android-specific notification operations for the password-monitor service.</summary>
     public static class NotificationHelper
     {
         // Notification channel for background password-health alerts.
@@ -18,7 +16,7 @@ namespace SecurioClient.Helpers
         public const int AlertNotificationId   = 1001;
         public const int ForegroundNotificationId = 1002;
 
-        // Creates the notification channel (required on Android 8+).
+        /// <summary>Creates the notification channel required on Android 8+.</summary>
         public static void CreateChannel(Context context)
         {
             if (Build.VERSION.SdkInt < BuildVersionCodes.O) return;
@@ -35,7 +33,7 @@ namespace SecurioClient.Helpers
             nm?.CreateNotificationChannel(channel);
             }
 
-        // Posts a local alert notification with the given message text.
+        /// <summary>Posts a local alert notification with the given message text.</summary>
         public static void PostAlert(Context context, string message)
         {
             var builder = new Notification.Builder(context, ChannelId)
@@ -48,8 +46,7 @@ namespace SecurioClient.Helpers
             nm?.Notify(AlertNotificationId, builder.Build());
         }
 
-        // Builds the persistent foreground-service notification shown while the
-        // PasswordMonitorService is running (required for foreground services).
+        /// <summary>Builds the persistent foreground-service notification shown while the PasswordMonitorService is running.</summary>
         public static Notification BuildForegroundNotification(Context context)
         {
             return new Notification.Builder(context, ChannelId)
@@ -60,8 +57,7 @@ namespace SecurioClient.Helpers
                 .Build();
         }
 
-        // Convenience wrapper: evaluates the PasswordCheckResult and posts an alert
-        // only when there is at least one issue to report.
+        /// <summary>Evaluates the PasswordCheckResult and posts an alert only when there is at least one issue to report.</summary>
         public static void PostCheckResult(Context context, PasswordCheckResult result)
         {
             if (!PasswordCheckDecision.ShouldNotify(result)) return;

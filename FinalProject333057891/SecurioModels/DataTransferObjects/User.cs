@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SecurioModels.DataTransferObjects
 {
-    // User - The data structure representing a user account, including security salts and hashed keys stored in the database.
+    /// <summary>Represents a user account including security salts and hashed keys stored in the database.</summary>
     public class User
     {
         public int Id { get; set; }

@@ -15,7 +15,7 @@ using SecurioModels.DataTransferObjects;
 
 namespace SecurioClient.Helpers
 {
-    // A volatile, memory-only manager that holds the active vault encryption key and cached vault data during a user session.
+    /// <summary>A volatile, memory-only manager that holds the active vault encryption key and cached vault data during a user session.</summary>
     public static class SessionHelper
     {
         // The AES key derived from the Master Password; kept in RAM and never saved to disk.
@@ -32,13 +32,13 @@ namespace SecurioClient.Helpers
         // Indicates if the session is currently active with a valid key.
         public static bool IsAuthenticated => !string.IsNullOrEmpty(SessionVaultKey);
 
-        // Starts a session by storing the derived AES key in memory.
+        /// <summary>Starts a session by storing the derived AES key in memory.</summary>
         public static void StartSession(string aesKey)
         {
             SessionVaultKey = aesKey;
         }
 
-        // Ends the session by wiping the AES key and cached data from memory.
+        /// <summary>Ends the session by wiping the AES key and cached data from memory.</summary>
         public static void EndSession()
         {
             SessionVaultKey = null;
@@ -48,20 +48,20 @@ namespace SecurioClient.Helpers
             GC.Collect();
         }
 
-        // Clears the cached warnings so they will be recomputed on the next access.
+        /// <summary>Clears the cached warnings so they will be recomputed on the next access.</summary>
         public static void InvalidateWarnings()
         {
             CachedWarnings = null;
         }
 
-        // Adds a vault item to the in-memory cache.
+        /// <summary>Adds a vault item to the in-memory cache.</summary>
         public static void AddVaultItem(VaultItem item)
         {
             if (item != null)
                 CachedVault.Add(item);
         }
 
-        // Updates an existing vault item in the in-memory cache by matching its Id.
+        /// <summary>Updates an existing vault item in the in-memory cache by matching its Id.</summary>
         public static void UpdateVaultItem(VaultItem updatedItem)
         {
             if (updatedItem == null) return;
@@ -81,7 +81,7 @@ namespace SecurioClient.Helpers
             }
         }
 
-        // Removes a vault item from the in-memory cache by Id.
+        /// <summary>Removes a vault item from the in-memory cache by Id.</summary>
         public static void RemoveVaultItem(int itemId)
         {
             CachedVault.RemoveAll(v => v.Id == itemId);

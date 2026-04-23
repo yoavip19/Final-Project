@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 
 namespace SecurioBackendFunction.Logic
 {
-    // Computes a password-health summary for a specific user without requiring an active session.
-    // Called by the PasswordCheckFunctions endpoint, which is invoked by the client's background
-    // monitor service (PasswordMonitorService) at most once per 24 hours.
+    /// <summary>Computes a password-health summary for a specific user without requiring an active session.</summary>
     public class PasswordCheckManager
     {
         // Passwords (and the master password) not changed within this many days are flagged as old.
@@ -26,10 +24,7 @@ namespace SecurioBackendFunction.Logic
             _vaultRepo = vaultRepo;
         }
 
-        // Returns a PasswordCheckResult for the given user, or null when the user is not found.
-        // BreachedCount — vault items where the stored IsLeaked flag is true.
-        // OldCount      — vault items whose LastUpdate is older than OldPasswordDays.
-        // MasterPasswordOld — the user's master password has not been rotated in OldPasswordDays.
+        /// <summary>Returns a PasswordCheckResult for the given user, or null when the user is not found.</summary>
         public async Task<PasswordCheckResult?> GetPasswordCheckAsync(int userId)
         {
             var user = await _userRepo.GetUserProfileAsync(userId);

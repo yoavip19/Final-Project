@@ -7,12 +7,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace SecurioBackendFunction.Helpers
 {
-    // A utility for creating and validating cryptographically signed JSON Web Tokens used to authorize subsequent requests to protected data.
+    /// <summary>A utility for creating and validating cryptographically signed JSON Web Tokens.</summary>
     public static class JwtHelper
     {
         private static readonly string Secret = GetSecret();
 
-        // Reads the JwtSecret environment variable and throws if it is not configured.
+        /// <summary>Reads the JwtSecret environment variable and throws if it is not configured.</summary>
         private static string GetSecret()
         {
             var secret = Environment.GetEnvironmentVariable("JwtSecret");
@@ -21,7 +21,7 @@ namespace SecurioBackendFunction.Helpers
             return secret;
         }
 
-        // Creates a signed JWT string for a specific user.
+        /// <summary>Creates a signed JWT string for a specific user.</summary>
         public static string GenerateJwtToken(int userId, string username)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret));
@@ -42,7 +42,7 @@ namespace SecurioBackendFunction.Helpers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        // Validates a JWT token and returns the ClaimsPrincipal if valid, or null if invalid or expired.
+        /// <summary>Validates a JWT token and returns the ClaimsPrincipal if valid, or null if invalid or expired.</summary>
         public static ClaimsPrincipal ValidateToken(string token)
         {
             if (string.IsNullOrEmpty(token))
@@ -71,7 +71,7 @@ namespace SecurioBackendFunction.Helpers
             }
         }
 
-        // Extracts the user_id claim from a validated ClaimsPrincipal. Returns 0 if extraction fails.
+        /// <summary>Extracts the user_id claim from a validated ClaimsPrincipal; returns 0 if extraction fails.</summary>
         public static int GetUserIdFromPrincipal(ClaimsPrincipal principal)
         {
             var claim = principal?.FindFirst("user_id");

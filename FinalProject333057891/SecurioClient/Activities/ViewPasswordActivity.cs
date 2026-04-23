@@ -8,10 +8,7 @@ using System;
 
 namespace SecurioClient.Activities
 {
-    /// <summary>
-    /// Read-only activity that displays a single vault entry's details.
-    /// The encrypted password is decrypted client-side using the session vault key.
-    /// </summary>
+    /// <summary>Read-only activity that displays a single vault entry's details with the password decrypted client-side.</summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class ViewPasswordActivity : AppCompatActivity
     {
@@ -41,6 +38,7 @@ namespace SecurioClient.Activities
 
         // ── Lifecycle ──────────────────────────────────────────
 
+        /// <summary>Initializes the activity, inflates the layout, populates fields, and wires up event handlers.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -54,6 +52,7 @@ namespace SecurioClient.Activities
 
         // ── Setup helpers ──────────────────────────────────────
 
+        /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
         {
             imageViewBack = FindViewById<ImageView>(Resource.Id.imageViewViewBack);

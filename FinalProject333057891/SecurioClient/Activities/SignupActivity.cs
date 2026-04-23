@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 namespace SecurioClient.Activities
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
+    /// <summary>Activity that provides the registration form and creates a new user account.</summary>
     public class SignupActivity : AppCompatActivity
     {
         private TextInputEditText editTextUsername;
@@ -33,6 +34,7 @@ namespace SecurioClient.Activities
         private TextView textViewLoginLink;
         private ProgressBar progressBarSignup;
 
+        /// <summary>Initializes the activity, inflates the layout, and wires up views and handlers.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -43,9 +45,8 @@ namespace SecurioClient.Activities
             SetupEventHandlers();
         }
 
+        /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
-        {
-            editTextUsername         = FindViewById<TextInputEditText>(Resource.Id.editTextUsername);
             editTextEmail            = FindViewById<TextInputEditText>(Resource.Id.editTextEmail);
             editTextPassword         = FindViewById<TextInputEditText>(Resource.Id.editTextPassword);
             editTextConfirmPassword  = FindViewById<TextInputEditText>(Resource.Id.editTextConfirmPassword);
@@ -62,6 +63,7 @@ namespace SecurioClient.Activities
             progressBarSignup        = FindViewById<ProgressBar>(Resource.Id.progressBarSignup);
         }
 
+        /// <summary>Wires up click and text-change event handlers for signup form controls.</summary>
         private void SetupEventHandlers()
         {
             buttonSignUp.Click += async (sender, e) => await OnSignUpClicked();
@@ -119,6 +121,7 @@ namespace SecurioClient.Activities
             }));
         }
 
+        /// <summary>Validates inputs and registers a new user via AuthService.</summary>
         private async Task OnSignUpClicked()
         {
             ClearErrors();
@@ -180,6 +183,7 @@ namespace SecurioClient.Activities
             }
         }
 
+        /// <summary>Validates all signup form fields and shows errors for any invalid values.</summary>
         private bool ValidateInputs(string username, string email, string password, string confirmPassword)
         {
             bool isValid = true;
@@ -199,12 +203,12 @@ namespace SecurioClient.Activities
             return isValid;
         }
 
+        /// <summary>Displays the general error message banner.</summary>
         private void ShowGeneralError(string message)
-        {
-            textViewGeneralError.Text = message;
             textViewGeneralError.Visibility = ViewStates.Visible;
         }
 
+        /// <summary>Hides all field-level and general error messages.</summary>
         private void ClearErrors()
         {
             FormUiHelper.HideError(textViewUsernameError);
@@ -214,6 +218,7 @@ namespace SecurioClient.Activities
             FormUiHelper.HideError(textViewGeneralError);
         }
 
+        /// <summary>Toggles the loading state, showing the progress bar and disabling form controls.</summary>
         private void SetLoadingState(bool isLoading)
         {
             progressBarSignup.Visibility = isLoading ? ViewStates.Visible : ViewStates.Gone;

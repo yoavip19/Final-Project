@@ -2,9 +2,7 @@ using System;
 
 namespace SecurioModels.DataTransferObjects
 {
-    // Represents a single entry in the master-password history log.
-    // Used by the no-reuse check: the client fetches the last 4 entries and
-    // derives DeriveKey(newPassword, entry.AuthSalt) to compare against entry.PasswordKey.
+    /// <summary>Represents a single entry in the master-password history log.</summary>
     public class MasterPasswordHistory
     {
         public int Id { get; set; }
