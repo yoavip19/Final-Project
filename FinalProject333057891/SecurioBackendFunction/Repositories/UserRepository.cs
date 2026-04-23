@@ -7,6 +7,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/*
+ * SQL migration — run once against the target database to create the history table:
+ *
+ * CREATE TABLE MasterPasswordHistory (
+ *     Id         INT           IDENTITY(1,1) PRIMARY KEY,
+ *     UserId     INT           NOT NULL,
+ *     PasswordKey NVARCHAR(MAX) NOT NULL,
+ *     AuthSalt   NVARCHAR(MAX) NOT NULL,
+ *     CreatedAt  DATETIME      NOT NULL,
+ *     CONSTRAINT FK_MasterPasswordHistory_Users
+ *         FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
+ * );
+ */
+
 namespace SecurioBackendFunction.Repositories
 {
     // Manages all direct SQL database interactions for user-related data.
@@ -174,6 +188,78 @@ namespace SecurioBackendFunction.Repositories
             cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
             int rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
+        }
+
+        // Retrieves a full user record (including password key and salts) by user ID.
+        public async Task<User> GetUserByIdAsync(int userId)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = @"SELECT Id, Username, Email, MasterPasswordKey, AuthSalt, EncryptionSalt,
+                               LastLogin, LastPasswordUpdate, CreatedAt
+                        FROM Users WHERE Id = @uid";
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new User
+                {
+                    Id = (int)reader["Id"],
+                    Username = reader["Username"].ToString(),
+                    Email = reader["Email"].ToString(),
+                    MasterPasswordKey = reader["MasterPasswordKey"].ToString(),
+                    AuthSalt = reader["AuthSalt"].ToString(),
+                    EncryptionSalt = reader["EncryptionSalt"].ToString(),
+                    LastLogin = reader["LastLogin"] != DBNull.Value ? (DateTime)reader["LastLogin"] : DateTime.MinValue,
+                    LastPasswordUpdate = reader["LastPasswordUpdate"] != DBNull.Value ? (DateTime)reader["LastPasswordUpdate"] : DateTime.MinValue,
+                    CreatedAt = reader["CreatedAt"] != DBNull.Value ? (DateTime)reader["CreatedAt"] : DateTime.MinValue
+                };
+            }
+            return null;
+        }
+
+        // Returns the most-recent @count password history entries for the given user, newest first.
+        public async Task<List<MasterPasswordHistory>> GetLastPasswordHistoryAsync(int userId, int count)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = @"SELECT TOP (@count) Id, UserId, PasswordKey, AuthSalt, CreatedAt
+                        FROM MasterPasswordHistory
+                        WHERE UserId = @uid
+                        ORDER BY CreatedAt DESC";
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.Add("@count", SqlDbType.Int).Value = count;
+            cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
+            using var reader = await cmd.ExecuteReaderAsync();
+            var result = new List<MasterPasswordHistory>();
+            while (await reader.ReadAsync())
+            {
+                result.Add(new MasterPasswordHistory
+                {
+                    Id = (int)reader["Id"],
+                    UserId = (int)reader["UserId"],
+                    PasswordKey = reader["PasswordKey"].ToString(),
+                    AuthSalt = reader["AuthSalt"].ToString(),
+                    CreatedAt = reader["CreatedAt"] != DBNull.Value ? (DateTime)reader["CreatedAt"] : DateTime.MinValue
+                });
+            }
+            return result;
+        }
+
+        // Inserts an entry into MasterPasswordHistory to record a password that is no longer active.
+        public async Task AddPasswordHistoryAsync(int userId, string passwordKey, string authSalt, DateTime createdAt)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = @"INSERT INTO MasterPasswordHistory (UserId, PasswordKey, AuthSalt, CreatedAt)
+                        VALUES (@uid, @key, @salt, @date)";
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
+            cmd.Parameters.Add("@key", SqlDbType.NVarChar).Value = passwordKey;
+            cmd.Parameters.Add("@salt", SqlDbType.NVarChar).Value = authSalt;
+            cmd.Parameters.Add("@date", SqlDbType.DateTime).Value = createdAt;
+            await cmd.ExecuteNonQueryAsync();
         }
     }
 }

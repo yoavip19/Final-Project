@@ -23,17 +23,17 @@ namespace SecurioClient.Helpers
         {
             if (Build.VERSION.SdkInt < BuildVersionCodes.O) return;
 
-            var channel = new NotificationChannel(
-                ChannelId,
-                ChannelName,
+                var channel = new NotificationChannel(
+                    ChannelId,
+                    ChannelName,
                 NotificationImportance.Default)
-            {
+                {
                 Description = "Securio password-health background alerts"
-            };
+                };
 
             var nm = (NotificationManager)context.GetSystemService(Context.NotificationService);
             nm?.CreateNotificationChannel(channel);
-        }
+            }
 
         // Posts a local alert notification with the given message text.
         public static void PostAlert(Context context, string message)

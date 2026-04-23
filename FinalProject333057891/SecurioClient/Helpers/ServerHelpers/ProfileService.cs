@@ -42,5 +42,13 @@ namespace SecurioClient.Helpers.ServerHelpers
         {
             return await PostAsync<object>("DeleteUser", new { });
         }
+
+        // Fetches the last 4 master-password history entries for the authenticated user.
+        // The client uses each entry's AuthSalt to derive and compare the new password
+        // for the no-reuse check.
+        public async Task<ServerResponse<List<MasterPasswordHistory>>> GetPasswordHistoryAsync()
+        {
+            return await GetAsync<List<MasterPasswordHistory>>("GetPasswordHistory");
+        }
     }
 }

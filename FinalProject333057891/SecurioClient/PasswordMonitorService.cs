@@ -40,6 +40,11 @@ namespace SecurioClient
 
             // Run the first check immediately, then repeat every 24 h.
             _handler.Post(_runnable);
+                }
+                Log.Info(Tag, $"Check complete. Next check in {IntervalMs / 3_600_000} h.");
+                // Schedule the next iteration only if the service is still alive.
+                _handler?.PostDelayed(_checkRunnable, IntervalMs);
+            });
         }
 
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
@@ -66,7 +71,7 @@ namespace SecurioClient
         // Performs a single password-health check and posts a notification when issues are found.
         // Extracted as an internal static so it can be exercised in integration tests.
         internal static async Task PerformCheckAsync(Context context)
-        {
+                {
             int userId = await StorageHelper.GetUserId();
             if (userId <= 0) return;
 

@@ -155,5 +155,43 @@ namespace SecurioBackendFunction.ServerFunctions
                 return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = "Error deleting account." });
             }
         }
+
+        // Returns the last 4 master-password history entries for the authenticated user.
+        // The client uses these (along with each entry's AuthSalt) to detect password reuse
+        // before submitting a new master password.
+        [Function("GetPasswordHistory")]
+        public async Task<IActionResult> GetPasswordHistory(
+            [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+        {
+            try
+            {
+                var authHeader = req.Headers["Authorization"].FirstOrDefault();
+                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+                {
+                    return new UnauthorizedObjectResult(new ServerResponse<object> { Success = false, Message = "Unauthorized." });
+                }
+
+                var token = authHeader.Substring("Bearer ".Length);
+                var principal = JwtHelper.ValidateToken(token);
+
+                if (principal == null)
+                {
+                    return new UnauthorizedObjectResult(new ServerResponse<object> { Success = false, Message = "Unauthorized." });
+                }
+
+                int userId = JwtHelper.GetUserIdFromPrincipal(principal);
+                if (userId <= 0)
+                {
+                    return new UnauthorizedObjectResult(new ServerResponse<object> { Success = false, Message = "Unauthorized." });
+                }
+
+                var result = await _userManager.GetPasswordHistoryAsync(userId);
+                return new OkObjectResult(result);
+            }
+            catch
+            {
+                return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = "Error loading password history." });
+            }
+        }
     }
 }

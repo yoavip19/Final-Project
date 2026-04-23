@@ -1,5 +1,6 @@
 using Moq;
 using Xunit;
+using SecurioBackendFunction.Helpers;
 using SecurioBackendFunction.Logic;
 using SecurioBackendFunction.Repositories;
 using SecurioModels.DataTransferObjects;
@@ -47,13 +48,6 @@ namespace SecurioBackendFunction.Tests
             LastUpdate = DateTime.UtcNow.AddDays(-5)   // 5 days ago — not old
         };
 
-        private static VaultItem OldItem(bool leaked = false) => new VaultItem
-        {
-            Id         = 2,
-            AccountName = "Twitter",
-            IsLeaked   = leaked,
-            LastUpdate = DateTime.UtcNow.AddDays(-100)  // 100 days ago — old
-        };
 
         // ── User not found ────────────────────────────────────────────────────────
 
@@ -68,7 +62,6 @@ namespace SecurioBackendFunction.Tests
             Assert.Null(result);
         }
 
-        // ── Empty vault ───────────────────────────────────────────────────────────
 
         [Fact]
         public async Task EmptyVault_FreshMasterPassword_AllCountersZero()
@@ -77,6 +70,8 @@ namespace SecurioBackendFunction.Tests
             var vaultRepo = new Mock<IVaultItemRepository>();
             userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
             vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(new List<VaultItem>());
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow));
+            var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
 
             var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
 
@@ -103,7 +98,6 @@ namespace SecurioBackendFunction.Tests
         }
 
         [Fact]
-        public async Task ThreeLeakedItems_BreachedCountIs3()
         {
             var userRepo  = new Mock<IUserRepository>();
             var vaultRepo = new Mock<IVaultItemRepository>();
@@ -156,7 +150,7 @@ namespace SecurioBackendFunction.Tests
         public async Task FreshItem_ExactlyAt89Days_NotCountedAsOld()
         {
             var item = new VaultItem
-            {
+        {
                 Id         = 3,
                 LastUpdate = DateTime.UtcNow.AddDays(-89),
                 IsLeaked   = false
@@ -176,7 +170,7 @@ namespace SecurioBackendFunction.Tests
         public async Task ItemAt91Days_CountedAsOld()
         {
             var item = new VaultItem
-            {
+        {
                 Id         = 4,
                 LastUpdate = DateTime.UtcNow.AddDays(-91),
                 IsLeaked   = false
@@ -214,8 +208,9 @@ namespace SecurioBackendFunction.Tests
             var vaultRepo = new Mock<IVaultItemRepository>();
             userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(OldMasterPasswordUser());
             vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(new List<VaultItem>());
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow.AddDays(-100)));
+            var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
 
-            var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
 
             Assert.True(result!.MasterPasswordOld);
         }
@@ -224,7 +219,7 @@ namespace SecurioBackendFunction.Tests
         public async Task MasterPasswordAt89Days_NotOld()
         {
             var user = new User
-            {
+        {
                 Id                 = 1,
                 LastPasswordUpdate = DateTime.UtcNow.AddDays(-89)
             };
@@ -233,6 +228,8 @@ namespace SecurioBackendFunction.Tests
             var vaultRepo = new Mock<IVaultItemRepository>();
             userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(user);
             vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(new List<VaultItem>());
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(MakeUser(DateTime.UtcNow.AddDays(-10)));
+            var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
 
             var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
 
@@ -243,7 +240,7 @@ namespace SecurioBackendFunction.Tests
         public async Task MasterPasswordAt91Days_IsOld()
         {
             var user = new User
-            {
+        {
                 Id                 = 1,
                 LastPasswordUpdate = DateTime.UtcNow.AddDays(-91)
             };
@@ -252,6 +249,8 @@ namespace SecurioBackendFunction.Tests
             var vaultRepo = new Mock<IVaultItemRepository>();
             userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(user);
             vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1)).ReturnsAsync(new List<VaultItem>());
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync((User)null);
+            var manager = new PasswordCheckManager(vaultRepo.Object, userRepo.Object, hibp.Object);
 
             var result = await Build(userRepo, vaultRepo).GetPasswordCheckAsync(1);
 
@@ -289,7 +288,7 @@ namespace SecurioBackendFunction.Tests
             userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
             vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
                      .ReturnsAsync(new List<VaultItem>
-                     {
+            {
                          FreshItem(leaked: true),
                          FreshItem(leaked: false)
                      });

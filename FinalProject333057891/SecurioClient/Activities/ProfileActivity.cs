@@ -173,10 +173,10 @@ namespace SecurioClient.Activities
                 .Show();
         }
 
-        private void PerformLogout()
+        private async void PerformLogout()
         {
             SessionHelper.EndSession();
-            StorageHelper.ClearAll();
+            await StorageHelper.ClearSessionAsync();
 
             var intent = new Intent(this, typeof(LoginActivity));
             intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);

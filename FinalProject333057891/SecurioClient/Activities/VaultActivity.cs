@@ -1,5 +1,6 @@
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -16,6 +17,9 @@ namespace SecurioClient.Activities
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class VaultActivity : AppCompatActivity
     {
+        private const int RequestCodeNotificationPermission = 9001;
+        private const string PostNotificationsPermission = "android.permission.POST_NOTIFICATIONS";
+
         private TextView textViewVaultTitle;
         private TextView textViewVaultSubtitle;
         private EditText editTextVaultSearch;
@@ -38,6 +42,9 @@ namespace SecurioClient.Activities
 
             // Load entries from the in-memory session cache.
             LoadVaultFromSession();
+
+            // Request notification permission (required at runtime on Android 13+).
+            RequestNotificationPermissionIfNeeded();
         }
 
         private void InitializeViews()
@@ -242,5 +249,19 @@ namespace SecurioClient.Activities
         {
             VaultEntryCache.Entries = new List<VaultItem>(allEntries);
         }
+
+        // Requests the POST_NOTIFICATIONS runtime permission on Android 13+ (API 33).
+        // Without this, notifications posted by the background worker are silently dropped.
+        private void RequestNotificationPermissionIfNeeded()
+        {
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+            {
+                if (CheckSelfPermission(PostNotificationsPermission) != Permission.Granted)
+                {
+                    RequestPermissions(new[] { PostNotificationsPermission }, RequestCodeNotificationPermission);
+                }
+            }
+        }
+
     }
 }

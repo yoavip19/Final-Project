@@ -1,5 +1,6 @@
 using Android.App;
 using Android.Content;
+using Android.Util;
 
 namespace SecurioClient
 {
@@ -16,8 +17,11 @@ namespace SecurioClient
     })]
     public class BootReceiver : BroadcastReceiver
     {
+        private const string Tag = "BootReceiver";
+
         public override void OnReceive(Context context, Intent intent)
         {
+            Log.Info(Tag, $"Received broadcast: {intent?.Action}");
             var serviceIntent = new Intent(context, typeof(PasswordMonitorService));
             context.StartForegroundService(serviceIntent);
         }

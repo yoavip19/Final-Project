@@ -102,7 +102,7 @@ namespace SecurioClient.Activities
                 {
                     decryptedPassword = EncryptionHelper.DecryptAesGcm(iv, tag, cipherText, SessionHelper.SessionVaultKey);
                 }
-                catch (Exception ex)
+                catch
                 {
                     System.Diagnostics.Debug.WriteLine("[VIEW PASSWORD ERROR] Failed to decrypt password");
                     decryptedPassword = null;

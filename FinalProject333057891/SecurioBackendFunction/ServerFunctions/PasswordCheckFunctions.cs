@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using SecurioBackendFunction.Logic;
 using SecurioModels;
 using SecurioModels.DataTransferObjects;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -38,10 +39,10 @@ namespace SecurioBackendFunction.ServerFunctions
                 if (request == null || request.UserId <= 0)
                 {
                     return new BadRequestObjectResult(new ServerResponse<PasswordCheckResult>
-                    {
-                        Success = false,
-                        Message = "UserId is required."
-                    });
+                        {
+                            Success = false,
+                            Message = "UserId is required."
+                        });
                 }
 
                 var result = await _manager.GetPasswordCheckAsync(request.UserId);
@@ -53,7 +54,7 @@ namespace SecurioBackendFunction.ServerFunctions
                         Success = false,
                         Message = "User not found."
                     });
-                }
+            }
 
                 return new OkObjectResult(new ServerResponse<PasswordCheckResult>
                 {
@@ -64,11 +65,17 @@ namespace SecurioBackendFunction.ServerFunctions
             catch
             {
                 return new BadRequestObjectResult(new ServerResponse<PasswordCheckResult>
-                {
-                    Success = false,
+                    {
+                        Success = false,
                     Message = "Error running password check."
-                });
+                    });
             }
         }
+    }
+
+    // Request body for the PasswordCheck endpoint.
+    internal sealed class PasswordCheckRequest
+    {
+        public int UserId { get; set; }
     }
 }

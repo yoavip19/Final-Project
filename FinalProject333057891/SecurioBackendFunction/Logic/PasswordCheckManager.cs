@@ -1,4 +1,6 @@
+using SecurioBackendFunction.Helpers;
 using SecurioBackendFunction.Repositories;
+using SecurioModels;
 using SecurioModels.DataTransferObjects;
 using System;
 using System.Linq;
@@ -21,6 +23,8 @@ namespace SecurioBackendFunction.Logic
         {
             _userRepo  = userRepo;
             _vaultRepo = vaultRepo;
+            _userRepo = userRepo;
+            _hibp = hibp;
         }
 
         // Returns a PasswordCheckResult for the given user, or null when the user is not found.
@@ -33,6 +37,7 @@ namespace SecurioBackendFunction.Logic
             if (user == null)
                 return null;
 
+            // 1. Load all vault items for the user.
             var items = await _vaultRepo.GetVaultItemsByUserIdAsync(userId);
 
             int breachedCount = items.Count(i => i.IsLeaked);
@@ -40,10 +45,11 @@ namespace SecurioBackendFunction.Logic
             bool masterOld    = (DateTime.UtcNow - user.LastPasswordUpdate).TotalDays > OldPasswordDays;
 
             return new PasswordCheckResult
-            {
+                {
                 BreachedCount    = breachedCount,
                 OldCount         = oldCount,
-                MasterPasswordOld = masterOld
+                    MasterPasswordOld = masterOld
+                }
             };
         }
     }
