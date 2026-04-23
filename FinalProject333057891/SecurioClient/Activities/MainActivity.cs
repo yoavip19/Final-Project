@@ -5,7 +5,7 @@ using AndroidX.AppCompat.App;
 using SecurioClient.Helpers;
 using SecurioClient.Helpers.ServerHelpers;
 
-namespace SecurioClient
+namespace SecurioClient.Activities
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
