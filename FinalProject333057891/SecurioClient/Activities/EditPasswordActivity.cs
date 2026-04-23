@@ -104,7 +104,6 @@ namespace SecurioClient.Activities
 
         // ── Setup helpers ──────────────────────────────────────
 
-        private void InitializeViews()
         /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
         {
