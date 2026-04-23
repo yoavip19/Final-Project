@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SecurioClient
+namespace SecurioClient.Activities
 {
     /// <summary>
     /// Activity for editing an existing password entry in the vault.

@@ -11,7 +11,7 @@ using SecurioClient.Helpers.ServerHelpers;
 using System;
 using System.Threading.Tasks;
 
-namespace SecurioClient
+namespace SecurioClient.Activities
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class LoginActivity : AppCompatActivity
