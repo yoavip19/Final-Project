@@ -144,10 +144,16 @@ namespace SecurioClient.Activities
             Toast.MakeText(this, $"Broadcast sent: {action}", ToastLength.Short).Show();
 
             // Give the service a moment to start, then refresh.
-            _handler.PostDelayed(() => RunOnUiThread(RefreshDisplay), 1500);
+            _handler.PostDelayed(() => RunOnUiThread(RefreshDisplay), ServiceStartDelayMs);
         }
 
         private readonly Android.OS.Handler _handler = new Android.OS.Handler(Looper.MainLooper);
+
+        /// <summary>
+        /// Milliseconds to wait after sending a broadcast before refreshing the service-status display.
+        /// Gives Android enough time to start the foreground service and post its notification.
+        /// </summary>
+        private const int ServiceStartDelayMs = 1500;
 
         private void SetBusy(bool busy)
         {

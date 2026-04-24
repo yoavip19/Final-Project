@@ -1,6 +1,7 @@
 using Android.Content;
 using Android.Util;
 using SecurioClient.Activities;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,7 +15,7 @@ namespace SecurioClient.Helpers
     /// </summary>
     public static class SessionExpiredHandler
     {
-        private static int _handling = 0;
+        private static int _sessionExpiryInProgress = 0;
 
         /// <summary>
         /// Clears the session and navigates to <see cref="LoginActivity"/>.
@@ -24,7 +25,7 @@ namespace SecurioClient.Helpers
         public static async Task OnSessionExpiredAsync()
         {
             // Only the first caller proceeds; all others are no-ops.
-            if (Interlocked.Exchange(ref _handling, 1) == 1) return;
+            if (Interlocked.Exchange(ref _sessionExpiryInProgress, 1) == 1) return;
 
             try
             {
@@ -38,9 +39,13 @@ namespace SecurioClient.Helpers
                 intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
                 context.StartActivity(intent);
             }
+            catch (Exception ex)
+            {
+                Log.Error(TestConfig.LogTag, $"SessionExpiredHandler — failed to redirect: {ex.Message}");
+            }
             finally
             {
-                Interlocked.Exchange(ref _handling, 0);
+                Interlocked.Exchange(ref _sessionExpiryInProgress, 0);
             }
         }
     }

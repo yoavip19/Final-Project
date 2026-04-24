@@ -16,9 +16,11 @@ namespace SecurioBackendFunction.Repositories
 
         /// <summary>
         /// Exposes the connection string for test-only use (e.g., TestFunctions rollback verification).
-        /// Do not call from production code paths.
+        /// Guarded by DEBUG so it is stripped from Release builds and cannot be called from production code.
         /// </summary>
+#if DEBUG
         internal string GetConnectionStringForTest() => _connectionString;
+#endif
 
         /// <summary>Inserts a new vault item record and returns the newly generated ID.</summary>
         public async Task<int> AddVaultItemAsync(VaultItem item)

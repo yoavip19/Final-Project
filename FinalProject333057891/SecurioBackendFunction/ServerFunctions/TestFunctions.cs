@@ -155,12 +155,17 @@ namespace SecurioBackendFunction.ServerFunctions
         /// <summary>
         /// Performs a bulk-update inside a SQL transaction and deliberately throws at
         /// <paramref name="failAtIndex"/> to verify rollback behaviour.
+        /// Only available in DEBUG builds (matching <see cref="VaultItemRepository.GetConnectionStringForTest"/>).
         /// </summary>
         private async Task BulkUpdateWithFaultAsync(List<VaultItem> items, int userId, int failAtIndex)
         {
             // Use the concrete type to access the connection string via reflection-free casting.
             if (_vaultRepo is not VaultItemRepository concreteRepo)
                 throw new InvalidOperationException("Repository must be VaultItemRepository for this test.");
+
+#if !DEBUG
+            throw new InvalidOperationException("TestBulkUpdateRollback is only available in DEBUG builds.");
+#endif
 
             string connStr = concreteRepo.GetConnectionStringForTest();
 

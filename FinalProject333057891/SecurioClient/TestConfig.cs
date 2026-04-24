@@ -10,8 +10,13 @@ namespace SecurioClient
         /// When <c>true</c>, test overrides are active:
         /// short check interval, verbose ADB logging, and the TestDashboard activity
         /// becomes accessible via ADB or a long-press on the profile title.
+        /// Automatically disabled in Release builds via the DEBUG compile symbol.
         /// </summary>
+#if DEBUG
         public const bool IsTestMode = true;
+#else
+        public const bool IsTestMode = false;
+#endif
 
         /// <summary>
         /// Password-monitor check interval in milliseconds.

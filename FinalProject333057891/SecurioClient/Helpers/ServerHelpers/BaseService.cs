@@ -49,6 +49,9 @@ namespace SecurioClient.Helpers
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     // JWT has expired — clear credentials and navigate to the login screen.
+                    // The task is intentionally not awaited here because we need to return immediately
+                    // while the redirect happens asynchronously. Any exception inside is caught and
+                    // logged by SessionExpiredHandler itself.
                     _ = SessionExpiredHandler.OnSessionExpiredAsync();
                     return new ServerResponse<T> { Success = false, Message = "Session expired. Please log in again." };
                 }
@@ -84,6 +87,8 @@ namespace SecurioClient.Helpers
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     // JWT has expired — clear credentials and navigate to the login screen.
+                    // The task is intentionally not awaited; any exception is caught and logged
+                    // by SessionExpiredHandler itself.
                     _ = SessionExpiredHandler.OnSessionExpiredAsync();
                     return new ServerResponse<T> { Success = false, Message = "Session expired. Please log in again." };
                 }
