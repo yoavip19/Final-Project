@@ -46,7 +46,14 @@ namespace SecurioClient.Helpers
                     return JsonConvert.DeserializeObject<ServerResponse<T>>(json);
                 }
 
-                // If server returns 401/500, try to parse the error message
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    // JWT has expired — clear credentials and navigate to the login screen.
+                    _ = SessionExpiredHandler.OnSessionExpiredAsync();
+                    return new ServerResponse<T> { Success = false, Message = "Session expired. Please log in again." };
+                }
+
+                // If server returns 500, try to parse the error message
                 var error = JsonConvert.DeserializeObject<ServerResponse<T>>(json);
                 return error ?? new ServerResponse<T> { Success = false, Message = "Server error occurred." };
             }
@@ -73,6 +80,13 @@ namespace SecurioClient.Helpers
 
                 if (response.IsSuccessStatusCode)
                     return JsonConvert.DeserializeObject<ServerResponse<T>>(json);
+
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    // JWT has expired — clear credentials and navigate to the login screen.
+                    _ = SessionExpiredHandler.OnSessionExpiredAsync();
+                    return new ServerResponse<T> { Success = false, Message = "Session expired. Please log in again." };
+                }
 
                 // Return the server's error message mapped to the object
                 var error = JsonConvert.DeserializeObject<ServerResponse<T>>(json);

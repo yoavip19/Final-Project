@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using SecurioBackendFunction.Helpers;
 using SecurioBackendFunction.Logic; // Adjust namespace if needed
 using SecurioBackendFunction.Repositories; // Adjust namespace if needed
+using SecurioBackendFunction.ServerFunctions;
 using System;
 
 var builder = FunctionsApplication.CreateBuilder(args);
@@ -33,5 +34,6 @@ builder.Services.AddScoped<UserManager>();
 builder.Services.AddScoped<AuthManager>();
 builder.Services.AddScoped<VaultItemManager>();
 builder.Services.AddScoped<PasswordCheckManager>();
+builder.Services.AddScoped<TestFunctions>();
 
 builder.Build().Run();

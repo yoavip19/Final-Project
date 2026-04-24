@@ -5,7 +5,7 @@
           package="com.companyname.securioclient">
   <uses-sdk android:minSdkVersion="33" android:targetSdkVersion="33" />
   <application android:usesCleartextTraffic="true" android:label="Securio" android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:supportsRtl="true" android:theme="@style/AppTheme">
-    <!-- Foreground service for 24-hour background password-health monitoring. -->
+    <!-- Foreground service for background password-health monitoring. -->
     <service
         android:name="com.companyname.securioclient.PasswordMonitorService"
         android:exported="false"
@@ -19,6 +19,13 @@
         <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
       </intent-filter>
     </receiver>
+    <!-- TEST-ONLY: manual test trigger screen. Launch via ADB:
+         adb shell am start -n com.companyname.securioclient/.Activities.TestDashboardActivity
+         Remove this entry (and set TestConfig.IsTestMode = false) before shipping. -->
+    <activity
+        android:name="com.companyname.securioclient.Activities.TestDashboardActivity"
+        android:exported="true"
+        android:label="Securio Test Dashboard" />
   </application>
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.INTERNET" />

@@ -14,6 +14,12 @@ namespace SecurioBackendFunction.Repositories
         /// <summary>Initializes a new instance of VaultItemRepository.</summary>
         public VaultItemRepository(string connectionString) => _connectionString = connectionString;
 
+        /// <summary>
+        /// Exposes the connection string for test-only use (e.g., TestFunctions rollback verification).
+        /// Do not call from production code paths.
+        /// </summary>
+        internal string GetConnectionStringForTest() => _connectionString;
+
         /// <summary>Inserts a new vault item record and returns the newly generated ID.</summary>
         public async Task<int> AddVaultItemAsync(VaultItem item)
         {
