@@ -108,6 +108,7 @@ namespace SecurioClient.Activities
         private void InitializeViews()
         {
             imageViewBack = FindViewById<ImageView>(Resource.Id.imageViewEntryBack);
+            textInputLayoutPassword = FindViewById<TextInputLayout>(Resource.Id.textInputLayoutEntryPassword);
             textInputLayoutConfirmPassword = FindViewById<TextInputLayout>(Resource.Id.textInputLayoutEntryConfirmPassword);
 
             editTextSiteName = FindViewById<TextInputEditText>(Resource.Id.editTextEntrySiteName);
@@ -116,6 +117,8 @@ namespace SecurioClient.Activities
             editTextConfirmPassword = FindViewById<TextInputEditText>(Resource.Id.editTextEntryConfirmPassword);
             editTextNotes = FindViewById<TextInputEditText>(Resource.Id.editTextEntryNotes);
 
+            textViewTitle = FindViewById<TextView>(Resource.Id.textViewEntryTitle);
+            textViewSubtitle = FindViewById<TextView>(Resource.Id.textViewEntrySubtitle);
             textViewSiteNameError = FindViewById<TextView>(Resource.Id.textViewEntrySiteNameError);
             textViewUsernameError = FindViewById<TextView>(Resource.Id.textViewEntryUsernameError);
             textViewPasswordError = FindViewById<TextView>(Resource.Id.textViewEntryPasswordError);
