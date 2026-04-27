@@ -163,7 +163,7 @@ namespace SecurioClient.Helpers
             switch (category)
             {
                 case "leaked":
-                    return await GetLeakedItemsAsync(vault);
+                    return GetLeakedItems(vault);
 
                 case "weak":
                     return GetWeakItems(vault, vaultKey);
@@ -179,17 +179,13 @@ namespace SecurioClient.Helpers
             }
         }
 
-        /// <summary>Returns the subset of vault items whose password appears in a known data breach.</summary>
-        private static async Task<List<VaultItem>> GetLeakedItemsAsync(IList<VaultItem> vault)
+        /// <summary>
+        /// Returns the subset of vault items whose password appears in a known data breach,
+        /// using the server-provided <see cref="VaultItem.IsLeaked"/> flag set at add/edit time.
+        /// </summary>
+        private static List<VaultItem> GetLeakedItems(IList<VaultItem> vault)
         {
-            var result = new List<VaultItem>();
-            foreach (var item in vault)
-            {
-                if (!string.IsNullOrEmpty(item.Sha1Hash) &&
-                    await HibpClientService.IsPasswordPwnedAsync(item.Sha1Hash))
-                    result.Add(item);
-            }
-            return result;
+            return vault.Where(item => item.IsLeaked).ToList();
         }
 
         /// <summary>Returns the subset of vault items that fail the password strength validation.</summary>
