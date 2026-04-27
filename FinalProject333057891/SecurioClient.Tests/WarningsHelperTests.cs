@@ -382,14 +382,12 @@ namespace SecurioClient.Tests
         }
 
         [Fact]
-        public async Task GetItemsAtRisk_Leaked_OnePwnedHash_ReturnsOneItem()
+        public async Task GetItemsAtRisk_Leaked_OneLeakedItem_ReturnsOneItem()
         {
-            HibpClientService.PwnedHashes.Add(PwnedHash1);
-
             var vault = new List<VaultItem>
             {
-                EncryptedItem("StrongP@ss1!", PwnedHash1),
-                EncryptedItem("StrongP@ss2!", SafeHash1)
+                EncryptedItem("StrongP@ss1!", PwnedHash1, isLeaked: true),
+                EncryptedItem("StrongP@ss2!", SafeHash1,  isLeaked: false)
             };
             var result = await WarningsHelper.GetItemsAtRiskAsync(vault, TestVaultKey, "leaked");
             Assert.Single(result);
@@ -397,13 +395,11 @@ namespace SecurioClient.Tests
         }
 
         [Fact]
-        public async Task GetItemsAtRisk_Leaked_ItemWithNullHash_NotReturned()
+        public async Task GetItemsAtRisk_Leaked_ItemWithIsLeakedFalse_NotReturned()
         {
-            HibpClientService.PwnedHashes.Add(PwnedHash1);
-
             var vault = new List<VaultItem>
             {
-                new VaultItem { Sha1Hash = null!, LastUpdate = DateTime.UtcNow }
+                new VaultItem { Sha1Hash = SafeHash1, IsLeaked = false, LastUpdate = DateTime.UtcNow }
             };
             var result = await WarningsHelper.GetItemsAtRiskAsync(vault, TestVaultKey, "leaked");
             Assert.Empty(result);
