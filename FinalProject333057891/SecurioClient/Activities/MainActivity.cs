@@ -42,9 +42,11 @@ namespace SecurioClient.Activities
                     await AuthService.FetchAndCacheVaultAsync();
 
                     // Compute password-health warnings for the restored session.
+                    // ComputeWarningsSync uses the server-provided IsLeaked flags, so
+                    // the count is correct even if the HIBP API is temporarily unreachable.
                     if (!string.IsNullOrEmpty(vaultKey))
                     {
-                        SessionHelper.CachedWarnings = await WarningsHelper.ComputeWarningsAsync(
+                        SessionHelper.CachedWarnings = WarningsHelper.ComputeWarningsSync(
                             SessionHelper.CachedVault, vaultKey);
                     }
 

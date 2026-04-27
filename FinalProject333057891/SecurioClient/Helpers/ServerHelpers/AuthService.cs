@@ -71,8 +71,11 @@ namespace SecurioClient.Helpers.ServerHelpers
             // 4. Fetch the user's vault items and cache them in memory
             await FetchAndCacheVaultAsync();
 
-            // 5. Compute password-health warnings and cache them for the session
-            SessionHelper.CachedWarnings = await WarningsHelper.ComputeWarningsAsync(
+            // 5. Compute password-health warnings and cache them for the session.
+            // ComputeWarningsSync uses the server-provided IsLeaked flags (set at
+            // add/edit time by the server's own HIBP check), so the count is always
+            // accurate and never reset to 0 by a client-side HIBP network failure.
+            SessionHelper.CachedWarnings = WarningsHelper.ComputeWarningsSync(
                 SessionHelper.CachedVault, vaultKey);
         }
 
