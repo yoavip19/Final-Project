@@ -55,6 +55,14 @@ namespace SecurioClient
         /// <summary>Runs the password-check once and then re-schedules itself for the next interval.</summary>
         private async Task RunCycleAsync()
         {
+            // Stop the service and skip the server call when the user has disabled notifications.
+            // Without the ability to notify the user, the check produces no value.
+            if (!NotificationHelper.AreNotificationsEnabled(this))
+            {
+                StopSelf();
+                return;
+            }
+
             await PerformCheckAsync(this);
             _handler.PostDelayed(_runnable, IntervalMs);
         }

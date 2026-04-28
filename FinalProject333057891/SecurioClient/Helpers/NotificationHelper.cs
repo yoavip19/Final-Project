@@ -57,6 +57,13 @@ namespace SecurioClient.Helpers
                 .Build();
         }
 
+        /// <summary>Returns true when the user has not disabled notifications for this app (covers both the POST_NOTIFICATIONS runtime permission and the per-app toggle in Settings).</summary>
+        public static bool AreNotificationsEnabled(Context context)
+        {
+            var nm = (NotificationManager)context.GetSystemService(Context.NotificationService);
+            return nm?.AreNotificationsEnabled() ?? false;
+        }
+
         /// <summary>Evaluates the PasswordCheckResult and posts an alert only when there is at least one issue to report.</summary>
         public static void PostCheckResult(Context context, PasswordCheckResult result)
         {

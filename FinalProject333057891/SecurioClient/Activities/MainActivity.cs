@@ -50,7 +50,6 @@ namespace SecurioClient.Activities
                             SessionHelper.CachedVault, vaultKey);
                     }
 
-                    StartPasswordMonitor(this);
                     _pendingVaultNavigation = true;
                 }
                 else
@@ -75,6 +74,11 @@ namespace SecurioClient.Activities
             }
             else
             {
+                // Permission is already granted (or not needed on this API level).
+                // Start the monitor now so it is ready before we navigate to the vault.
+                if (_pendingVaultNavigation)
+                    StartPasswordMonitor(this);
+
                 NavigateToDest();
             }
         }
@@ -91,6 +95,16 @@ namespace SecurioClient.Activities
                     grantResults[0] == Android.Content.PM.Permission.Granted;
                 System.Diagnostics.Debug.WriteLine(
                     $"[NOTIFICATIONS] POST_NOTIFICATIONS permission {(granted ? "granted" : "denied")}.");
+
+                if (granted && _pendingVaultNavigation)
+                {
+                    StartPasswordMonitor(this);
+                }
+                else if (!granted)
+                {
+                    // User denied notifications — stop the monitor so no server calls are made.
+                    StopService(new Android.Content.Intent(this, typeof(PasswordMonitorService)));
+                }
 
                 NavigateToDest();
             }

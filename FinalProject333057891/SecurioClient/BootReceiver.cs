@@ -21,6 +21,16 @@ namespace SecurioClient
         public override void OnReceive(Context context, Intent intent)
         {
             Log.Info(Tag, $"Received broadcast: {intent?.Action}");
+
+            // Skip the restart if the user has disabled notifications; starting the
+            // service without the ability to deliver alerts would cause unnecessary
+            // server calls with no benefit to the user.
+            if (!Helpers.NotificationHelper.AreNotificationsEnabled(context))
+            {
+                Log.Info(Tag, "Notifications disabled — skipping service restart.");
+                return;
+            }
+
             var serviceIntent = new Intent(context, typeof(PasswordMonitorService));
             context.StartForegroundService(serviceIntent);
         }
