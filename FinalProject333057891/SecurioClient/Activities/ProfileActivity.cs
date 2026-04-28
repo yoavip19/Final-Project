@@ -118,10 +118,8 @@ namespace SecurioClient.Activities
             if (cached != null)
             {
                 // Serve from the in-memory cache — no server call needed.
+                // DisplayProfile always derives PasswordCount from CachedVault.Count.
                 DisplayProfile(cached);
-                // Always derive PasswordCount from the live vault so it stays
-                // accurate after additions/deletions without mutating the cached object.
-                textViewProfilePasswordCount.Text = SessionHelper.CachedVault.Count.ToString();
                 return;
             }
 
@@ -137,8 +135,6 @@ namespace SecurioClient.Activities
                 {
                     SessionHelper.CachedProfile = result.Data;
                     DisplayProfile(result.Data);
-                    // Keep the count consistent with the local vault from the start.
-                    textViewProfilePasswordCount.Text = SessionHelper.CachedVault.Count.ToString();
                 }
                 else
                 {
@@ -181,7 +177,9 @@ namespace SecurioClient.Activities
             textViewProfileLastLogin.Text = FormatDate(profile.LastLogin);
             textViewProfileLastPasswordChange.Text = FormatDate(profile.LastPasswordUpdate);
             textViewProfileCreatedAt.Text = FormatDate(profile.CreatedAt);
-            textViewProfilePasswordCount.Text = profile.PasswordCount.ToString();
+            // Always derive the count from the live vault so it stays accurate
+            // after additions or deletions, regardless of what the server returned.
+            textViewProfilePasswordCount.Text = SessionHelper.CachedVault.Count.ToString();
         }
 
         /// <summary>Formats a DateTime as a locale-friendly string, returning "—" for the minimum value.</summary>
