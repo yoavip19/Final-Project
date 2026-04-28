@@ -1,6 +1,5 @@
 using System;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SecurioClient.Helpers
@@ -13,17 +12,16 @@ namespace SecurioClient.Helpers
     public static class HibpClientService
     {
         private const string ApiBase = "https://api.pwnedpasswords.com/range/";
-        private const int TimeoutSeconds = 10;
 
-        // Single shared HttpClient — Xamarin.Android.Net.AndroidClientHandler (set in
-        // AndroidHttpClientHandlerType) is used automatically for new HttpClient() on Android.
+        // Single shared HttpClient — Xamarin.Android.Net.AndroidClientHandler (set via
+        // AndroidHttpClientHandlerType in the .csproj) is used automatically on Android.
         private static readonly HttpClient _http = new HttpClient();
 
         /// <summary>
         /// Returns <c>true</c> if the given 40-character uppercase SHA-1 hex hash
         /// appears in the HIBP Pwned Passwords dataset.
-        /// Returns <c>false</c> on any error or timeout (fail-open), so a
-        /// temporary outage never produces false positives.
+        /// Returns <c>false</c> on any error (fail-open), so a temporary outage
+        /// never produces false positives or blocks the user.
         /// </summary>
         public static async Task<bool> IsPasswordPwnedAsync(string sha1Hash)
         {
@@ -36,18 +34,17 @@ namespace SecurioClient.Helpers
 
             try
             {
-                // Use SendAsync + HttpRequestMessage so the User-Agent is set per-request.
-                // AndroidClientHandler (the default handler on Android) does not reliably
-                // forward HttpClient.DefaultRequestHeaders to the underlying Java HTTP stack,
-                // and HttpClient.Timeout is not honoured by AndroidClientHandler either.
-                // Setting the header on each HttpRequestMessage and using a CancellationToken
-                // for the timeout both work correctly with AndroidClientHandler.
-                using var cts     = new CancellationTokenSource(TimeSpan.FromSeconds(TimeoutSeconds));
-                using var request = new HttpRequestMessage(HttpMethod.Get, ApiBase + prefix);
+                // Build the request with the User-Agent set on the message itself.
+                // Per-request headers on HttpRequestMessage are reliably forwarded by
+                // AndroidClientHandler, matching the pattern used in BaseService.cs.
+                var request = new HttpRequestMessage(HttpMethod.Get, ApiBase + prefix);
                 request.Headers.TryAddWithoutValidation("User-Agent", "Securio/1.0");
 
-                using var response = await _http.SendAsync(request, cts.Token);
-                response.EnsureSuccessStatusCode();
+                var response = await _http.SendAsync(request);
+
+                // If the API is unavailable or returns a non-success status, fail open.
+                if (!response.IsSuccessStatusCode)
+                    return false;
 
                 string body = await response.Content.ReadAsStringAsync();
 
@@ -62,14 +59,9 @@ namespace SecurioClient.Helpers
 
                 return false;
             }
-            catch (OperationCanceledException)
-            {
-                // Timeout expired — fail open so a slow API never stalls the UI.
-                return false;
-            }
             catch
             {
-                // Network or API error — fail open.
+                // Network or API error — fail open so no exception ever escapes to the caller.
                 return false;
             }
         }
