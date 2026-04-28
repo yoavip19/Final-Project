@@ -98,14 +98,33 @@ namespace SecurioClient.Activities
                 && resultCode == Result.Ok
                 && data?.GetBooleanExtra(EditAccountActivity.ResultUpdated, false) == true)
             {
-                // Refresh the displayed profile after a successful account edit.
+                // Invalidate the session cache so the next load fetches fresh data from the server.
+                SessionHelper.InvalidateProfile();
                 await LoadProfileAsync();
             }
         }
 
-        /// <summary>Fetches the user profile from the server and displays it, falling back to cached data on failure.</summary>
+        /// <summary>
+        /// Displays the user profile. Uses the in-memory session cache when available so
+        /// re-opening the page does not trigger a server round-trip. The password count is
+        /// always derived from the live vault cache so it stays accurate after vault edits.
+        /// The cache is populated on the first load and invalidated whenever the account is
+        /// edited (<see cref="OnActivityResult"/>).
+        /// </summary>
         private async Task LoadProfileAsync()
         {
+            var cached = SessionHelper.CachedProfile;
+
+            if (cached != null)
+            {
+                // Serve from the in-memory cache — no server call needed.
+                // Override PasswordCount so it always matches the live vault.
+                cached.PasswordCount = SessionHelper.CachedVault.Count;
+                DisplayProfile(cached);
+                return;
+            }
+
+            // Cache miss — fetch from the server.
             progressBarProfile.Visibility = ViewStates.Visible;
 
             try
@@ -115,15 +134,16 @@ namespace SecurioClient.Activities
 
                 if (result.Success && result.Data != null)
                 {
+                    SessionHelper.CachedProfile = result.Data;
                     DisplayProfile(result.Data);
                 }
                 else
                 {
                     // Fall back to cached profile data
-                    var cached = await StorageHelper.GetCachedProfileAsync();
-                    if (cached != null)
+                    var diskCached = await StorageHelper.GetCachedProfileAsync();
+                    if (diskCached != null)
                     {
-                        DisplayProfile(cached);
+                        DisplayProfile(diskCached);
                         Toast.MakeText(this, Resource.String.profile_load_error, ToastLength.Short).Show();
                     }
                     else
@@ -137,10 +157,10 @@ namespace SecurioClient.Activities
                 System.Diagnostics.Debug.WriteLine($"[PROFILE LOAD ERROR] {ex.Message}");
 
                 // Fall back to cached profile data
-                var cached = await StorageHelper.GetCachedProfileAsync();
-                if (cached != null)
+                var diskCached = await StorageHelper.GetCachedProfileAsync();
+                if (diskCached != null)
                 {
-                    DisplayProfile(cached);
+                    DisplayProfile(diskCached);
                     Toast.MakeText(this, Resource.String.profile_load_error, ToastLength.Short).Show();
                 }
             }

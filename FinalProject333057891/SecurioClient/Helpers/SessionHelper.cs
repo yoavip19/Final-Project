@@ -29,6 +29,10 @@ namespace SecurioClient.Helpers
         // invalidated (set to null) whenever the vault contents change.
         public static WarningsData CachedWarnings { get; set; }
 
+        // Cached user profile fetched from the server.  Populated on first load and
+        // invalidated (set to null) whenever the profile is edited.
+        public static SecurioModels.DataTransferObjects.User CachedProfile { get; set; }
+
         // Indicates if the session is currently active with a valid key.
         public static bool IsAuthenticated => !string.IsNullOrEmpty(SessionVaultKey);
 
@@ -44,6 +48,7 @@ namespace SecurioClient.Helpers
             SessionVaultKey = null;
             CachedVault.Clear();
             CachedWarnings = null;
+            CachedProfile = null;
 
             GC.Collect();
         }
@@ -52,6 +57,12 @@ namespace SecurioClient.Helpers
         public static void InvalidateWarnings()
         {
             CachedWarnings = null;
+        }
+
+        /// <summary>Clears the cached profile so it will be re-fetched from the server on the next access.</summary>
+        public static void InvalidateProfile()
+        {
+            CachedProfile = null;
         }
 
         /// <summary>Adds a vault item to the in-memory cache.</summary>
