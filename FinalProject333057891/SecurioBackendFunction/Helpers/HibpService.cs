@@ -37,7 +37,7 @@ namespace SecurioBackendFunction.Helpers
                 {
                     int colon = line.IndexOf(':');
                     if (colon < 0) continue;
-                    if (string.Equals(line.Substring(0, colon), suffix, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(line[..colon].Trim(), suffix, StringComparison.OrdinalIgnoreCase))
                         return true;
                 }
 

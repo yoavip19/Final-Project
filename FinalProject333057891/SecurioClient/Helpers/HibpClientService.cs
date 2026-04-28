@@ -35,8 +35,9 @@ namespace SecurioClient.Helpers
             if (string.IsNullOrWhiteSpace(sha1Hash) || sha1Hash.Length != 40)
                 return false;
 
-            string prefix = sha1Hash[..5].ToUpperInvariant();
-            string suffix = sha1Hash[5..].ToUpperInvariant();
+            string upper  = sha1Hash.ToUpperInvariant();
+            string prefix = upper[..5];
+            string suffix = upper[5..];
 
             try
             {
