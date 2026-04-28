@@ -55,7 +55,13 @@ namespace SecurioClient
         /// <summary>Runs the password-check once and then re-schedules itself for the next interval.</summary>
         private async Task RunCycleAsync()
         {
-            await PerformCheckAsync(this);
+            // Only hit the server and post a notification when the user has notifications enabled.
+            // If the user toggled notifications off in Settings the check is skipped, but the
+            // service keeps running so that notifications resume automatically the next cycle
+            // when the user turns them back on — without needing to open the app.
+            if (NotificationHelper.AreNotificationsEnabled(this))
+                await PerformCheckAsync(this);
+
             _handler.PostDelayed(_runnable, IntervalMs);
         }
 
