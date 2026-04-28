@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SecurioClient.Helpers
@@ -12,17 +13,11 @@ namespace SecurioClient.Helpers
     public static class HibpClientService
     {
         private const string ApiBase = "https://api.pwnedpasswords.com/range/";
+        private const int TimeoutSeconds = 10;
 
-        // HIBP requires a descriptive User-Agent; requests without one receive HTTP 403.
-        // Timeout is capped at 10 seconds so a slow or unresponsive API never stalls the UI.
-        private static readonly HttpClient _http = CreateHttpClient();
-
-        private static HttpClient CreateHttpClient()
-        {
-            var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("Securio/1.0");
-            return client;
-        }
+        // Single shared HttpClient — Xamarin.Android.Net.AndroidClientHandler (set in
+        // AndroidHttpClientHandlerType) is used automatically for new HttpClient() on Android.
+        private static readonly HttpClient _http = new HttpClient();
 
         /// <summary>
         /// Returns <c>true</c> if the given 40-character uppercase SHA-1 hex hash
@@ -41,7 +36,20 @@ namespace SecurioClient.Helpers
 
             try
             {
-                string body = await _http.GetStringAsync(ApiBase + prefix);
+                // Use SendAsync + HttpRequestMessage so the User-Agent is set per-request.
+                // AndroidClientHandler (the default handler on Android) does not reliably
+                // forward HttpClient.DefaultRequestHeaders to the underlying Java HTTP stack,
+                // and HttpClient.Timeout is not honoured by AndroidClientHandler either.
+                // Setting the header on each HttpRequestMessage and using a CancellationToken
+                // for the timeout both work correctly with AndroidClientHandler.
+                using var cts     = new CancellationTokenSource(TimeSpan.FromSeconds(TimeoutSeconds));
+                using var request = new HttpRequestMessage(HttpMethod.Get, ApiBase + prefix);
+                request.Headers.TryAddWithoutValidation("User-Agent", "Securio/1.0");
+
+                using var response = await _http.SendAsync(request, cts.Token);
+                response.EnsureSuccessStatusCode();
+
+                string body = await response.Content.ReadAsStringAsync();
 
                 // Each line in the response is "SUFFIX:COUNT" (CRLF-terminated).
                 foreach (string line in body.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries))
