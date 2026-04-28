@@ -11,19 +11,32 @@ using System.Threading.Tasks;
 namespace SecurioBackendFunction.Tests
 {
     // Comprehensive unit tests for PasswordCheckManager.GetPasswordCheckAsync.
-    // Covers: user not found, empty vault, breached passwords, old passwords,
-    // old master password, and combinations thereof.
-    // All repository dependencies are mocked.
+    // Covers: user not found, empty vault, HIBP re-check (new breach / cleared / no hash),
+    // IsLeaked DB update, old passwords, old master password, and combinations thereof.
+    // All repository and HIBP dependencies are mocked.
     // To run: dotnet test SecurioBackendFunction.Tests/SecurioBackendFunction.Tests.csproj
     public class PasswordCheckManagerTests
     {
+        private const string SafeHash  = "AABBCCDDEEFF00112233445566778899AABBCCDD";
+        private const string PwnedHash = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709";
+
         private static PasswordCheckManager Build(
             Mock<IUserRepository>? userRepo  = null,
-            Mock<IVaultItemRepository>? vault = null)
+            Mock<IVaultItemRepository>? vault = null,
+            Mock<IHibpService>? hibp          = null)
         {
             userRepo ??= new Mock<IUserRepository>();
             vault    ??= new Mock<IVaultItemRepository>();
-            return new PasswordCheckManager(userRepo.Object, vault.Object);
+            if (hibp == null)
+            {
+                hibp = new Mock<IHibpService>();
+                // Default: every hash is clean.
+                hibp.Setup(h => h.IsPasswordPwnedAsync(It.IsAny<string>())).ReturnsAsync(false);
+            }
+            // Default: UpdateIsLeakedAsync is a no-op.
+            vault.Setup(v => v.UpdateIsLeakedAsync(It.IsAny<int>(), It.IsAny<bool>()))
+                 .Returns(Task.CompletedTask);
+            return new PasswordCheckManager(userRepo.Object, vault.Object, hibp.Object);
         }
 
         private static User FreshUser() => new User
@@ -40,19 +53,21 @@ namespace SecurioBackendFunction.Tests
             LastPasswordUpdate  = DateTime.UtcNow.AddDays(-100)  // 100 days ago — old
         };
 
-        private static VaultItem FreshItem(bool leaked = false) => new VaultItem
+        private static VaultItem FreshItem(bool leaked = false, string sha1Hash = null) => new VaultItem
         {
-            Id         = 1,
+            Id          = 1,
             AccountName = "Gmail",
-            IsLeaked   = leaked,
-            LastUpdate = DateTime.UtcNow.AddDays(-5)   // 5 days ago — not old
+            IsLeaked    = leaked,
+            Sha1Hash    = sha1Hash,
+            LastUpdate  = DateTime.UtcNow.AddDays(-5)   // 5 days ago — not old
         };
 
-        private static VaultItem OldItem(bool leaked = false) => new VaultItem
+        private static VaultItem OldItem(bool leaked = false, string sha1Hash = null) => new VaultItem
         {
             Id          = 1,
             AccountName = "OldSite",
             IsLeaked    = leaked,
+            Sha1Hash    = sha1Hash,
             LastUpdate  = DateTime.UtcNow.AddDays(-100)  // 100 days ago — old
         };
 
@@ -85,6 +100,131 @@ namespace SecurioBackendFunction.Tests
             Assert.Equal(0, result!.BreachedCount);
             Assert.Equal(0, result.OldCount);
             Assert.False(result.MasterPasswordOld);
+        }
+
+        // ── HIBP re-check: new breach detected ───────────────────────────────────
+
+        [Fact]
+        public async Task ItemWasClean_HibpNowPwned_BreachedCountIs1()
+        {
+            // Item was stored as not-leaked (IsLeaked = false), but HIBP now says it is.
+            var hibp = new Mock<IHibpService>();
+            hibp.Setup(h => h.IsPasswordPwnedAsync(PwnedHash)).ReturnsAsync(true);
+
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
+                     .ReturnsAsync(new List<VaultItem> { FreshItem(leaked: false, sha1Hash: PwnedHash) });
+
+            var result = await Build(userRepo, vaultRepo, hibp).GetPasswordCheckAsync(1);
+
+            Assert.Equal(1, result!.BreachedCount);
+        }
+
+        [Fact]
+        public async Task ItemWasClean_HibpNowPwned_UpdateIsLeakedCalledWithTrue()
+        {
+            // When HIBP reports a new breach, the DB must be updated so the vault UI stays accurate.
+            var hibp = new Mock<IHibpService>();
+            hibp.Setup(h => h.IsPasswordPwnedAsync(PwnedHash)).ReturnsAsync(true);
+
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            var item = FreshItem(leaked: false, sha1Hash: PwnedHash);
+            item.Id = 42;
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
+                     .ReturnsAsync(new List<VaultItem> { item });
+            vaultRepo.Setup(v => v.UpdateIsLeakedAsync(It.IsAny<int>(), It.IsAny<bool>()))
+                     .Returns(Task.CompletedTask);
+
+            await Build(userRepo, vaultRepo, hibp).GetPasswordCheckAsync(1);
+
+            vaultRepo.Verify(v => v.UpdateIsLeakedAsync(42, true), Times.Once);
+        }
+
+        // ── HIBP re-check: breach cleared ─────────────────────────────────────────
+
+        [Fact]
+        public async Task ItemWasLeaked_HibpNowClean_BreachedCountIs0()
+        {
+            // Edge case: item was previously leaked but HIBP no longer reports it (e.g. false positive removed).
+            var hibp = new Mock<IHibpService>();
+            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
+
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
+                     .ReturnsAsync(new List<VaultItem> { FreshItem(leaked: true, sha1Hash: SafeHash) });
+
+            var result = await Build(userRepo, vaultRepo, hibp).GetPasswordCheckAsync(1);
+
+            Assert.Equal(0, result!.BreachedCount);
+        }
+
+        [Fact]
+        public async Task ItemWasLeaked_HibpNowClean_UpdateIsLeakedCalledWithFalse()
+        {
+            var hibp = new Mock<IHibpService>();
+            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
+
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            var item = FreshItem(leaked: true, sha1Hash: SafeHash);
+            item.Id = 7;
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
+                     .ReturnsAsync(new List<VaultItem> { item });
+            vaultRepo.Setup(v => v.UpdateIsLeakedAsync(It.IsAny<int>(), It.IsAny<bool>()))
+                     .Returns(Task.CompletedTask);
+
+            await Build(userRepo, vaultRepo, hibp).GetPasswordCheckAsync(1);
+
+            vaultRepo.Verify(v => v.UpdateIsLeakedAsync(7, false), Times.Once);
+        }
+
+        // ── HIBP re-check: status unchanged → no DB write ─────────────────────────
+
+        [Fact]
+        public async Task ItemStatusUnchanged_UpdateIsLeakedNotCalled()
+        {
+            // If HIBP agrees with the cached flag, there is no DB write.
+            var hibp = new Mock<IHibpService>();
+            hibp.Setup(h => h.IsPasswordPwnedAsync(PwnedHash)).ReturnsAsync(true);
+
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
+                     .ReturnsAsync(new List<VaultItem> { FreshItem(leaked: true, sha1Hash: PwnedHash) });
+            vaultRepo.Setup(v => v.UpdateIsLeakedAsync(It.IsAny<int>(), It.IsAny<bool>()))
+                     .Returns(Task.CompletedTask);
+
+            await Build(userRepo, vaultRepo, hibp).GetPasswordCheckAsync(1);
+
+            vaultRepo.Verify(v => v.UpdateIsLeakedAsync(It.IsAny<int>(), It.IsAny<bool>()), Times.Never);
+        }
+
+        // ── HIBP re-check: no Sha1Hash stored → skip HIBP, trust cached flag ─────
+
+        [Fact]
+        public async Task ItemWithNoSha1Hash_HibpNotCalled_CachedFlagUsed()
+        {
+            // Items without a stored hash cannot be re-checked; the cached IsLeaked value is used as-is.
+            var hibp = new Mock<IHibpService>();
+
+            var userRepo  = new Mock<IUserRepository>();
+            var vaultRepo = new Mock<IVaultItemRepository>();
+            userRepo.Setup(r => r.GetUserProfileAsync(1)).ReturnsAsync(FreshUser());
+            vaultRepo.Setup(r => r.GetVaultItemsByUserIdAsync(1))
+                     .ReturnsAsync(new List<VaultItem> { FreshItem(leaked: true, sha1Hash: null) });
+
+            var result = await Build(userRepo, vaultRepo, hibp).GetPasswordCheckAsync(1);
+
+            hibp.Verify(h => h.IsPasswordPwnedAsync(It.IsAny<string>()), Times.Never);
+            Assert.Equal(1, result!.BreachedCount);  // cached value preserved
         }
 
         // ── BreachedCount ─────────────────────────────────────────────────────────
@@ -157,7 +297,7 @@ namespace SecurioBackendFunction.Tests
         public async Task FreshItem_ExactlyAt89Days_NotCountedAsOld()
         {
             var item = new VaultItem
-        {
+            {
                 Id         = 3,
                 LastUpdate = DateTime.UtcNow.AddDays(-89),
                 IsLeaked   = false
@@ -177,7 +317,7 @@ namespace SecurioBackendFunction.Tests
         public async Task ItemAt91Days_CountedAsOld()
         {
             var item = new VaultItem
-        {
+            {
                 Id         = 4,
                 LastUpdate = DateTime.UtcNow.AddDays(-91),
                 IsLeaked   = false
@@ -225,7 +365,7 @@ namespace SecurioBackendFunction.Tests
         public async Task MasterPasswordAt89Days_NotOld()
         {
             var user = new User
-        {
+            {
                 Id                 = 1,
                 LastPasswordUpdate = DateTime.UtcNow.AddDays(-89)
             };
@@ -244,7 +384,7 @@ namespace SecurioBackendFunction.Tests
         public async Task MasterPasswordAt91Days_IsOld()
         {
             var user = new User
-        {
+            {
                 Id                 = 1,
                 LastPasswordUpdate = DateTime.UtcNow.AddDays(-91)
             };
