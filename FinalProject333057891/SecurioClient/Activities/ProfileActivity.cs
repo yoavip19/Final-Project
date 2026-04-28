@@ -118,9 +118,10 @@ namespace SecurioClient.Activities
             if (cached != null)
             {
                 // Serve from the in-memory cache — no server call needed.
-                // Override PasswordCount so it always matches the live vault.
-                cached.PasswordCount = SessionHelper.CachedVault.Count;
                 DisplayProfile(cached);
+                // Always derive PasswordCount from the live vault so it stays
+                // accurate after additions/deletions without mutating the cached object.
+                textViewProfilePasswordCount.Text = SessionHelper.CachedVault.Count.ToString();
                 return;
             }
 
@@ -136,6 +137,8 @@ namespace SecurioClient.Activities
                 {
                     SessionHelper.CachedProfile = result.Data;
                     DisplayProfile(result.Data);
+                    // Keep the count consistent with the local vault from the start.
+                    textViewProfilePasswordCount.Text = SessionHelper.CachedVault.Count.ToString();
                 }
                 else
                 {
