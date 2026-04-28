@@ -140,12 +140,12 @@ namespace SecurioClient.Activities
             {
                 string site = editTextSiteName.Text?.Trim();
                 if (string.IsNullOrWhiteSpace(site))
-                    ShowError(textViewSiteNameError, GetString(Resource.String.entry_error_site_required));
+                    FormUiHelper.ShowError(textViewSiteNameError, GetString(Resource.String.entry_error_site_required));
                 else
-                    HideError(textViewSiteNameError);
+                    FormUiHelper.HideError(textViewSiteNameError);
 
                 // Clear any previous duplicate error when the user changes the field.
-                HideError(textViewGeneralError);
+                FormUiHelper.HideError(textViewGeneralError);
             }));
 
             // Real-time validation: username
@@ -153,11 +153,11 @@ namespace SecurioClient.Activities
             {
                 string username = editTextUsername.Text?.Trim();
                 if (string.IsNullOrWhiteSpace(username))
-                    ShowError(textViewUsernameError, GetString(Resource.String.entry_error_username_required));
+                    FormUiHelper.ShowError(textViewUsernameError, GetString(Resource.String.entry_error_username_required));
                 else
-                    HideError(textViewUsernameError);
+                    FormUiHelper.HideError(textViewUsernameError);
 
-                HideError(textViewGeneralError);
+                FormUiHelper.HideError(textViewGeneralError);
             }));
 
             // Real-time validation: password (strength bar — informational only, never blocks)
@@ -195,7 +195,7 @@ namespace SecurioClient.Activities
 
             if (IsDuplicate(siteName, username))
             {
-                ShowError(textViewGeneralError, GetString(Resource.String.entry_error_duplicate));
+                FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.entry_error_duplicate));
                 return;
             }
 
@@ -249,12 +249,12 @@ namespace SecurioClient.Activities
                 }
                 else
                 {
-                    ShowError(textViewGeneralError, result.Message);
+                    FormUiHelper.ShowError(textViewGeneralError, result.Message);
                 }
             }
             catch (Exception ex)
             {
-                ShowError(textViewGeneralError, GetString(Resource.String.entry_error_save_failed));
+                FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.entry_error_save_failed));
                 System.Diagnostics.Debug.WriteLine($"[ADD PASSWORD ERROR] {ex.Message}");
             }
             finally
@@ -272,30 +272,30 @@ namespace SecurioClient.Activities
 
             if (string.IsNullOrWhiteSpace(siteName))
             {
-                ShowError(textViewSiteNameError, GetString(Resource.String.entry_error_site_required));
+                FormUiHelper.ShowError(textViewSiteNameError, GetString(Resource.String.entry_error_site_required));
                 valid = false;
             }
 
             if (string.IsNullOrWhiteSpace(username))
             {
-                ShowError(textViewUsernameError, GetString(Resource.String.entry_error_username_required));
+                FormUiHelper.ShowError(textViewUsernameError, GetString(Resource.String.entry_error_username_required));
                 valid = false;
             }
 
             if (string.IsNullOrEmpty(password))
             {
-                ShowError(textViewPasswordError, GetString(Resource.String.entry_error_password_required));
+                FormUiHelper.ShowError(textViewPasswordError, GetString(Resource.String.entry_error_password_required));
                 valid = false;
             }
 
             if (string.IsNullOrEmpty(confirmPassword))
             {
-                ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_confirm_password_required));
+                FormUiHelper.ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_confirm_password_required));
                 valid = false;
             }
             else if (!string.IsNullOrEmpty(password) && password != confirmPassword)
             {
-                ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
+                FormUiHelper.ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
                 valid = false;
             }
 
@@ -320,13 +320,13 @@ namespace SecurioClient.Activities
             string confirm = editTextConfirmPassword.Text;
             if (string.IsNullOrEmpty(confirm))
             {
-                HideError(textViewConfirmPasswordError);
+                FormUiHelper.HideError(textViewConfirmPasswordError);
                 return;
             }
             if (password != confirm)
-                ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
+                FormUiHelper.ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
             else
-                HideError(textViewConfirmPasswordError);
+                FormUiHelper.HideError(textViewConfirmPasswordError);
         }
 
         // ── Password strength indicator (informational) ────────
@@ -338,7 +338,7 @@ namespace SecurioClient.Activities
             {
                 progressBarStrength.Visibility = ViewStates.Gone;
                 textViewStrengthHint.Visibility = ViewStates.Gone;
-                HideError(textViewPasswordError);
+                FormUiHelper.HideError(textViewPasswordError);
                 return;
             }
 
@@ -372,28 +372,14 @@ namespace SecurioClient.Activities
 
         // ── UI helpers ─────────────────────────────────────────
 
-        /// <summary>Sets the error text and makes the given error view visible.</summary>
-        private void ShowError(TextView errorView, string message)
-        {
-            errorView.Text = message;
-            errorView.Visibility = ViewStates.Visible;
-        }
-
-        /// <summary>Clears the error text and hides the given error view.</summary>
-        private void HideError(TextView errorView)
-        {
-            errorView.Text = null;
-            errorView.Visibility = ViewStates.Gone;
-        }
-
         /// <summary>Hides all field-level and general error messages.</summary>
         private void ClearErrors()
         {
-            HideError(textViewSiteNameError);
-            HideError(textViewUsernameError);
-            HideError(textViewPasswordError);
-            HideError(textViewConfirmPasswordError);
-            HideError(textViewGeneralError);
+            FormUiHelper.HideError(textViewSiteNameError);
+            FormUiHelper.HideError(textViewUsernameError);
+            FormUiHelper.HideError(textViewPasswordError);
+            FormUiHelper.HideError(textViewConfirmPasswordError);
+            FormUiHelper.HideError(textViewGeneralError);
         }
 
         /// <summary>Toggles the loading state, showing the progress bar and disabling form controls.</summary>

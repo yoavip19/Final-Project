@@ -67,17 +67,17 @@ namespace SecurioClient.Activities
             {
                 var result = ValidationHelper.ValidateEmail(editTextEmail.Text?.Trim());
                 if (!result.IsValid)
-                    ShowError(textViewEmailError, result.ErrorMessage);
+                    FormUiHelper.ShowError(textViewEmailError, result.ErrorMessage);
                 else
-                    HideError(textViewEmailError);
+                    FormUiHelper.HideError(textViewEmailError);
             }));
 
             editTextPassword.AddTextChangedListener(new SimpleTextWatcher(_ =>
             {
                 if (string.IsNullOrEmpty(editTextPassword.Text))
-                    ShowError(textViewPasswordError, GetString(Resource.String.login_error_password_required));
+                    FormUiHelper.ShowError(textViewPasswordError, GetString(Resource.String.login_error_password_required));
                 else
-                    HideError(textViewPasswordError);
+                    FormUiHelper.HideError(textViewPasswordError);
             }));
         }
 
@@ -109,12 +109,12 @@ namespace SecurioClient.Activities
                 }
                 else
                 {
-                    ShowGeneralError(result.Message);
+                    FormUiHelper.ShowError(textViewGeneralError, result.Message);
                 }
             }
             catch (Exception ex)
             {
-                ShowGeneralError(GetString(Resource.String.login_error_sign_in_failed));
+                FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.login_error_sign_in_failed));
                 System.Diagnostics.Debug.WriteLine($"[LOGIN ERROR] {ex.Message}");
             }
             finally
@@ -131,46 +131,25 @@ namespace SecurioClient.Activities
             var emailResult = ValidationHelper.ValidateEmail(email);
             if (!emailResult.IsValid)
             {
-                ShowError(textViewEmailError, emailResult.ErrorMessage);
+                FormUiHelper.ShowError(textViewEmailError, emailResult.ErrorMessage);
                 isValid = false;
             }
 
             if (string.IsNullOrEmpty(password))
             {
-                ShowError(textViewPasswordError, GetString(Resource.String.login_error_password_required));
+                FormUiHelper.ShowError(textViewPasswordError, GetString(Resource.String.login_error_password_required));
                 isValid = false;
             }
 
             return isValid;
         }
 
-        /// <summary>Sets the error text and makes the given error view visible.</summary>
-        private void ShowError(TextView errorView, string message)
-        {
-            errorView.Text = message;
-            errorView.Visibility = ViewStates.Visible;
-        }
-
-        /// <summary>Clears the error text and hides the given error view.</summary>
-        private void HideError(TextView errorView)
-        {
-            errorView.Text = null;
-            errorView.Visibility = ViewStates.Gone;
-        }
-
-        /// <summary>Displays the general error message banner.</summary>
-        private void ShowGeneralError(string message)
-        {
-            textViewGeneralError.Text = message;
-            textViewGeneralError.Visibility = ViewStates.Visible;
-        }
-
         /// <summary>Hides all field-level and general error messages.</summary>
         private void ClearErrors()
         {
-            HideError(textViewEmailError);
-            HideError(textViewPasswordError);
-            HideError(textViewGeneralError);
+            FormUiHelper.HideError(textViewEmailError);
+            FormUiHelper.HideError(textViewPasswordError);
+            FormUiHelper.HideError(textViewGeneralError);
         }
 
         /// <summary>Toggles the loading state, showing the progress bar and disabling form controls.</summary>
