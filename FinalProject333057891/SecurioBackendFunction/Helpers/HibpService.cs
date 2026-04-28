@@ -28,8 +28,8 @@ namespace SecurioBackendFunction.Helpers
             try
             {
                 string upper  = sha1Hash.ToUpperInvariant();
-                string prefix = upper.Substring(0, 5);
-                string suffix = upper.Substring(5);
+                string prefix = upper[..5];
+                string suffix = upper[5..];
 
                 string body = await _http.GetStringAsync(BaseUrl + prefix);
 
