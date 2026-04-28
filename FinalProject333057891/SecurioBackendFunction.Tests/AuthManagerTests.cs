@@ -1,6 +1,5 @@
 using Moq;
 using Xunit;
-using SecurioBackendFunction.Helpers;
 using SecurioBackendFunction.Logic;
 using SecurioBackendFunction.Repositories;
 using SecurioModels.DataTransferObjects;
@@ -19,19 +18,18 @@ namespace SecurioBackendFunction.Tests
             Environment.SetEnvironmentVariable("JwtSecret", "test-jwt-secret-32-bytes-minimum!!");
         }
 
-        // SHA-1 of the empty string — a real HIBP-leaked hash used as the "pwned" fixture.
+        // SHA-1 of the empty string — a well-known leaked hash used as our "pwned" fixture.
         private const string PwnedHash = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709";
         // A valid 40-char hex string that will NOT appear in any mocked HIBP response.
         private const string SafeHash  = "AABBCCDDEEFF00112233445566778899AABBCCDD";
 
-        private static User ValidUser(string? sha1Hash = null) => new User
+        private static User ValidUser() => new User
         {
             Username          = "alice",
             Email             = "alice@example.com",
             MasterPasswordKey = "derivedkey==",
             AuthSalt          = "authsalt==",
-            EncryptionSalt    = "encsalt==",
-            PasswordSha1Hash  = sha1Hash
+            EncryptionSalt    = "encsalt=="
         };
 
         private static User StoredUser() => new User
@@ -44,10 +42,9 @@ namespace SecurioBackendFunction.Tests
             EncryptionSalt    = "encsalt=="
         };
 
-        private static AuthManager Build(Mock<IUserRepository> repo, Mock<IHibpService>? hibp = null)
+        private static AuthManager Build(Mock<IUserRepository> repo)
         {
-            hibp ??= new Mock<IHibpService>();
-            return new AuthManager(repo.Object, hibp.Object);
+            return new AuthManager(repo.Object);
         }
 
         // ── RegisterAsync: happy path ────────────────────────────────────────────
@@ -55,13 +52,11 @@ namespace SecurioBackendFunction.Tests
         [Fact]
         public async Task Register_HappyPath_ReturnsSuccess()
         {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
             var repo = new Mock<IUserRepository>();
             repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
             repo.Setup(r => r.CreateUserAsync(It.IsAny<User>())).ReturnsAsync(5);
 
-            var result = await Build(repo, hibp).RegisterAsync(ValidUser(SafeHash));
+            var result = await Build(repo).RegisterAsync(ValidUser());
 
             Assert.True(result.Success);
             Assert.Equal("User registered successfully", result.Message);
@@ -70,13 +65,11 @@ namespace SecurioBackendFunction.Tests
         [Fact]
         public async Task Register_HappyPath_DataContainsToken()
         {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
             var repo = new Mock<IUserRepository>();
             repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
             repo.Setup(r => r.CreateUserAsync(It.IsAny<User>())).ReturnsAsync(5);
 
-            var result = await Build(repo, hibp).RegisterAsync(ValidUser(SafeHash));
+            var result = await Build(repo).RegisterAsync(ValidUser());
 
             Assert.NotNull(result.Data);
             Assert.False(string.IsNullOrEmpty(result.Data!.Token));
@@ -86,13 +79,11 @@ namespace SecurioBackendFunction.Tests
         public async Task Register_HappyPath_DataContainsAssignedUserId()
         {
             const int assignedId = 99;
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
             var repo = new Mock<IUserRepository>();
             repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
             repo.Setup(r => r.CreateUserAsync(It.IsAny<User>())).ReturnsAsync(assignedId);
 
-            var result = await Build(repo, hibp).RegisterAsync(ValidUser(SafeHash));
+            var result = await Build(repo).RegisterAsync(ValidUser());
 
             Assert.Equal(assignedId, result.Data!.UserId);
         }
@@ -100,72 +91,14 @@ namespace SecurioBackendFunction.Tests
         [Fact]
         public async Task Register_HappyPath_DataContainsUsername()
         {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
             var repo = new Mock<IUserRepository>();
             repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
             repo.Setup(r => r.CreateUserAsync(It.IsAny<User>())).ReturnsAsync(1);
 
-            var user = ValidUser(SafeHash);
-            var result = await Build(repo, hibp).RegisterAsync(user);
+            var user = ValidUser();
+            var result = await Build(repo).RegisterAsync(user);
 
             Assert.Equal(user.Username, result.Data!.Username);
-        }
-
-        // ── RegisterAsync: HIBP breach check ────────────────────────────────────
-
-        [Fact]
-        public async Task Register_PwnedPassword_ReturnsFail()
-        {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(PwnedHash)).ReturnsAsync(true);
-
-            var result = await Build(new Mock<IUserRepository>(), hibp).RegisterAsync(ValidUser(PwnedHash));
-
-            Assert.False(result.Success);
-            Assert.Contains("data breach", result.Message);
-        }
-
-        [Fact]
-        public async Task Register_PwnedPassword_DatabaseNeverCalled()
-        {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(PwnedHash)).ReturnsAsync(true);
-            var repo = new Mock<IUserRepository>();
-
-            await Build(repo, hibp).RegisterAsync(ValidUser(PwnedHash));
-
-            repo.Verify(r => r.CreateUserAsync(It.IsAny<User>()), Times.Never);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("   ")]
-        public async Task Register_NullOrWhitespaceHash_SkipsHibpCheck(string? hash)
-        {
-            var hibp = new Mock<IHibpService>();
-            var repo = new Mock<IUserRepository>();
-            repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
-            repo.Setup(r => r.CreateUserAsync(It.IsAny<User>())).ReturnsAsync(1);
-
-            await Build(repo, hibp).RegisterAsync(ValidUser(hash));
-
-            hibp.Verify(h => h.IsPasswordPwnedAsync(It.IsAny<string>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task Register_SafeHash_HibpCalledExactlyOnce()
-        {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
-            var repo = new Mock<IUserRepository>();
-            repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
-            repo.Setup(r => r.CreateUserAsync(It.IsAny<User>())).ReturnsAsync(1);
-
-            await Build(repo, hibp).RegisterAsync(ValidUser(SafeHash));
-
-            hibp.Verify(h => h.IsPasswordPwnedAsync(SafeHash), Times.Once);
         }
 
         // ── RegisterAsync: email uniqueness ─────────────────────────────────────
@@ -173,12 +106,10 @@ namespace SecurioBackendFunction.Tests
         [Fact]
         public async Task Register_DuplicateEmail_ReturnsFail()
         {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
             var repo = new Mock<IUserRepository>();
             repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(true);
 
-            var result = await Build(repo, hibp).RegisterAsync(ValidUser(SafeHash));
+            var result = await Build(repo).RegisterAsync(ValidUser());
 
             Assert.False(result.Success);
             Assert.Equal("Email already registered.", result.Message);
@@ -187,12 +118,10 @@ namespace SecurioBackendFunction.Tests
         [Fact]
         public async Task Register_DuplicateEmail_DatabaseCreateNeverCalled()
         {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
             var repo = new Mock<IUserRepository>();
             repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(true);
 
-            await Build(repo, hibp).RegisterAsync(ValidUser(SafeHash));
+            await Build(repo).RegisterAsync(ValidUser());
 
             repo.Verify(r => r.CreateUserAsync(It.IsAny<User>()), Times.Never);
         }
@@ -202,13 +131,11 @@ namespace SecurioBackendFunction.Tests
         [Fact]
         public async Task Register_DatabaseReturnsZero_ReturnsFail()
         {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
             var repo = new Mock<IUserRepository>();
             repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
             repo.Setup(r => r.CreateUserAsync(It.IsAny<User>())).ReturnsAsync(0);
 
-            var result = await Build(repo, hibp).RegisterAsync(ValidUser(SafeHash));
+            var result = await Build(repo).RegisterAsync(ValidUser());
 
             Assert.False(result.Success);
             Assert.Equal("Database error.", result.Message);

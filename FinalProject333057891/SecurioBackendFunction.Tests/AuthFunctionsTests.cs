@@ -26,9 +26,6 @@ namespace SecurioBackendFunction.Tests
             Environment.SetEnvironmentVariable("JwtSecret", "test-jwt-secret-32-bytes-minimum!!");
         }
 
-        private const string SafeHash  = "AABBCCDDEEFF00112233445566778899AABBCCDD";
-        private const string PwnedHash = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709";
-
         private static HttpRequest BuildRequest(string? authHeader, object? body)
         {
             var mock    = new Mock<HttpRequest>();
@@ -45,20 +42,18 @@ namespace SecurioBackendFunction.Tests
 
         private static HttpRequest BuildRequest(object? body) => BuildRequest(null, body);
 
-        private static AuthFunctions BuildFunctions(Mock<IUserRepository> repo, Mock<IHibpService>? hibp = null)
+        private static AuthFunctions BuildFunctions(Mock<IUserRepository> repo)
         {
-            hibp ??= new Mock<IHibpService>();
-            return new AuthFunctions(new AuthManager(repo.Object, hibp.Object));
+            return new AuthFunctions(new AuthManager(repo.Object));
         }
 
-        private static User ValidRegistrationUser(string? sha1Hash = null) => new User
+        private static User ValidRegistrationUser() => new User
         {
             Username          = "alice",
             Email             = "alice@example.com",
             MasterPasswordKey = "derivedkey==",
             AuthSalt          = "authsalt==",
-            EncryptionSalt    = "encsalt==",
-            PasswordSha1Hash  = sha1Hash
+            EncryptionSalt    = "encsalt=="
         };
 
         private static User StoredUser() => new User
@@ -76,13 +71,11 @@ namespace SecurioBackendFunction.Tests
         [Fact]
         public async Task Register_ValidUser_Returns200()
         {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
             var repo = new Mock<IUserRepository>();
             repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
             repo.Setup(r => r.CreateUserAsync(It.IsAny<User>())).ReturnsAsync(1);
 
-            var result = await BuildFunctions(repo, hibp).Register(BuildRequest(ValidRegistrationUser(SafeHash)));
+            var result = await BuildFunctions(repo).Register(BuildRequest(ValidRegistrationUser()));
 
             Assert.IsType<OkObjectResult>(result);
         }
@@ -90,13 +83,11 @@ namespace SecurioBackendFunction.Tests
         [Fact]
         public async Task Register_ValidUser_ResponseContainsToken()
         {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
             var repo = new Mock<IUserRepository>();
             repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
             repo.Setup(r => r.CreateUserAsync(It.IsAny<User>())).ReturnsAsync(1);
 
-            var result   = await BuildFunctions(repo, hibp).Register(BuildRequest(ValidRegistrationUser(SafeHash)));
+            var result   = await BuildFunctions(repo).Register(BuildRequest(ValidRegistrationUser()));
             var ok       = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<ServerResponse<AuthData>>(ok.Value);
 
@@ -108,13 +99,11 @@ namespace SecurioBackendFunction.Tests
         public async Task Register_ValidUser_ResponseContainsAssignedId()
         {
             const int assignedId = 42;
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
             var repo = new Mock<IUserRepository>();
             repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(false);
             repo.Setup(r => r.CreateUserAsync(It.IsAny<User>())).ReturnsAsync(assignedId);
 
-            var result   = await BuildFunctions(repo, hibp).Register(BuildRequest(ValidRegistrationUser(SafeHash)));
+            var result   = await BuildFunctions(repo).Register(BuildRequest(ValidRegistrationUser()));
             var ok       = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<ServerResponse<AuthData>>(ok.Value);
 
@@ -122,41 +111,12 @@ namespace SecurioBackendFunction.Tests
         }
 
         [Fact]
-        public async Task Register_PwnedPassword_Returns409()
-        {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(PwnedHash)).ReturnsAsync(true);
-
-            var result = await BuildFunctions(new Mock<IUserRepository>(), hibp)
-                .Register(BuildRequest(ValidRegistrationUser(PwnedHash)));
-
-            Assert.IsType<ConflictObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task Register_PwnedPassword_ResponseContainsBreachMessage()
-        {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(PwnedHash)).ReturnsAsync(true);
-
-            var result   = await BuildFunctions(new Mock<IUserRepository>(), hibp)
-                .Register(BuildRequest(ValidRegistrationUser(PwnedHash)));
-            var conflict = Assert.IsType<ConflictObjectResult>(result);
-            var response = Assert.IsType<ServerResponse<AuthData>>(conflict.Value);
-
-            Assert.False(response.Success);
-            Assert.Contains("data breach", response.Message);
-        }
-
-        [Fact]
         public async Task Register_DuplicateEmail_Returns409()
         {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
             var repo = new Mock<IUserRepository>();
             repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(true);
 
-            var result = await BuildFunctions(repo, hibp).Register(BuildRequest(ValidRegistrationUser(SafeHash)));
+            var result = await BuildFunctions(repo).Register(BuildRequest(ValidRegistrationUser()));
 
             Assert.IsType<ConflictObjectResult>(result);
         }
@@ -164,12 +124,10 @@ namespace SecurioBackendFunction.Tests
         [Fact]
         public async Task Register_DuplicateEmail_ResponseContainsEmailMessage()
         {
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(SafeHash)).ReturnsAsync(false);
             var repo = new Mock<IUserRepository>();
             repo.Setup(r => r.EmailExistsAsync(It.IsAny<string>())).ReturnsAsync(true);
 
-            var result   = await BuildFunctions(repo, hibp).Register(BuildRequest(ValidRegistrationUser(SafeHash)));
+            var result   = await BuildFunctions(repo).Register(BuildRequest(ValidRegistrationUser()));
             var conflict = Assert.IsType<ConflictObjectResult>(result);
             var response = Assert.IsType<ServerResponse<AuthData>>(conflict.Value);
 

@@ -1,5 +1,4 @@
-﻿using SecurioBackendFunction.Helpers;
-using SecurioBackendFunction.Repositories;
+﻿using SecurioBackendFunction.Repositories;
 using SecurioModels;
 using SecurioModels.DataTransferObjects;
 using System;
@@ -14,14 +13,12 @@ namespace SecurioBackendFunction.Logic
     {
         private readonly IUserRepository _repo;
         private readonly IVaultItemRepository _vaultRepo;
-        private readonly IHibpService _hibp;
 
         /// <summary>Initializes a new instance of UserManager.</summary>
-        public UserManager(IUserRepository repo, IVaultItemRepository vaultRepo, IHibpService hibp)
+        public UserManager(IUserRepository repo, IVaultItemRepository vaultRepo)
         {
             _repo = repo;
             _vaultRepo = vaultRepo;
-            _hibp = hibp;
         }
 
         /// <summary>Fetches the profile and wraps it in a standard response for the API.</summary>
@@ -66,18 +63,6 @@ namespace SecurioBackendFunction.Logic
 
                 if (string.IsNullOrWhiteSpace(updated.EncryptionSalt))
                     return new ServerResponse<object> { Success = false, Message = "EncryptionSalt is required when changing password." };
-
-                // HIBP breach check — same pattern as registration.
-                if (!string.IsNullOrWhiteSpace(updated.PasswordSha1Hash))
-                {
-                    bool isPwned = await _hibp.IsPasswordPwnedAsync(updated.PasswordSha1Hash);
-                    if (isPwned)
-                        return new ServerResponse<object>
-                        {
-                            Success = false,
-                            Message = "Password has been found in a data breach. Please choose a different password."
-                        };
-                }
 
                 // Fetch the current user record so we can archive the old password key before overwriting it.
                 oldUser = await _repo.GetUserByIdAsync(userId);

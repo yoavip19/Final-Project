@@ -13,9 +13,6 @@ namespace SecurioModels.DataTransferObjects
         public string MasterPasswordKey { get; set; }
         public string AuthSalt { get; set; }
         public string EncryptionSalt { get; set; }
-        // SHA-1 hash of the plaintext new password, used for the HIBP breach check.
-        // Never stored; discarded by the server after the check.
-        public string PasswordSha1Hash { get; set; }
 
         // Re-encrypted vault items — sent when the master password changes
         // so the server can bulk-update them in one transaction.

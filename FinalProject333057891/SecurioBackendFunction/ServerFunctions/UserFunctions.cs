@@ -104,8 +104,7 @@ namespace SecurioBackendFunction.ServerFunctions
                     Email = request.Email,
                     MasterPasswordKey = request.MasterPasswordKey,
                     AuthSalt = request.AuthSalt,
-                    EncryptionSalt = request.EncryptionSalt,
-                    PasswordSha1Hash = request.PasswordSha1Hash
+                    EncryptionSalt = request.EncryptionSalt
                 };
 
                 var result = await _userManager.UpdateUserAsync(userId, updatedUser, request.PasswordChanged, request.VaultItems);

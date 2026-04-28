@@ -1,6 +1,5 @@
 using Moq;
 using Xunit;
-using SecurioBackendFunction.Helpers;
 using SecurioBackendFunction.Logic;
 using SecurioBackendFunction.Repositories;
 using SecurioModels.DataTransferObjects;
@@ -9,8 +8,8 @@ using System.Collections.Generic;
 namespace SecurioBackendFunction.Tests
 {
     // Comprehensive unit tests for VaultItemManager.
-    // Covers Add, Update, Get, and Delete operations including HIBP IsLeaked integration.
-    // All repository and HIBP dependencies are mocked.
+    // Covers Add, Update, Get, and Delete operations including the client-provided IsLeaked flag.
+    // All repository dependencies are mocked.
     // To run: dotnet test SecurioBackendFunction.Tests/SecurioBackendFunction.Tests.csproj
     public class VaultItemManagerTests
     {
@@ -27,11 +26,10 @@ namespace SecurioBackendFunction.Tests
         };
 
         private static VaultItemManager Build(
-            Mock<IVaultItemRepository>? repo = null,
-            Mock<IHibpService>? hibp = null)
+            Mock<IVaultItemRepository>? repo = null)
         {
             repo ??= new Mock<IVaultItemRepository>();
-            return new VaultItemManager(repo.Object, hibp?.Object);
+            return new VaultItemManager(repo.Object);
         }
 
         // ── AddVaultItemAsync: happy path ────────────────────────────────────────
@@ -180,51 +178,33 @@ namespace SecurioBackendFunction.Tests
             Assert.Equal("Database error.", result.Message);
         }
 
-        // ── AddVaultItemAsync: HIBP IsLeaked integration ─────────────────────────
+        // ── AddVaultItemAsync: IsLeaked flag trust ───────────────────────────────
 
         [Fact]
-        public async Task Add_HibpPwnedPassword_SetsIsLeakedTrue()
+        public async Task Add_IsLeakedTrueFromClient_PreservedOnAdd()
         {
+            // The server trusts the IsLeaked flag set by the client (HIBP is checked client-side).
             var repo = new Mock<IVaultItemRepository>();
             repo.Setup(r => r.AddVaultItemAsync(It.IsAny<VaultItem>())).ReturnsAsync(1);
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(It.IsAny<string>())).ReturnsAsync(true);
 
-            var result = await Build(repo, hibp).AddVaultItemAsync(ValidItem());
+            var item = ValidItem();
+            item.IsLeaked = true;
+
+            var result = await Build(repo).AddVaultItemAsync(item);
 
             Assert.True(result.Data!.IsLeaked);
         }
 
         [Fact]
-        public async Task Add_HibpSafePassword_LeavesIsLeakedFalse()
+        public async Task Add_IsLeakedFalseFromClient_PreservedOnAdd()
         {
-            var repo = new Mock<IVaultItemRepository>();
-            repo.Setup(r => r.AddVaultItemAsync(It.IsAny<VaultItem>())).ReturnsAsync(1);
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(It.IsAny<string>())).ReturnsAsync(false);
-
-            var item = ValidItem();
-            item.IsLeaked = false;
-
-            var result = await Build(repo, hibp).AddVaultItemAsync(item);
-
-            Assert.False(result.Data!.IsLeaked);
-        }
-
-        [Fact]
-        public async Task Add_NoHibpService_IsLeakedUnchanged()
-        {
-            // When no HIBP service is injected, the server-side check is skipped
-            // and the item is stored with whatever IsLeaked value the client sent.
             var repo = new Mock<IVaultItemRepository>();
             repo.Setup(r => r.AddVaultItemAsync(It.IsAny<VaultItem>())).ReturnsAsync(1);
 
             var item = ValidItem();
             item.IsLeaked = false;
 
-            // Build with no HIBP service (null)
-            var manager = new VaultItemManager(repo.Object);
-            var result  = await manager.AddVaultItemAsync(item);
+            var result = await Build(repo).AddVaultItemAsync(item);
 
             Assert.False(result.Data!.IsLeaked);
         }
@@ -287,37 +267,22 @@ namespace SecurioBackendFunction.Tests
             Assert.Equal(default, result.Data!.LastUpdate);
         }
 
-        // ── UpdateVaultItemAsync: HIBP check ─────────────────────────────────────
+        // ── UpdateVaultItemAsync: IsLeaked flag trust ────────────────────────────
 
         [Fact]
-        public async Task Update_PasswordChangedAndPwned_SetsIsLeakedTrue()
+        public async Task Update_IsLeakedTrueFromClient_PreservedOnUpdate()
         {
+            // The server trusts the IsLeaked flag set by the client — same as on Add.
             var repo = new Mock<IVaultItemRepository>();
             repo.Setup(r => r.UpdateVaultItemAsync(It.IsAny<VaultItem>())).ReturnsAsync(true);
-            var hibp = new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(It.IsAny<string>())).ReturnsAsync(true);
 
             var item = ValidItem();
-            item.Id             = 1;
+            item.Id              = 1;
             item.PasswordChanged = true;
-            var result = await Build(repo, hibp).UpdateVaultItemAsync(item);
+            item.IsLeaked        = true;
+            var result = await Build(repo).UpdateVaultItemAsync(item);
 
             Assert.True(result.Data!.IsLeaked);
-        }
-
-        [Fact]
-        public async Task Update_PasswordNotChanged_HibpNotCalled()
-        {
-            var repo = new Mock<IVaultItemRepository>();
-            repo.Setup(r => r.UpdateVaultItemAsync(It.IsAny<VaultItem>())).ReturnsAsync(true);
-            var hibp = new Mock<IHibpService>();
-
-            var item = ValidItem();
-            item.Id             = 1;
-            item.PasswordChanged = false;
-            await Build(repo, hibp).UpdateVaultItemAsync(item);
-
-            hibp.Verify(h => h.IsPasswordPwnedAsync(It.IsAny<string>()), Times.Never);
         }
 
         // ── UpdateVaultItemAsync: validation failures ────────────────────────────

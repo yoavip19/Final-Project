@@ -140,10 +140,17 @@ namespace SecurioClient.Activities
 
             try
             {
-                // Compute SHA-1 of the plaintext password BEFORE key derivation.
-                // This hash is only used for the HIBP breach check on the server
-                // and is never persisted to the database.
+                // Compute SHA-1 of the plaintext password for the client-side HIBP breach check.
                 string passwordSha1Hash = EncryptionHelper.ComputeSha1Hash(password);
+
+                // Check HIBP before sending anything to the server — fail fast if the password is known to be breached.
+                bool isPwned = await HibpClientService.IsPasswordPwnedAsync(passwordSha1Hash);
+                if (isPwned)
+                {
+                    FormUiHelper.ShowError(textViewPasswordError,
+                        "This password has appeared in a known data breach. Please choose a different password.");
+                    return;
+                }
 
                 string authSalt       = EncryptionHelper.GenerateSalt();
                 string encryptionSalt = EncryptionHelper.GenerateSalt();
@@ -155,8 +162,7 @@ namespace SecurioClient.Activities
                     Email             = email,
                     MasterPasswordKey = masterPasswordKey,
                     AuthSalt          = authSalt,
-                    EncryptionSalt    = encryptionSalt,
-                    PasswordSha1Hash  = passwordSha1Hash
+                    EncryptionSalt    = encryptionSalt
                 };
 
                 var authService = new AuthService();
