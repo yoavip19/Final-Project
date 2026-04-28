@@ -75,7 +75,6 @@ namespace SecurioClient.Activities
             else
             {
                 // Permission is already granted (or not needed on this API level).
-                // Start the monitor now so it is ready before we navigate to the vault.
                 if (_pendingVaultNavigation)
                     StartPasswordMonitor(this);
 
@@ -96,15 +95,12 @@ namespace SecurioClient.Activities
                 System.Diagnostics.Debug.WriteLine(
                     $"[NOTIFICATIONS] POST_NOTIFICATIONS permission {(granted ? "granted" : "denied")}.");
 
-                if (granted && _pendingVaultNavigation)
-                {
+                // Start the monitor regardless of the permission result.
+                // The service checks AreNotificationsEnabled on every cycle and skips
+                // the server call when notifications are off, so it is safe to keep
+                // it running even if the user denied permission for now.
+                if (_pendingVaultNavigation)
                     StartPasswordMonitor(this);
-                }
-                else if (!granted)
-                {
-                    // User denied notifications — stop the monitor so no server calls are made.
-                    StopService(new Android.Content.Intent(this, typeof(PasswordMonitorService)));
-                }
 
                 NavigateToDest();
             }
