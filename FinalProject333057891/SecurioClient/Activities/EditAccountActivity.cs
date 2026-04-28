@@ -210,7 +210,7 @@ namespace SecurioClient.Activities
 
                     if (!saltResult.Success)
                     {
-                        ShowGeneralError(GetString(Resource.String.edit_account_verify_password_failed));
+                        FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.edit_account_verify_password_failed));
                         return;
                     }
 
@@ -318,7 +318,7 @@ namespace SecurioClient.Activities
                     }
                     else
                     {
-                        ShowGeneralError(result.Message);
+                        FormUiHelper.ShowError(textViewGeneralError, result.Message);
                     }
                 }
                 else
@@ -337,13 +337,13 @@ namespace SecurioClient.Activities
                     }
                     else
                     {
-                        ShowGeneralError(result.Message);
+                        FormUiHelper.ShowError(textViewGeneralError, result.Message);
                     }
                 }
             }
             catch (Exception ex)
             {
-                ShowGeneralError(GetString(Resource.String.edit_account_error));
+                FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.edit_account_error));
                 System.Diagnostics.Debug.WriteLine($"[EDIT ACCOUNT ERROR] {ex.Message}");
             }
             finally
@@ -384,13 +384,6 @@ namespace SecurioClient.Activities
         }
 
         // ── UI helpers delegating to the shared FormUiHelper (DRY) ──
-
-        /// <summary>Displays the general error message banner.</summary>
-        private void ShowGeneralError(string message)
-        {
-            textViewGeneralError.Text = message;
-            textViewGeneralError.Visibility = ViewStates.Visible;
-        }
 
         /// <summary>Hides all field-level and general error messages.</summary>
         private void ClearErrors()

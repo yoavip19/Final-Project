@@ -171,12 +171,12 @@ namespace SecurioClient.Activities
                 }
                 else
                 {
-                    ShowGeneralError(result.Message);
+                    FormUiHelper.ShowError(textViewGeneralError, result.Message);
                 }
             }
             catch (Exception ex)
             {
-                ShowGeneralError(GetString(Resource.String.signup_error_create_failed));
+                FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.signup_error_create_failed));
                 System.Diagnostics.Debug.WriteLine($"[SIGNUP ERROR] {ex.Message}");
             }
             finally
@@ -203,13 +203,6 @@ namespace SecurioClient.Activities
             if (!confirmResult.IsValid) { FormUiHelper.ShowError(textViewConfirmPasswordError, confirmResult.ErrorMessage); isValid = false; }
 
             return isValid;
-        }
-
-        /// <summary>Displays the general error message banner.</summary>
-        private void ShowGeneralError(string message)
-        {
-            textViewGeneralError.Text = message;
-            textViewGeneralError.Visibility = ViewStates.Visible;
         }
 
         /// <summary>Hides all field-level and general error messages.</summary>
