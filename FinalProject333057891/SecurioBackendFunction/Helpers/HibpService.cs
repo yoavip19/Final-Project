@@ -43,9 +43,14 @@ namespace SecurioBackendFunction.Helpers
 
                 return false;
             }
+            catch (OperationCanceledException)
+            {
+                // Timeout expired — fail open so a slow API never stalls a background check.
+                return false;
+            }
             catch
             {
-                // Fail open: a network error must never block a legitimate user.
+                // Network or API error — fail open.
                 return false;
             }
         }
