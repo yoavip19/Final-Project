@@ -252,10 +252,9 @@ namespace SecurioClient.Activities
                     FormUiHelper.ShowError(textViewGeneralError, result.Message);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.entry_error_save_failed));
-                System.Diagnostics.Debug.WriteLine($"[ADD PASSWORD ERROR] {ex.Message}");
             }
             finally
             {

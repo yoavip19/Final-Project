@@ -341,10 +341,9 @@ namespace SecurioClient.Activities
                     FormUiHelper.ShowError(textViewGeneralError, result.Message);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.entry_error_update_failed));
-                System.Diagnostics.Debug.WriteLine($"[EDIT PASSWORD ERROR] {ex.Message}");
             }
             finally
             {

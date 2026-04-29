@@ -151,10 +151,8 @@ namespace SecurioClient.Activities
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine($"[PROFILE LOAD ERROR] {ex.Message}");
-
                 // Fall back to cached profile data
                 var diskCached = await StorageHelper.GetCachedProfileAsync();
                 if (diskCached != null)
@@ -259,9 +257,8 @@ namespace SecurioClient.Activities
                     Toast.MakeText(this, Resource.String.profile_delete_error, ToastLength.Long).Show();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine($"[PROFILE DELETE ERROR] {ex.Message}");
                 Toast.MakeText(this, Resource.String.profile_delete_error, ToastLength.Long).Show();
             }
             finally
