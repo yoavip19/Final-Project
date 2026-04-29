@@ -7,20 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-/*
- * SQL migration — run once against the target database to create the history table:
- *
- * CREATE TABLE MasterPasswordHistory (
- *     Id         INT           IDENTITY(1,1) PRIMARY KEY,
- *     UserId     INT           NOT NULL,
- *     PasswordKey NVARCHAR(MAX) NOT NULL,
- *     AuthSalt   NVARCHAR(MAX) NOT NULL,
- *     CreatedAt  DATETIME      NOT NULL,
- *     CONSTRAINT FK_MasterPasswordHistory_Users
- *         FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
- * );
- */
-
 namespace SecurioBackendFunction.Repositories
 {
     /// <summary>Manages all direct SQL database interactions for user-related data.</summary>
