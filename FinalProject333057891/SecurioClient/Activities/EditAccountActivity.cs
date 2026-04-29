@@ -249,6 +249,16 @@ namespace SecurioClient.Activities
                         }
                     }
 
+                    // HIBP breach check — done entirely on the client; the SHA-1 hash never reaches the server.
+                    bool isPwned = await HibpClientService.IsPasswordPwnedAsync(
+                        EncryptionHelper.ComputeSha1Hash(newPassword));
+                    if (isPwned)
+                    {
+                        FormUiHelper.ShowError(textViewNewPasswordError,
+                            "This password has appeared in a known data breach. Please choose a different password.");
+                        return;
+                    }
+
                     // Generate new salts and derive new keys.
                     string newAuthSalt       = EncryptionHelper.GenerateSalt();
                     string newEncryptionSalt = EncryptionHelper.GenerateSalt();
@@ -258,9 +268,6 @@ namespace SecurioClient.Activities
                     request.MasterPasswordKey = newMasterPasswordKey;
                     request.AuthSalt          = newAuthSalt;
                     request.EncryptionSalt    = newEncryptionSalt;
-                    // Compute SHA-1 of the plaintext new password for the HIBP breach check.
-                    // Same pattern as signup — never stored, discarded after server validation.
-                    request.PasswordSha1Hash  = EncryptionHelper.ComputeSha1Hash(newPassword);
 
                     // Re-encrypt all vault items with the new key.
                     string oldVaultKey = SessionHelper.SessionVaultKey;

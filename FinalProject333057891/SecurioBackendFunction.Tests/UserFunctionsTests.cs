@@ -48,15 +48,11 @@ namespace SecurioBackendFunction.Tests
 
         private static UserFunctions BuildFunctions(
             Mock<IUserRepository> userRepo,
-            Mock<IVaultItemRepository>? vaultRepo = null,
-            Mock<IHibpService>? hibp = null)
+            Mock<IVaultItemRepository>? vaultRepo = null)
         {
-            hibp ??= new Mock<IHibpService>();
-            hibp.Setup(h => h.IsPasswordPwnedAsync(It.IsAny<string>())).ReturnsAsync(false);
             return new UserFunctions(new UserManager(
                 userRepo.Object,
-                (vaultRepo ?? new Mock<IVaultItemRepository>()).Object,
-                hibp.Object));
+                (vaultRepo ?? new Mock<IVaultItemRepository>()).Object));
         }
 
         // ── GetProfile: authorization ─────────────────────────────────────────────

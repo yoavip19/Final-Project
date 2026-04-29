@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Newtonsoft.Json;
+using SecurioBackendFunction.Helpers;
 using SecurioBackendFunction.Logic;
 using SecurioBackendFunction.Repositories;
 using SecurioBackendFunction.ServerFunctions;
@@ -36,7 +37,11 @@ namespace SecurioBackendFunction.Tests
         {
             userRepo ??= new Mock<IUserRepository>();
             vault    ??= new Mock<IVaultItemRepository>();
-            return new PasswordCheckFunctions(new PasswordCheckManager(userRepo.Object, vault.Object));
+            vault.Setup(v => v.UpdateIsLeakedAsync(It.IsAny<int>(), It.IsAny<bool>()))
+                 .Returns(Task.CompletedTask);
+            var hibp = new Mock<IHibpService>();
+            hibp.Setup(h => h.IsPasswordPwnedAsync(It.IsAny<string>())).ReturnsAsync(false);
+            return new PasswordCheckFunctions(new PasswordCheckManager(userRepo.Object, vault.Object, hibp.Object));
         }
 
         private static User FreshUser() => new User

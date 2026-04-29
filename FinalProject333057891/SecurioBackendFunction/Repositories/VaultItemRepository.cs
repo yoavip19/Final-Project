@@ -148,5 +148,16 @@ namespace SecurioBackendFunction.Repositories
                 return false;
             }
         }
+        /// <summary>Updates the IsLeaked flag for a single vault item by its ID.</summary>
+        public async Task UpdateIsLeakedAsync(int itemId, bool isLeaked)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = "UPDATE VaultItems SET IsLeaked = @leaked WHERE Id = @id";
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.Add("@id",     SqlDbType.Int).Value = itemId;
+            cmd.Parameters.Add("@leaked", SqlDbType.Bit).Value = isLeaked;
+            await cmd.ExecuteNonQueryAsync();
+        }
     }
 }

@@ -23,12 +23,11 @@ namespace SecurioClient
                 return;
             }
 
-            var service = new PasswordCheckService();
-            var (success, message, data) = await service.CheckAsync(userId);
+            var data = await PasswordCheckService.FetchAsync(userId);
 
-            if (!success || data == null)
+            if (data == null)
             {
-                Log.Warn(Tag, $"Server check failed: {message}");
+                Log.Warn(Tag, "Server check failed.");
                 return;
             }
 

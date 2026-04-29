@@ -1,29 +1,39 @@
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
 namespace SecurioBackendFunction.Helpers
 {
-    /// <summary>Checks passwords against the Have I Been Pwned Pwned Passwords API using the k-anonymity model.</summary>
+    /// <summary>
+    /// Checks passwords against the Have I Been Pwned Pwned Passwords API using k-anonymity
+    /// (only the first 5 hex characters of the SHA-1 hash are sent over the network).
+    /// </summary>
     public class HibpService : IHibpService
     {
+        private const string BaseUrl = "https://api.pwnedpasswords.com/range/";
         private readonly HttpClient _http;
-        private const string ApiBase = "https://api.pwnedpasswords.com/range/";
 
-        /// <summary>Initializes a new instance of HibpService.</summary>
+        /// <summary>Initializes a new instance of HibpService with the provided HttpClient.</summary>
         public HibpService(HttpClient http) => _http = http;
 
-        /// <summary>Returns true if the given SHA-1 hex hash appears in the HIBP dataset.</summary>
+        /// <summary>
+        /// Returns true if the given SHA-1 hash appears in the HIBP breach database.
+        /// Invalid or empty hashes always return false (fail open).
+        /// </summary>
         public async Task<bool> IsPasswordPwnedAsync(string sha1Hash)
         {
             if (string.IsNullOrWhiteSpace(sha1Hash) || sha1Hash.Length != 40)
                 return false;
 
-            string prefix = sha1Hash[..5].ToUpperInvariant();
-            string suffix = sha1Hash[5..].ToUpperInvariant();
-
             try
             {
-                string body = await _http.GetStringAsync(ApiBase + prefix);
+                string upper  = sha1Hash.ToUpperInvariant();
+                string prefix = upper[..5];
+                string suffix = upper[5..];
 
-                // Each line in the response is "SUFFIX:COUNT" (CRLF-terminated).
-                foreach (string line in body.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries))
+                string body = await _http.GetStringAsync(BaseUrl + prefix);
+
+                foreach (var line in body.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     int colon = line.IndexOf(':');
                     if (colon < 0) continue;
@@ -33,9 +43,14 @@ namespace SecurioBackendFunction.Helpers
 
                 return false;
             }
+            catch (OperationCanceledException)
+            {
+                // Timeout expired — fail open so a slow API never stalls a background check.
+                return false;
+            }
             catch
             {
-                // Fail open: if the HIBP service is unavailable, allow the operation to proceed.
+                // Network or API error — fail open.
                 return false;
             }
         }

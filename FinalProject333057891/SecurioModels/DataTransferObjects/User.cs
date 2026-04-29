@@ -17,8 +17,5 @@ namespace SecurioModels.DataTransferObjects
         public DateTime LastPasswordUpdate { get; set; }
         public DateTime CreatedAt { get; set; }
         public int PasswordCount { get; set; }
-        // SHA-1 hash of the plaintext master password, used for the HIBP breach check.
-        // Never stored in the database; consumed only during registration validation.
-        public string PasswordSha1Hash { get; set; }
     }
 }

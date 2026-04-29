@@ -1,16 +1,39 @@
-using System.Threading.Tasks;
+using Newtonsoft.Json;
+using SecurioModels;
 using SecurioModels.DataTransferObjects;
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SecurioClient.Helpers.ServerHelpers
 {
-    /// <summary>Calls the PasswordCheck endpoint used by the background worker to poll for password-health issues.</summary>
-    public class PasswordCheckService : BaseService
+    /// <summary>Contacts the backend PasswordCheck endpoint on behalf of the background monitor service using only the stored UserId.</summary>
+    public static class PasswordCheckService
     {
-        /// <summary>Sends the user's ID to the server and receives breach/old/master-old counts.</summary>
-        public async Task<(bool Success, string Message, PasswordCheckResult Data)> CheckAsync(int userId)
+        private static readonly HttpClient _http = new HttpClient();
+        private const string Endpoint = "http://10.0.2.2:7071/api/PasswordCheck";
+
+        /// <summary>Calls POST /api/PasswordCheck with the given userId; returns null on failure.</summary>
+        public static async Task<PasswordCheckResult?> FetchAsync(int userId)
         {
-            var result = await PostAsync<PasswordCheckResult>("PasswordCheck", new { UserId = userId });
-            return (result.Success, result.Message, result.Data);
+            try
+            {
+                var payload = JsonConvert.SerializeObject(new PasswordCheckRequest { UserId = userId });
+                using var content  = new StringContent(payload, Encoding.UTF8, "application/json");
+                using var response = await _http.PostAsync(Endpoint, content);
+
+                if (!response.IsSuccessStatusCode) return null;
+
+                var json   = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<ServerResponse<PasswordCheckResult>>(json);
+                return result?.Success == true ? result.Data : null;
+            }
+            catch
+            {
+                // Fail open: a connectivity issue must not produce false positives.
+                return null;
+            }
         }
     }
 }

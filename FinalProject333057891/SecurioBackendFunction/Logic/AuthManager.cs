@@ -14,29 +14,16 @@ namespace SecurioBackendFunction.Logic
     public class AuthManager
     {
         private readonly IUserRepository _repo;
-        private readonly IHibpService _hibp;
 
         /// <summary>Initializes a new instance of AuthManager.</summary>
-        public AuthManager(IUserRepository repo, IHibpService hibp)
+        public AuthManager(IUserRepository repo)
         {
             _repo = repo;
-            _hibp = hibp;
         }
 
         /// <summary>Registers user and generates a token immediately for a seamless UI transition.</summary>
         public async Task<ServerResponse<AuthData>> RegisterAsync(User user)
         {
-            if (!string.IsNullOrWhiteSpace(user.PasswordSha1Hash))
-            {
-                bool isPwned = await _hibp.IsPasswordPwnedAsync(user.PasswordSha1Hash);
-                if (isPwned)
-                    return new ServerResponse<AuthData>
-                    {
-                        Success = false,
-                        Message = "Password has been found in a data breach. Please choose a different password."
-                    };
-            }
-
             if (await _repo.EmailExistsAsync(user.Email))
                 return new ServerResponse<AuthData> { Success = false, Message = "Email already registered." };
 

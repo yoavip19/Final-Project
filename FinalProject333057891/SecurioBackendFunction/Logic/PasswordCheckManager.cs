@@ -16,12 +16,14 @@ namespace SecurioBackendFunction.Logic
 
         private readonly IUserRepository _userRepo;
         private readonly IVaultItemRepository _vaultRepo;
+        private readonly IHibpService _hibp;
 
-        /// <summary>Initializes the manager with the required repository dependencies.</summary>
-        public PasswordCheckManager(IUserRepository userRepo, IVaultItemRepository vaultRepo)
+        /// <summary>Initializes the manager with repository and HIBP dependencies.</summary>
+        public PasswordCheckManager(IUserRepository userRepo, IVaultItemRepository vaultRepo, IHibpService hibp)
         {
             _userRepo  = userRepo;
             _vaultRepo = vaultRepo;
+            _hibp      = hibp;
         }
 
         /// <summary>Returns a PasswordCheckResult for the given user, or null when the user is not found.</summary>
@@ -33,6 +35,22 @@ namespace SecurioBackendFunction.Logic
 
             // 1. Load all vault items for the user.
             var items = await _vaultRepo.GetVaultItemsByUserIdAsync(userId);
+
+            // 2. Re-check HIBP for every item that has a stored SHA-1 hash and update the DB
+            //    when the breach status has changed.  This is the sole legitimate server-side
+            //    HIBP use: the background service can detect new breaches for passwords that
+            //    were clean when originally saved, without the user having to re-edit them.
+            foreach (var item in items)
+            {
+                if (string.IsNullOrWhiteSpace(item.Sha1Hash)) continue;
+
+                bool nowLeaked = await _hibp.IsPasswordPwnedAsync(item.Sha1Hash);
+                if (nowLeaked != item.IsLeaked)
+                {
+                    item.IsLeaked = nowLeaked;
+                    await _vaultRepo.UpdateIsLeakedAsync(item.Id, nowLeaked);
+                }
+            }
 
             int breachedCount = items.Count(i => i.IsLeaked);
             int oldCount      = items.Count(i => (DateTime.UtcNow - i.LastUpdate).TotalDays > OldPasswordDays);

@@ -71,7 +71,7 @@ namespace SecurioClient
             int userId = await StorageHelper.GetUserId();
             if (userId <= 0) return;
 
-            var result = await PasswordCheckServerService.FetchAsync(userId);
+            var result = await PasswordCheckService.FetchAsync(userId);
             if (result == null) return;
 
             NotificationHelper.PostCheckResult(context, result);
