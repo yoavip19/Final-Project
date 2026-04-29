@@ -103,7 +103,6 @@ namespace SecurioClient.Activities
                 }
                 catch
                 {
-                    System.Diagnostics.Debug.WriteLine("[VIEW PASSWORD ERROR] Failed to decrypt password");
                     decryptedPassword = null;
                     Toast.MakeText(this, GetString(Resource.String.view_decrypt_error), ToastLength.Short).Show();
                 }

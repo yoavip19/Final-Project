@@ -63,11 +63,6 @@ namespace SecurioClient.Activities
                 CheckSelfPermission(Android.Manifest.Permission.PostNotifications)
                     != Android.Content.PM.Permission.Granted)
             {
-                if (ShouldShowRequestPermissionRationale(Android.Manifest.Permission.PostNotifications))
-                {
-                    System.Diagnostics.Debug.WriteLine("[NOTIFICATIONS] Showing POST_NOTIFICATIONS permission prompt after prior denial.");
-                }
-
                 RequestPermissions(
                     new[] { Android.Manifest.Permission.PostNotifications },
                     RequestCodeNotificationPermission);
@@ -90,11 +85,6 @@ namespace SecurioClient.Activities
 
             if (requestCode == RequestCodeNotificationPermission)
             {
-                bool granted = grantResults?.Length > 0 &&
-                    grantResults[0] == Android.Content.PM.Permission.Granted;
-                System.Diagnostics.Debug.WriteLine(
-                    $"[NOTIFICATIONS] POST_NOTIFICATIONS permission {(granted ? "granted" : "denied")}.");
-
                 // Start the monitor regardless of the permission result.
                 // The service checks AreNotificationsEnabled on every cycle and skips
                 // the server call when notifications are off, so it is safe to keep

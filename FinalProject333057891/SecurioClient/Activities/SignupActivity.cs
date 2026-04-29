@@ -180,10 +180,9 @@ namespace SecurioClient.Activities
                     FormUiHelper.ShowError(textViewGeneralError, result.Message);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.signup_error_create_failed));
-                System.Diagnostics.Debug.WriteLine($"[SIGNUP ERROR] {ex.Message}");
             }
             finally
             {

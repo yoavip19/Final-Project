@@ -348,10 +348,9 @@ namespace SecurioClient.Activities
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.edit_account_error));
-                System.Diagnostics.Debug.WriteLine($"[EDIT ACCOUNT ERROR] {ex.Message}");
             }
             finally
             {

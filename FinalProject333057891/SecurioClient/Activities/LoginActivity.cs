@@ -112,10 +112,9 @@ namespace SecurioClient.Activities
                     FormUiHelper.ShowError(textViewGeneralError, result.Message);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.login_error_sign_in_failed));
-                System.Diagnostics.Debug.WriteLine($"[LOGIN ERROR] {ex.Message}");
             }
             finally
             {
