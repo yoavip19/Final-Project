@@ -10,8 +10,6 @@ namespace SecurioBackendFunction.Helpers
     /// <summary>A utility for creating and validating cryptographically signed JSON Web Tokens.</summary>
     public static class JwtHelper
     {
-        private static readonly string Secret = GetSecret();
-
         /// <summary>Reads the JwtSecret environment variable and throws if it is not configured.</summary>
         private static string GetSecret()
         {
@@ -24,7 +22,7 @@ namespace SecurioBackendFunction.Helpers
         /// <summary>Creates a signed JWT string for a specific user.</summary>
         public static string GenerateJwtToken(int userId, string username)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetSecret()));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -51,7 +49,7 @@ namespace SecurioBackendFunction.Helpers
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.UTF8.GetBytes(Secret);
+                var key = Encoding.UTF8.GetBytes(GetSecret());
 
                 var validationParameters = new TokenValidationParameters
                 {
