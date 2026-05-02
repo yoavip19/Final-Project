@@ -14,6 +14,9 @@ namespace SecurioClient.Activities
         private const int RequestCodeNotificationPermission = 1001;
         private const int RequestCodeBatteryOptimization    = 1002;
 
+        private const string PrefsName         = "securio_prefs";
+        private const string KeyAutostartShown = "autostart_dialog_shown";
+
         private bool _pendingVaultNavigation = false;
 
         /// <summary>Initializes the activity, validates the stored JWT, and navigates to the appropriate screen.</summary>
@@ -120,6 +123,8 @@ namespace SecurioClient.Activities
         /// <summary>
         /// Shows a dialog guiding the user to the OEM-specific Autostart / Protected-Apps settings
         /// when the device brand is known to impose additional background restrictions.
+        /// The dialog is shown at most once: once the user taps "Open Settings" or "Skip" the
+        /// choice is persisted in SharedPreferences and the dialog is never shown again.
         /// Skips straight to navigation on stock Android devices with no known deep-link.
         /// </summary>
         private void ShowManufacturerDialogIfNeeded()
@@ -127,16 +132,29 @@ namespace SecurioClient.Activities
             var intent = PowerManagerHelper.GetManufacturerAutostartIntent();
             if (intent != null && intent.ResolveActivity(PackageManager) != null)
             {
+                if (GetSharedPreferences(PrefsName, Android.Content.FileCreationMode.Private)
+                        .GetBoolean(KeyAutostartShown, false))
+                {
+                    // User has already seen (and acted on) this dialog — don't show it again.
+                    RequestBatteryOptIfNeeded();
+                    return;
+                }
+
                 new AndroidX.AppCompat.App.AlertDialog.Builder(this)
                     .SetTitle("Allow Background Activity")
                     .SetMessage("Your device restricts background apps. To ensure Securio can monitor your passwords reliably, please enable Autostart (or Protected Apps) for Securio in your device settings.")
                     .SetPositiveButton("Open Settings", (s, e) =>
                     {
+                        MarkAutostartDialogShown();
                         try { StartActivity(intent); }
                         catch { Android.Widget.Toast.MakeText(this, "Could not open settings — please enable Autostart for Securio manually.", Android.Widget.ToastLength.Long)?.Show(); }
                         RequestBatteryOptIfNeeded();
                     })
-                    .SetNegativeButton("Skip", (s, e) => RequestBatteryOptIfNeeded())
+                    .SetNegativeButton("Skip", (s, e) =>
+                    {
+                        MarkAutostartDialogShown();
+                        RequestBatteryOptIfNeeded();
+                    })
                     .SetCancelable(false)
                     .Show();
             }
@@ -144,6 +162,15 @@ namespace SecurioClient.Activities
             {
                 RequestBatteryOptIfNeeded();
             }
+        }
+
+        /// <summary>Persists a flag so the Autostart onboarding dialog is not shown again on future launches.</summary>
+        private void MarkAutostartDialogShown()
+        {
+            GetSharedPreferences(PrefsName, Android.Content.FileCreationMode.Private)
+                .Edit()
+                .PutBoolean(KeyAutostartShown, true)
+                .Apply();
         }
 
         /// <summary>Navigates to VaultActivity if a valid session exists, otherwise to LoginActivity.</summary>
