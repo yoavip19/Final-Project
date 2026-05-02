@@ -74,7 +74,7 @@ namespace SecurioClient.Activities
                 if (_pendingVaultNavigation)
                     StartPasswordMonitor(this);
 
-                RequestBatteryOptIfNeeded();
+                ShowManufacturerDialogIfNeeded();
             }
         }
 
@@ -93,16 +93,16 @@ namespace SecurioClient.Activities
                 if (_pendingVaultNavigation)
                     StartPasswordMonitor(this);
 
-                RequestBatteryOptIfNeeded();
+                ShowManufacturerDialogIfNeeded();
             }
         }
 
-        /// <summary>Handles the result of the battery-optimisation system dialog and continues to manufacturer onboarding.</summary>
+        /// <summary>Handles the result of the battery-optimisation system dialog and navigates to the destination screen.</summary>
         protected override void OnActivityResult(int requestCode, Result resultCode, Android.Content.Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
             if (requestCode == RequestCodeBatteryOptimization)
-                ShowManufacturerDialogIfNeeded();
+                NavigateToDest();
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace SecurioClient.Activities
             if (!PowerManagerHelper.IsIgnoringBatteryOptimizations(this))
                 PowerManagerHelper.RequestIgnoreBatteryOptimizations(this, RequestCodeBatteryOptimization);
             else
-                ShowManufacturerDialogIfNeeded();
+                NavigateToDest();
         }
 
         /// <summary>
@@ -134,15 +134,15 @@ namespace SecurioClient.Activities
                     {
                         try { StartActivity(intent); }
                         catch { Android.Widget.Toast.MakeText(this, "Could not open settings — please enable Autostart for Securio manually.", Android.Widget.ToastLength.Long)?.Show(); }
-                        NavigateToDest();
+                        RequestBatteryOptIfNeeded();
                     })
-                    .SetNegativeButton("Skip", (s, e) => NavigateToDest())
+                    .SetNegativeButton("Skip", (s, e) => RequestBatteryOptIfNeeded())
                     .SetCancelable(false)
                     .Show();
             }
             else
             {
-                NavigateToDest();
+                RequestBatteryOptIfNeeded();
             }
         }
 
