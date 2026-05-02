@@ -16,7 +16,7 @@ namespace SecurioClient.Helpers
         protected static readonly HttpClient Client = new HttpClient();
 
         /// Update this to your local or Azure URL
-        protected const string BaseUrl = "https://securio-backend.azurewebsites.net/api/";
+        protected const string BaseUrl = "https://ironi-alef-cs-security-hkeacye5c5cchgg4.israelcentral-01.azurewebsites.net/api/";
 
         /// <summary>Initializes a new instance of BaseService.</summary>
         public BaseService()
