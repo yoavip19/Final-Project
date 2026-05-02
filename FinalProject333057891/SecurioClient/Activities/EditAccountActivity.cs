@@ -201,6 +201,16 @@ namespace SecurioClient.Activities
 
                 if (isChangingPassword)
                 {
+                    // HIBP breach check — done entirely on the client; the SHA-1 hash never reaches the server.
+                    bool isPwned = await HibpClientService.IsPasswordPwnedAsync(
+                        EncryptionHelper.ComputeSha1Hash(newPassword));
+                    if (isPwned)
+                    {
+                        FormUiHelper.ShowError(textViewNewPasswordError,
+                            "This password has appeared in a known data breach. Please choose a different password.");
+                        return;
+                    }
+
                     // Verify the current password by deriving the auth key and comparing locally.
                     // We fetch the user's salts from the server to derive the current key.
                     var saltResult = await new BaseServiceProxy().GetSaltsAsync(email);
@@ -256,16 +266,6 @@ namespace SecurioClient.Activities
                             FormUiHelper.ShowError(textViewNewPasswordError, GetString(Resource.String.edit_account_password_reused));
                             return;
                         }
-                    }
-
-                    // HIBP breach check — done entirely on the client; the SHA-1 hash never reaches the server.
-                    bool isPwned = await HibpClientService.IsPasswordPwnedAsync(
-                        EncryptionHelper.ComputeSha1Hash(newPassword));
-                    if (isPwned)
-                    {
-                        FormUiHelper.ShowError(textViewNewPasswordError,
-                            "This password has appeared in a known data breach. Please choose a different password.");
-                        return;
                     }
 
                     // Generate new salts and derive new keys.
