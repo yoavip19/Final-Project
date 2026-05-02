@@ -16,32 +16,29 @@ namespace SecurioBackendFunction.Repositories
         /// <summary>Initializes a new instance of UserRepository.</summary>
         public UserRepository(string connectionString) => _connectionString = connectionString;
 
-        /// <summary>Checks the database to see if a specific email address is already in use.</summary>
-        public async Task<bool> EmailExistsAsync(string email)
+        /// <summary>
+        /// Atomically inserts a new user record and returns the newly generated ID.
+        /// Uses INSERT...WHERE NOT EXISTS so the email uniqueness check and the write are a single
+        /// indivisible operation — no separate SELECT needed, no TOCTOU window.
+        /// Returns 0 if the email is already registered.
+        /// </summary>
+        public async Task<int> RegisterIfEmailFreeAsync(User user)
         {
             using var conn = new SqlConnection(_connectionString);
             await conn.OpenAsync();
-            var sql = "SELECT COUNT(1) FROM Users WHERE Email = @email";
+            var sql = @"INSERT INTO Users (Username, Email, MasterPasswordKey, AuthSalt, EncryptionSalt,
+                                           LastLogin, LastPasswordUpdate, CreatedAt)
+                        OUTPUT INSERTED.Id
+                        SELECT @name, @email, @key, @asalt, @esalt, GETDATE(), GETDATE(), GETDATE()
+                        WHERE NOT EXISTS (SELECT 1 FROM Users WHERE Email = @email)";
             using var cmd = new SqlCommand(sql, conn);
-            cmd.Parameters.Add("@email", SqlDbType.NVarChar).Value = email;
-            return (int)await cmd.ExecuteScalarAsync() > 0;
-        }
-
-        /// <summary>Inserts a new user record and returns the newly generated ID.</summary>
-        public async Task<int> CreateUserAsync(User user)
-        {
-            using var conn = new SqlConnection(_connectionString);
-            await conn.OpenAsync();
-            var sql = @"INSERT INTO Users (Username, Email, MasterPasswordKey, AuthSalt, EncryptionSalt, LastLogin, LastPasswordUpdate, CreatedAt) 
-                    OUTPUT INSERTED.Id
-                    VALUES (@name, @email, @key, @asalt, @esalt, GETDATE(), GETDATE(), GETDATE())";
-            using var cmd = new SqlCommand(sql, conn);
-            cmd.Parameters.Add("@name", SqlDbType.NVarChar).Value = user.Username;
+            cmd.Parameters.Add("@name",  SqlDbType.NVarChar).Value = user.Username;
             cmd.Parameters.Add("@email", SqlDbType.NVarChar).Value = user.Email;
-            cmd.Parameters.Add("@key", SqlDbType.NVarChar).Value = user.MasterPasswordKey;
+            cmd.Parameters.Add("@key",   SqlDbType.NVarChar).Value = user.MasterPasswordKey;
             cmd.Parameters.Add("@asalt", SqlDbType.NVarChar).Value = user.AuthSalt;
             cmd.Parameters.Add("@esalt", SqlDbType.NVarChar).Value = user.EncryptionSalt;
-            return (int)await cmd.ExecuteScalarAsync();
+            var result = await cmd.ExecuteScalarAsync();
+            return result != null ? (int)result : 0;
         }
 
         /// <summary>Retrieves a user record by email for authentication purposes.</summary>
@@ -103,17 +100,6 @@ namespace SecurioBackendFunction.Repositories
             }
             return null;
         }
-        /// <summary>Updates the LastLogin timestamp for the given user to the current UTC time.</summary>
-        public async Task UpdateLastLoginAsync(int userId)
-        {
-            using var conn = new SqlConnection(_connectionString);
-            await conn.OpenAsync();
-            var sql = "UPDATE Users SET LastLogin = GETDATE() WHERE Id = @uid";
-            using var cmd = new SqlCommand(sql, conn);
-            cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
-            await cmd.ExecuteNonQueryAsync();
-        }
-
         /// <summary>Checks whether the email is already used by a different user.</summary>
         public async Task<bool> EmailExistsForOtherUserAsync(string email, int excludeUserId)
         {
@@ -124,6 +110,43 @@ namespace SecurioBackendFunction.Repositories
             cmd.Parameters.Add("@email", SqlDbType.NVarChar).Value = email;
             cmd.Parameters.Add("@uid", SqlDbType.Int).Value = excludeUserId;
             return (int)await cmd.ExecuteScalarAsync() > 0;
+        }
+
+        /// <summary>
+        /// Atomically verifies login credentials and stamps LastLogin in a single SQL statement.
+        /// The UPDATE runs only when both email AND MasterPasswordKey match; OUTPUT returns the full
+        /// user record so no second round-trip is needed. Returns null if not found or key is wrong.
+        /// </summary>
+        public async Task<User> VerifyLoginAndUpdateLastLoginAsync(string email, string key)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var sql = @"UPDATE Users
+                        SET LastLogin = GETDATE()
+                        OUTPUT INSERTED.Id, INSERTED.Username, INSERTED.Email,
+                               INSERTED.MasterPasswordKey, INSERTED.AuthSalt, INSERTED.EncryptionSalt,
+                               INSERTED.LastLogin, INSERTED.LastPasswordUpdate, INSERTED.CreatedAt
+                        WHERE Email = @email AND MasterPasswordKey = @key";
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.Add("@email", SqlDbType.NVarChar).Value = email;
+            cmd.Parameters.Add("@key",   SqlDbType.NVarChar).Value = key;
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new User
+                {
+                    Id                 = (int)reader["Id"],
+                    Username           = reader["Username"].ToString(),
+                    Email              = reader["Email"].ToString(),
+                    MasterPasswordKey  = reader["MasterPasswordKey"].ToString(),
+                    AuthSalt           = reader["AuthSalt"].ToString(),
+                    EncryptionSalt     = reader["EncryptionSalt"].ToString(),
+                    LastLogin          = reader["LastLogin"] != DBNull.Value ? (DateTime)reader["LastLogin"] : DateTime.MinValue,
+                    LastPasswordUpdate = reader["LastPasswordUpdate"] != DBNull.Value ? (DateTime)reader["LastPasswordUpdate"] : DateTime.MinValue,
+                    CreatedAt          = reader["CreatedAt"] != DBNull.Value ? (DateTime)reader["CreatedAt"] : DateTime.MinValue
+                };
+            }
+            return null;
         }
 
         /// <summary>Updates the user's profile fields, including password fields when passwordChanged is true.</summary>
@@ -263,10 +286,7 @@ namespace SecurioBackendFunction.Repositories
                     cmd.Parameters.Add("@esalt", SqlDbType.NVarChar).Value = user.EncryptionSalt;
                     int rows = await cmd.ExecuteNonQueryAsync();
                     if (rows == 0)
-                    {
-                        transaction.Rollback();
-                        return false;
-                    }
+                        return false;  // user not found — transaction rolls back on dispose
                 }
 
                 // 2. Archive the old password key.
@@ -301,7 +321,7 @@ namespace SecurioBackendFunction.Repositories
             }
             catch
             {
-                transaction.Rollback();
+                // Transaction rolls back automatically when disposed without Commit().
                 return false;
             }
         }

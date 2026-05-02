@@ -24,11 +24,10 @@ namespace SecurioBackendFunction.Logic
         /// <summary>Registers user and generates a token immediately for a seamless UI transition.</summary>
         public async Task<ServerResponse<AuthData>> RegisterAsync(User user)
         {
-            if (await _repo.EmailExistsAsync(user.Email))
+            // Atomically check for email uniqueness and insert — no separate SELECT needed.
+            int newId = await _repo.RegisterIfEmailFreeAsync(user);
+            if (newId <= 0)
                 return new ServerResponse<AuthData> { Success = false, Message = "Email already registered." };
-
-            int newId = await _repo.CreateUserAsync(user);
-            if (newId <= 0) return new ServerResponse<AuthData> { Success = false, Message = "Database error." };
 
             string token = Helpers.JwtHelper.GenerateJwtToken(newId, user.Username);
             return new ServerResponse<AuthData>
@@ -47,12 +46,12 @@ namespace SecurioBackendFunction.Logic
         /// <summary>Validates login credentials and returns a session token.</summary>
         public async Task<ServerResponse<AuthData>> VerifyLoginAsync(string email, string key)
         {
-            var user = await _repo.GetUserByEmailAsync(email);
-            if (user == null || user.MasterPasswordKey != key)
+            // Atomically verify credentials and update LastLogin in a single SQL statement.
+            var user = await _repo.VerifyLoginAndUpdateLastLoginAsync(email, key);
+            if (user == null)
                 return new ServerResponse<AuthData> { Success = false, Message = "Invalid email or password." };
 
             string token = Helpers.JwtHelper.GenerateJwtToken(user.Id, user.Username);
-            await _repo.UpdateLastLoginAsync(user.Id);
             return new ServerResponse<AuthData>
             {
                 Success = true,
