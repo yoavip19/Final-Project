@@ -12,6 +12,7 @@ namespace SecurioClient.Activities
     public class MainActivity : AppCompatActivity
     {
         private const int RequestCodeNotificationPermission = 1001;
+        private const int RequestCodeBatteryOptimization    = 1002;
 
         private bool _pendingVaultNavigation = false;
 
@@ -73,7 +74,7 @@ namespace SecurioClient.Activities
                 if (_pendingVaultNavigation)
                     StartPasswordMonitor(this);
 
-                NavigateToDest();
+                RequestBatteryOptIfNeeded();
             }
         }
 
@@ -92,6 +93,55 @@ namespace SecurioClient.Activities
                 if (_pendingVaultNavigation)
                     StartPasswordMonitor(this);
 
+                RequestBatteryOptIfNeeded();
+            }
+        }
+
+        /// <summary>Handles the result of the battery-optimisation system dialog and continues to manufacturer onboarding.</summary>
+        protected override void OnActivityResult(int requestCode, Result resultCode, Android.Content.Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+            if (requestCode == RequestCodeBatteryOptimization)
+                ShowManufacturerDialogIfNeeded();
+        }
+
+        /// <summary>
+        /// Requests battery-optimisation exemption if not already granted;
+        /// otherwise proceeds directly to manufacturer onboarding.
+        /// </summary>
+        private void RequestBatteryOptIfNeeded()
+        {
+            if (!PowerManagerHelper.IsIgnoringBatteryOptimizations(this))
+                PowerManagerHelper.RequestIgnoreBatteryOptimizations(this, RequestCodeBatteryOptimization);
+            else
+                ShowManufacturerDialogIfNeeded();
+        }
+
+        /// <summary>
+        /// Shows a dialog guiding the user to the OEM-specific Autostart / Protected-Apps settings
+        /// when the device brand is known to impose additional background restrictions.
+        /// Skips straight to navigation on stock Android devices with no known deep-link.
+        /// </summary>
+        private void ShowManufacturerDialogIfNeeded()
+        {
+            var intent = PowerManagerHelper.GetManufacturerAutostartIntent();
+            if (intent != null && intent.ResolveActivity(PackageManager) != null)
+            {
+                new AndroidX.AppCompat.App.AlertDialog.Builder(this)
+                    .SetTitle("Allow Background Activity")
+                    .SetMessage("Your device restricts background apps. To ensure Securio can monitor your passwords reliably, please enable Autostart (or Protected Apps) for Securio in your device settings.")
+                    .SetPositiveButton("Open Settings", (s, e) =>
+                    {
+                        try { StartActivity(intent); }
+                        catch { Android.Widget.Toast.MakeText(this, "Could not open settings — please enable Autostart for Securio manually.", Android.Widget.ToastLength.Long)?.Show(); }
+                        NavigateToDest();
+                    })
+                    .SetNegativeButton("Skip", (s, e) => NavigateToDest())
+                    .SetCancelable(false)
+                    .Show();
+            }
+            else
+            {
                 NavigateToDest();
             }
         }
