@@ -12,13 +12,11 @@ namespace SecurioBackendFunction.Logic
     public class UserManager
     {
         private readonly IUserRepository _repo;
-        private readonly IVaultItemRepository _vaultRepo;
 
         /// <summary>Initializes a new instance of UserManager.</summary>
-        public UserManager(IUserRepository repo, IVaultItemRepository vaultRepo)
+        public UserManager(IUserRepository repo)
         {
             _repo = repo;
-            _vaultRepo = vaultRepo;
         }
 
         /// <summary>Fetches the profile and wraps it in a standard response for the API.</summary>
@@ -71,31 +69,28 @@ namespace SecurioBackendFunction.Logic
             }
 
             updated.Id = userId;
-            bool success = await _repo.UpdateUserAsync(updated, passwordChanged);
 
-            if (!success)
-                return new ServerResponse<object> { Success = false, Message = "Account not found." };
-
-            // When the password changed, save the old key to MasterPasswordHistory so the
-            // no-reuse check can compare against it later.
-            if (passwordChanged && oldUser != null)
+            if (passwordChanged)
             {
-                // Use LastPasswordUpdate as the archived timestamp so history entries can be
-                // sorted chronologically.  If the field is missing (e.g. a legacy account that
-                // pre-dates the LastPasswordUpdate column), fall back to the current time so
-                // the INSERT always has a valid date.
+                // Execute credentials update, password-history archival, and vault re-encryption
+                // atomically in a single SQL transaction.  Any partial failure rolls back the whole
+                // unit so the database is never left with new credentials but old vault ciphertext.
                 DateTime archivedAt = oldUser.LastPasswordUpdate != DateTime.MinValue
                     ? oldUser.LastPasswordUpdate
                     : DateTime.UtcNow;
-                await _repo.AddPasswordHistoryAsync(userId, oldUser.MasterPasswordKey, oldUser.AuthSalt, archivedAt);
-            }
 
-            // Bulk-update re-encrypted vault items when the master password changes
-            if (passwordChanged && reEncryptedItems != null && reEncryptedItems.Count > 0)
+                var items = reEncryptedItems ?? new List<VaultItem>();
+                bool success = await _repo.UpdateUserAndVaultAsync(
+                    updated, oldUser.MasterPasswordKey, oldUser.AuthSalt, archivedAt, items, userId);
+
+                if (!success)
+                    return new ServerResponse<object> { Success = false, Message = "Account not found." };
+            }
+            else
             {
-                bool vaultUpdated = await _vaultRepo.BulkUpdateVaultItemsAsync(reEncryptedItems, userId);
-                if (!vaultUpdated)
-                    return new ServerResponse<object> { Success = false, Message = "Account updated but vault re-encryption failed." };
+                bool success = await _repo.UpdateUserAsync(updated, passwordChanged: false);
+                if (!success)
+                    return new ServerResponse<object> { Success = false, Message = "Account not found." };
             }
 
             return new ServerResponse<object> { Success = true, Message = "Account updated successfully." };

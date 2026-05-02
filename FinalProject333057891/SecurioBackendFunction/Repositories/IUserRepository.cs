@@ -29,5 +29,12 @@ namespace SecurioBackendFunction.Repositories
         Task<List<MasterPasswordHistory>> GetLastPasswordHistoryAsync(int userId, int count);
         /// <summary>Inserts an entry into MasterPasswordHistory.</summary>
         Task AddPasswordHistoryAsync(int userId, string passwordKey, string authSalt, System.DateTime createdAt);
+        /// <summary>
+        /// Atomically updates user credentials, archives the old password key, and re-encrypts all
+        /// vault items in a single SQL transaction so that a partial server failure can never leave
+        /// the new master-password key in place while vault items are still encrypted with the old key.
+        /// </summary>
+        Task<bool> UpdateUserAndVaultAsync(User user, string oldPasswordKey, string oldAuthSalt,
+            System.DateTime archivedAt, List<VaultItem> reEncryptedItems, int userId);
     }
 }

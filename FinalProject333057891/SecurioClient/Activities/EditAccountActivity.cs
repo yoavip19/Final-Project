@@ -281,8 +281,9 @@ namespace SecurioClient.Activities
 
                     // Re-encrypt all vault items with the new key on a background thread.
                     string oldVaultKey = SessionHelper.SessionVaultKey;
-                    // Deep-copy only the fields read during re-encryption to avoid races with
-                    // the background PasswordMonitorService that may update other item fields.
+                    // Deep-copy only the fields read during re-encryption. The snapshot is taken
+                    // here on the UI thread; PasswordMonitorService never structurally modifies
+                    // CachedVault (it only makes server calls), so this enumeration is safe.
                     var vaultSnapshot = SessionHelper.CachedVault
                         .Select(v => new VaultItem { Id = v.Id, IV = v.IV, Tag = v.Tag, CipherText = v.CipherText })
                         .ToList();

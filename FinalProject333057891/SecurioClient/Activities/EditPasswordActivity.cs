@@ -281,8 +281,9 @@ namespace SecurioClient.Activities
                 if (!string.IsNullOrEmpty(password))
                 {
                     // User entered a new password — encrypt it and check HIBP.
+                    // AES-GCM encryption runs off the UI thread to prevent ANR.
                     string vaultKey = SessionHelper.SessionVaultKey;
-                    (iv, tag, cipherText) = EncryptionHelper.EncryptAesGcm(password, vaultKey);
+                    (iv, tag, cipherText) = await Task.Run(() => EncryptionHelper.EncryptAesGcm(password, vaultKey));
                     sha1Hash = EncryptionHelper.ComputeSha1Hash(password);
                     isLeaked = await HibpClientService.IsPasswordPwnedAsync(sha1Hash);
                 }

@@ -154,7 +154,8 @@ namespace SecurioClient.Activities
 
                 string authSalt       = EncryptionHelper.GenerateSalt();
                 string encryptionSalt = EncryptionHelper.GenerateSalt();
-                string masterPasswordKey = EncryptionHelper.DeriveKey(password, authSalt);
+                // PBKDF2 key derivation — run off the UI thread to prevent ANR.
+                string masterPasswordKey = await Task.Run(() => EncryptionHelper.DeriveKey(password, authSalt));
 
                 var newUser = new User
                 {

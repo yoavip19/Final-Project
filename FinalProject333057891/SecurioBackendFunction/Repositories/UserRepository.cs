@@ -233,19 +233,77 @@ namespace SecurioBackendFunction.Repositories
             return result;
         }
 
-        /// <summary>Inserts an entry into MasterPasswordHistory to record a password that is no longer active.</summary>
-        public async Task AddPasswordHistoryAsync(int userId, string passwordKey, string authSalt, DateTime createdAt)
+        /// <summary>
+        /// Atomically updates user credentials, archives the old password key, and re-encrypts all
+        /// vault items in a single SQL transaction.  A server crash at any point between the three
+        /// steps rolls back the whole unit so the database is never left in an inconsistent state.
+        /// </summary>
+        public async Task<bool> UpdateUserAndVaultAsync(User user, string oldPasswordKey, string oldAuthSalt,
+            DateTime archivedAt, List<VaultItem> reEncryptedItems, int userId)
         {
             using var conn = new SqlConnection(_connectionString);
             await conn.OpenAsync();
-            var sql = @"INSERT INTO MasterPasswordHistory (UserId, PasswordKey, AuthSalt, CreatedAt)
-                        VALUES (@uid, @key, @salt, @date)";
-            using var cmd = new SqlCommand(sql, conn);
-            cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
-            cmd.Parameters.Add("@key", SqlDbType.NVarChar).Value = passwordKey;
-            cmd.Parameters.Add("@salt", SqlDbType.NVarChar).Value = authSalt;
-            cmd.Parameters.Add("@date", SqlDbType.DateTime).Value = createdAt;
-            await cmd.ExecuteNonQueryAsync();
+            using var transaction = conn.BeginTransaction();
+
+            try
+            {
+                // 1. Update user credentials.
+                var userSql = @"UPDATE Users
+                                SET Username = @name, Email = @email,
+                                    MasterPasswordKey = @key, AuthSalt = @asalt, EncryptionSalt = @esalt,
+                                    LastPasswordUpdate = GETDATE()
+                                WHERE Id = @uid";
+                using (var cmd = new SqlCommand(userSql, conn, transaction))
+                {
+                    cmd.Parameters.Add("@uid", SqlDbType.Int).Value = user.Id;
+                    cmd.Parameters.Add("@name", SqlDbType.NVarChar).Value = user.Username;
+                    cmd.Parameters.Add("@email", SqlDbType.NVarChar).Value = user.Email;
+                    cmd.Parameters.Add("@key", SqlDbType.NVarChar).Value = user.MasterPasswordKey;
+                    cmd.Parameters.Add("@asalt", SqlDbType.NVarChar).Value = user.AuthSalt;
+                    cmd.Parameters.Add("@esalt", SqlDbType.NVarChar).Value = user.EncryptionSalt;
+                    int rows = await cmd.ExecuteNonQueryAsync();
+                    if (rows == 0)
+                    {
+                        transaction.Rollback();
+                        return false;
+                    }
+                }
+
+                // 2. Archive the old password key.
+                var historySql = @"INSERT INTO MasterPasswordHistory (UserId, PasswordKey, AuthSalt, CreatedAt)
+                                   VALUES (@uid, @key, @salt, @date)";
+                using (var cmd = new SqlCommand(historySql, conn, transaction))
+                {
+                    cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
+                    cmd.Parameters.Add("@key", SqlDbType.NVarChar).Value = oldPasswordKey;
+                    cmd.Parameters.Add("@salt", SqlDbType.NVarChar).Value = oldAuthSalt;
+                    cmd.Parameters.Add("@date", SqlDbType.DateTime).Value = archivedAt;
+                    await cmd.ExecuteNonQueryAsync();
+                }
+
+                // 3. Re-encrypt vault items.
+                foreach (var item in reEncryptedItems)
+                {
+                    var vaultSql = @"UPDATE VaultItems
+                                     SET IV = @iv, Tag = @tag, CipherText = @cipher
+                                     WHERE Id = @id AND UserId = @uid";
+                    using var cmd = new SqlCommand(vaultSql, conn, transaction);
+                    cmd.Parameters.Add("@id", SqlDbType.Int).Value = item.Id;
+                    cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
+                    cmd.Parameters.Add("@iv", SqlDbType.NVarChar).Value = item.IV;
+                    cmd.Parameters.Add("@tag", SqlDbType.NVarChar).Value = item.Tag;
+                    cmd.Parameters.Add("@cipher", SqlDbType.NVarChar).Value = item.CipherText;
+                    await cmd.ExecuteNonQueryAsync();
+                }
+
+                transaction.Commit();
+                return true;
+            }
+            catch
+            {
+                transaction.Rollback();
+                return false;
+            }
         }
     }
 }

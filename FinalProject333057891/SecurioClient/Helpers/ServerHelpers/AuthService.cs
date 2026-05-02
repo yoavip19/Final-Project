@@ -34,8 +34,8 @@ namespace SecurioClient.Helpers.ServerHelpers
             if (!saltResult.Success)
                 return (false, saltResult.Message);
 
-            // 2. Hash the password locally using the AuthSalt
-            string hashedMPK = EncryptionHelper.DeriveKey(password, saltResult.Data.AuthSalt);
+            // 2. Hash the password locally using the AuthSalt (PBKDF2 — run off the UI thread)
+            string hashedMPK = await Task.Run(() => EncryptionHelper.DeriveKey(password, saltResult.Data.AuthSalt));
 
             // 3. Authenticate with the hashed key
             var authResult = await PostAsync<AuthData>("VerifyLogin", new
@@ -61,8 +61,8 @@ namespace SecurioClient.Helpers.ServerHelpers
             await StorageHelper.SaveJwt(data.Token);
             await StorageHelper.SaveUsername(data.Username);
 
-            // 2. Derive the vault key and start the in-memory session
-            string vaultKey = EncryptionHelper.DeriveKey(password, salt);
+            // 2. Derive the vault key and start the in-memory session (PBKDF2 — run off the UI thread)
+            string vaultKey = await Task.Run(() => EncryptionHelper.DeriveKey(password, salt));
             SessionHelper.StartSession(vaultKey);
 
             // 3. Persist the vault key so it can be restored after an app restart
@@ -75,8 +75,11 @@ namespace SecurioClient.Helpers.ServerHelpers
             // ComputeWarningsSync uses the server-provided IsLeaked flags (set at
             // add/edit time by the server's own HIBP check), so the count is always
             // accurate and never reset to 0 by a client-side HIBP network failure.
-            SessionHelper.CachedWarnings = WarningsHelper.ComputeWarningsSync(
-                SessionHelper.CachedVault, vaultKey);
+            // DecryptAesGcm (needed for the weak-password check) runs on a background
+            // thread to avoid blocking the UI thread for large vaults.
+            var vault = SessionHelper.CachedVault;
+            SessionHelper.CachedWarnings = await Task.Run(() =>
+                WarningsHelper.ComputeWarningsSync(vault, vaultKey));
         }
 
         /// <summary>Fetches the user's vault items from the server and stores them in SessionHelper.CachedVault.</summary>

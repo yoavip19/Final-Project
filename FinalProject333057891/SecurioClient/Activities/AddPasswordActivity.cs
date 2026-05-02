@@ -203,9 +203,10 @@ namespace SecurioClient.Activities
 
             try
             {
-                // Encrypt the password with AES-GCM using the session vault key.
+                // Encrypt the password with AES-GCM using the session vault key, and compute
+                // the SHA-1 hash for HIBP checks — both run off the UI thread.
                 string vaultKey = SessionHelper.SessionVaultKey;
-                var (iv, tag, cipherText) = EncryptionHelper.EncryptAesGcm(password, vaultKey);
+                var (iv, tag, cipherText) = await Task.Run(() => EncryptionHelper.EncryptAesGcm(password, vaultKey));
                 string sha1Hash = EncryptionHelper.ComputeSha1Hash(password);
                 bool isLeaked = await HibpClientService.IsPasswordPwnedAsync(sha1Hash);
 
