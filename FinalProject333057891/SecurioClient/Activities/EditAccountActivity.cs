@@ -214,8 +214,10 @@ namespace SecurioClient.Activities
                         return;
                     }
 
-                    string currentAuthKey = EncryptionHelper.DeriveKey(currentPassword, saltResult.Data.AuthSalt);
-                    string currentVaultKey = EncryptionHelper.DeriveKey(currentPassword, saltResult.Data.EncryptionSalt);
+                    var (currentAuthKey, currentVaultKey) = await Task.Run(() => (
+                        EncryptionHelper.DeriveKey(currentPassword, saltResult.Data.AuthSalt),
+                        EncryptionHelper.DeriveKey(currentPassword, saltResult.Data.EncryptionSalt)
+                    ));
 
                     // Verify the current vault key matches the session key.
                     if (currentVaultKey != SessionHelper.SessionVaultKey)
@@ -227,7 +229,7 @@ namespace SecurioClient.Activities
                     // No-reuse check: compare new password against the current one and last 4 history entries.
                     // For each entry (and the current), derive: DeriveKey(newPassword, entry.AuthSalt).
                     // A match means the password was already used → reject.
-                    string newKeyForReuseCheck = EncryptionHelper.DeriveKey(newPassword, saltResult.Data.AuthSalt);
+                    string newKeyForReuseCheck = await Task.Run(() => EncryptionHelper.DeriveKey(newPassword, saltResult.Data.AuthSalt));
                     if (newKeyForReuseCheck == currentAuthKey)
                     {
                         FormUiHelper.ShowError(textViewNewPasswordError, GetString(Resource.String.edit_account_password_reused));
@@ -238,14 +240,20 @@ namespace SecurioClient.Activities
                     var historyResult = await historyService.GetPasswordHistoryAsync();
                     if (historyResult.Success && historyResult.Data != null)
                     {
-                        foreach (var entry in historyResult.Data)
+                        bool isReused = await Task.Run(() =>
                         {
-                            string historicCheck = EncryptionHelper.DeriveKey(newPassword, entry.AuthSalt);
-                            if (historicCheck == entry.PasswordKey)
+                            foreach (var entry in historyResult.Data)
                             {
-                                FormUiHelper.ShowError(textViewNewPasswordError, GetString(Resource.String.edit_account_password_reused));
-                                return;
+                                string historicCheck = EncryptionHelper.DeriveKey(newPassword, entry.AuthSalt);
+                                if (historicCheck == entry.PasswordKey) return true;
                             }
+                            return false;
+                        });
+
+                        if (isReused)
+                        {
+                            FormUiHelper.ShowError(textViewNewPasswordError, GetString(Resource.String.edit_account_password_reused));
+                            return;
                         }
                     }
 
@@ -262,34 +270,44 @@ namespace SecurioClient.Activities
                     // Generate new salts and derive new keys.
                     string newAuthSalt       = EncryptionHelper.GenerateSalt();
                     string newEncryptionSalt = EncryptionHelper.GenerateSalt();
-                    string newMasterPasswordKey = EncryptionHelper.DeriveKey(newPassword, newAuthSalt);
-                    string newVaultKey       = EncryptionHelper.DeriveKey(newPassword, newEncryptionSalt);
+                    var (newMasterPasswordKey, newVaultKey) = await Task.Run(() => (
+                        EncryptionHelper.DeriveKey(newPassword, newAuthSalt),
+                        EncryptionHelper.DeriveKey(newPassword, newEncryptionSalt)
+                    ));
 
                     request.MasterPasswordKey = newMasterPasswordKey;
                     request.AuthSalt          = newAuthSalt;
                     request.EncryptionSalt    = newEncryptionSalt;
 
-                    // Re-encrypt all vault items with the new key.
+                    // Re-encrypt all vault items with the new key on a background thread.
                     string oldVaultKey = SessionHelper.SessionVaultKey;
-                    var reEncryptedItems = new List<VaultItem>();
-
-                    foreach (var item in SessionHelper.CachedVault)
+                    // Deep-copy only the fields read during re-encryption to avoid races with
+                    // the background PasswordMonitorService that may update other item fields.
+                    var vaultSnapshot = SessionHelper.CachedVault
+                        .Select(v => new VaultItem { Id = v.Id, IV = v.IV, Tag = v.Tag, CipherText = v.CipherText })
+                        .ToList();
+                    var reEncryptedItems = await Task.Run(() =>
                     {
-                        // Decrypt with old key
-                        string plaintext = EncryptionHelper.DecryptAesGcm(
-                            item.IV, item.Tag, item.CipherText, oldVaultKey);
-
-                        // Re-encrypt with new key
-                        var (newIV, newTag, newCipherText) = EncryptionHelper.EncryptAesGcm(plaintext, newVaultKey);
-
-                        reEncryptedItems.Add(new VaultItem
+                        var items = new List<VaultItem>();
+                        foreach (var item in vaultSnapshot)
                         {
-                            Id         = item.Id,
-                            IV         = newIV,
-                            Tag        = newTag,
-                            CipherText = newCipherText
-                        });
-                    }
+                            // Decrypt with old key
+                            string plaintext = EncryptionHelper.DecryptAesGcm(
+                                item.IV, item.Tag, item.CipherText, oldVaultKey);
+
+                            // Re-encrypt with new key
+                            var (newIV, newTag, newCipherText) = EncryptionHelper.EncryptAesGcm(plaintext, newVaultKey);
+
+                            items.Add(new VaultItem
+                            {
+                                Id         = item.Id,
+                                IV         = newIV,
+                                Tag        = newTag,
+                                CipherText = newCipherText
+                            });
+                        }
+                        return items;
+                    });
 
                     request.VaultItems = reEncryptedItems;
 
