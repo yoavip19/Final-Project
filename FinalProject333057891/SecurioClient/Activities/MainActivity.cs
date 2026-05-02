@@ -1,6 +1,7 @@
 ﻿using Android.App;
 using Android.OS;
 using Android.Runtime;
+using Android.Util;
 using AndroidX.AppCompat.App;
 using SecurioClient.Helpers;
 using SecurioClient.Helpers.ServerHelpers;
@@ -11,6 +12,8 @@ namespace SecurioClient.Activities
     /// <summary>Entry-point activity that validates the stored JWT and routes to VaultActivity or LoginActivity.</summary>
     public class MainActivity : AppCompatActivity
     {
+        private const string Tag = "MainActivity";
+
         private const int RequestCodeNotificationPermission = 1001;
         private const int RequestCodeBatteryOptimization    = 1002;
 
@@ -30,13 +33,19 @@ namespace SecurioClient.Activities
             // A valid token means the user is already authenticated and can go straight to the Vault.
             string jwt = await StorageHelper.GetJwt();
 
-            if (!string.IsNullOrEmpty(jwt))
+            if (string.IsNullOrEmpty(jwt))
             {
+                Log.Info(Tag, "No stored JWT — session will not be restored");
+            }
+            else
+            {
+                Log.Info(Tag, "Stored JWT found — validating with server");
                 var authService = new AuthService();
                 bool tokenValid = await authService.ValidateTokenAsync();
 
                 if (tokenValid)
                 {
+                    Log.Info(Tag, "Token valid — restoring session");
                     // Restore the vault key from secure storage so in-memory encryption is ready.
                     string vaultKey = await StorageHelper.GetVaultKey();
                     if (!string.IsNullOrEmpty(vaultKey))
@@ -58,6 +67,7 @@ namespace SecurioClient.Activities
                 }
                 else
                 {
+                    Log.Warn(Tag, "Token invalid or expired — clearing session and routing to login");
                     // Token is invalid or expired — clear stale credentials before going to login.
                     StorageHelper.ClearAll();
                 }
@@ -67,12 +77,14 @@ namespace SecurioClient.Activities
                 CheckSelfPermission(Android.Manifest.Permission.PostNotifications)
                     != Android.Content.PM.Permission.Granted)
             {
+                Log.Info(Tag, "POST_NOTIFICATIONS permission not granted — requesting at runtime");
                 RequestPermissions(
                     new[] { Android.Manifest.Permission.PostNotifications },
                     RequestCodeNotificationPermission);
             }
             else
             {
+                Log.Info(Tag, "POST_NOTIFICATIONS permission already granted (or not required on this API level)");
                 // Permission is already granted (or not needed on this API level).
                 if (_pendingVaultNavigation)
                     StartPasswordMonitor(this);
@@ -89,6 +101,10 @@ namespace SecurioClient.Activities
 
             if (requestCode == RequestCodeNotificationPermission)
             {
+                bool granted = grantResults.Length > 0 &&
+                               grantResults[0] == Android.Content.PM.Permission.Granted;
+                Log.Info(Tag, $"POST_NOTIFICATIONS permission result: {(granted ? "granted" : "denied")}");
+
                 // Start the monitor regardless of the permission result.
                 // The service checks AreNotificationsEnabled on every cycle and skips
                 // the server call when notifications are off, so it is safe to keep
@@ -105,7 +121,10 @@ namespace SecurioClient.Activities
         {
             base.OnActivityResult(requestCode, resultCode, data);
             if (requestCode == RequestCodeBatteryOptimization)
+            {
+                Log.Info(Tag, $"Battery optimisation dialog result: {resultCode}");
                 NavigateToDest();
+            }
         }
 
         /// <summary>
@@ -115,9 +134,15 @@ namespace SecurioClient.Activities
         private void RequestBatteryOptIfNeeded()
         {
             if (!PowerManagerHelper.IsIgnoringBatteryOptimizations(this))
+            {
+                Log.Info(Tag, "App is NOT battery-optimisation exempt — requesting exemption");
                 PowerManagerHelper.RequestIgnoreBatteryOptimizations(this, RequestCodeBatteryOptimization);
+            }
             else
+            {
+                Log.Info(Tag, "App is already battery-optimisation exempt");
                 NavigateToDest();
+            }
         }
 
         /// <summary>
@@ -135,16 +160,19 @@ namespace SecurioClient.Activities
                 if (GetSharedPreferences(PrefsName, Android.Content.FileCreationMode.Private)
                         .GetBoolean(KeyAutostartShown, false))
                 {
+                    Log.Info(Tag, "Autostart dialog already shown previously — skipping");
                     // User has already seen (and acted on) this dialog — don't show it again.
                     RequestBatteryOptIfNeeded();
                     return;
                 }
 
+                Log.Info(Tag, $"Showing OEM autostart dialog (brand: {Android.OS.Build.Brand})");
                 new AndroidX.AppCompat.App.AlertDialog.Builder(this)
                     .SetTitle("Allow Background Activity")
                     .SetMessage("Your device restricts background apps. To ensure Securio can monitor your passwords reliably, please enable Autostart (or Protected Apps) for Securio in your device settings.")
                     .SetPositiveButton("Open Settings", (s, e) =>
                     {
+                        Log.Info(Tag, "User tapped 'Open Settings' on autostart dialog");
                         MarkAutostartDialogShown();
                         try { StartActivity(intent); }
                         catch { Android.Widget.Toast.MakeText(this, "Could not open settings — please enable Autostart for Securio manually.", Android.Widget.ToastLength.Long)?.Show(); }
@@ -152,6 +180,7 @@ namespace SecurioClient.Activities
                     })
                     .SetNegativeButton("Skip", (s, e) =>
                     {
+                        Log.Info(Tag, "User tapped 'Skip' on autostart dialog");
                         MarkAutostartDialogShown();
                         RequestBatteryOptIfNeeded();
                     })
@@ -160,6 +189,7 @@ namespace SecurioClient.Activities
             }
             else
             {
+                Log.Info(Tag, "No OEM autostart intent available (stock Android or unrecognised brand) — skipping dialog");
                 RequestBatteryOptIfNeeded();
             }
         }
@@ -179,11 +209,13 @@ namespace SecurioClient.Activities
             Android.Content.Intent intent;
             if (_pendingVaultNavigation)
             {
+                Log.Info(Tag, "Navigating to VaultActivity");
                 intent = new Android.Content.Intent(this, typeof(VaultActivity));
                 intent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);
             }
             else
             {
+                Log.Info(Tag, "Navigating to LoginActivity");
                 intent = new Android.Content.Intent(this, typeof(LoginActivity));
             }
 
@@ -194,6 +226,7 @@ namespace SecurioClient.Activities
         /// <summary>Starts the PasswordMonitorService as a foreground service if it is not already running.</summary>
         public static void StartPasswordMonitor(Android.Content.Context context)
         {
+            Log.Info(Tag, "Starting PasswordMonitorService as foreground service");
             var serviceIntent = new Android.Content.Intent(context, typeof(PasswordMonitorService));
             context.StartForegroundService(serviceIntent);
         }

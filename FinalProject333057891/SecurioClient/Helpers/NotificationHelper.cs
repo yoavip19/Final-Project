@@ -1,6 +1,7 @@
 using Android.App;
 using Android.Content;
 using Android.OS;
+using Android.Util;
 using SecurioModels.DataTransferObjects;
 
 namespace SecurioClient.Helpers
@@ -8,12 +9,14 @@ namespace SecurioClient.Helpers
     /// <summary>Handles all Android-specific notification operations for the password-monitor service.</summary>
     public static class NotificationHelper
     {
+        private const string Tag = "NotificationHelper";
+
         // Notification channel for background password-health alerts.
         public const string ChannelId   = "securio_monitor_channel";
         public const string ChannelName = "Password Monitor";
 
         // Notification IDs
-        public const int AlertNotificationId   = 1001;
+        public const int AlertNotificationId      = 1001;
         public const int ForegroundNotificationId = 1002;
 
         /// <summary>Creates the notification channel required on Android 8+.</summary>
@@ -61,14 +64,23 @@ namespace SecurioClient.Helpers
         public static bool AreNotificationsEnabled(Context context)
         {
             var nm = (NotificationManager)context.GetSystemService(Context.NotificationService);
-            return nm?.AreNotificationsEnabled() ?? false;
+            bool enabled = nm?.AreNotificationsEnabled() ?? false;
+            Log.Info(Tag, $"AreNotificationsEnabled: {enabled}");
+            return enabled;
         }
 
         /// <summary>Evaluates the PasswordCheckResult and posts an alert only when there is at least one issue to report.</summary>
         public static void PostCheckResult(Context context, PasswordCheckResult result)
         {
-            if (!PasswordCheckDecision.ShouldNotify(result)) return;
-            PostAlert(context, PasswordCheckDecision.BuildMessage(result));
+            if (!PasswordCheckDecision.ShouldNotify(result))
+            {
+                Log.Info(Tag, "Check result does not require a notification — suppressing alert");
+                return;
+            }
+
+            string message = PasswordCheckDecision.BuildMessage(result);
+            Log.Info(Tag, $"Posting password-health alert: {message}");
+            PostAlert(context, message);
         }
     }
 }
