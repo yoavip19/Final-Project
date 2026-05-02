@@ -36,10 +36,10 @@ public class AuthFunctions
             var result = await _authManager.RegisterAsync(signup);
             return result.Success ? new OkObjectResult(result) : new ConflictObjectResult(result);
         }
-        catch (Exception ex)
+        catch
         {
             // This catch ensures the client ALWAYS gets a JSON BaseResponse, never a raw crash string.
-            return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = $"An internal error occurred. Error - {ex.Message} " });
+            return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = $"An internal error occurred." });
         }
     }
 
@@ -53,7 +53,7 @@ public class AuthFunctions
             var result = await _authManager.VerifyLoginAsync(attempt.Email, attempt.MasterPasswordKey);
             return result.Success ? new OkObjectResult(result) : new UnauthorizedObjectResult(result);
         }
-        catch (Exception ex)
+        catch
         {
             return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = "An internal error occurred." });
         }
@@ -71,7 +71,7 @@ public class AuthFunctions
             var user = await _authManager.GetUserSaltsAsync(email);
             return user.Success ? new OkObjectResult(user) : new NotFoundObjectResult(user);
         }
-        catch (Exception ex)
+        catch
         {
             return new BadRequestObjectResult(new ServerResponse<object> { Success = false, Message = "An internal error occurred." });
         }
