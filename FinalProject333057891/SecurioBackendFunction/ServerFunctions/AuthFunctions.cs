@@ -28,7 +28,7 @@ public class AuthFunctions
 
     /// <summary>Handles the Register HTTP request and catches any unexpected errors.</summary>
     [Function("RegisterUser")]
-    public async Task<IActionResult> Register([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+    public async Task<IActionResult> Register([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
         try
         {
@@ -45,7 +45,7 @@ public class AuthFunctions
 
     /// <summary>Handles the Login HTTP request and ensures a secure JSON response.</summary>
     [Function("VerifyLogin")]
-    public async Task<IActionResult> Login([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+    public async Task<IActionResult> Login([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
         try
         {
@@ -61,7 +61,7 @@ public class AuthFunctions
 
     /// <summary>Gets the user's salts for the login process.</summary>
     [Function("GetSalts")]
-    public async Task<IActionResult> GetSalts([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+    public async Task<IActionResult> GetSalts([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
         try
         {
@@ -79,7 +79,7 @@ public class AuthFunctions
 
     /// <summary>Validates an existing JWT token; returns 200 if valid and unexpired, 401 otherwise.</summary>
     [Function("ValidateToken")]
-    public IActionResult ValidateToken([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+    public IActionResult ValidateToken([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
     {
         try
         {

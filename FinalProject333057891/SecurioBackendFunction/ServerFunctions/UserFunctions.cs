@@ -29,7 +29,7 @@ namespace SecurioBackendFunction.ServerFunctions
         /// <summary>Retrieves the user's statistics and profile details via a GET request.</summary>
         [Function("GetProfile")]
         public async Task<IActionResult> GetProfile(
-            [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
             try
             {
@@ -66,7 +66,7 @@ namespace SecurioBackendFunction.ServerFunctions
         /// <summary>Updates the user's account details including username, email, and optionally master password.</summary>
         [Function("UpdateUser")]
         public async Task<IActionResult> UpdateUser(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
             try
             {
@@ -121,7 +121,7 @@ namespace SecurioBackendFunction.ServerFunctions
         /// <summary>Permanently deletes the user account and all associated vault items.</summary>
         [Function("DeleteUser")]
         public async Task<IActionResult> DeleteUser(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
             try
             {
@@ -157,7 +157,7 @@ namespace SecurioBackendFunction.ServerFunctions
         /// <summary>Returns the last 4 master-password history entries for the authenticated user.</summary>
         [Function("GetPasswordHistory")]
         public async Task<IActionResult> GetPasswordHistory(
-            [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
             try
             {

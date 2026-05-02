@@ -12,7 +12,7 @@ namespace SecurioClient.Helpers.ServerHelpers
     public static class PasswordCheckService
     {
         private static readonly HttpClient _http = new HttpClient();
-        private const string Endpoint = "https://securio-backend.azurewebsites.net/api/PasswordCheck";
+        private const string Endpoint = "https://ironi-alef-cs-security-hkeacye5c5cchgg4.israelcentral-01.azurewebsites.net/api/PasswordCheck";
 
         /// <summary>Calls POST /api/PasswordCheck with the given userId; returns null on failure.</summary>
         public static async Task<PasswordCheckResult?> FetchAsync(int userId)

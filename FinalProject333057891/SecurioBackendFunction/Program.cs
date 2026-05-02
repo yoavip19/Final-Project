@@ -27,12 +27,13 @@ builder.Services.AddSingleton<IVaultItemRepository>(new VaultItemRepository(sqlC
 // 3. Register the HIBP service with a dedicated HttpClient (used only by PasswordCheckManager).
 //    HIBP requires a descriptive User-Agent header (returns HTTP 403 without one).
 //    Timeout is capped at 10 seconds so a slow or unresponsive API never stalls a request.
-builder.Services.AddHttpClient<HibpService>(client =>
+//    Using AddHttpClient<IHibpService, HibpService> so the DI container resolves IHibpService
+//    via the typed-client factory (which provides the configured HttpClient to the constructor).
+builder.Services.AddHttpClient<IHibpService, HibpService>(client =>
 {
     client.DefaultRequestHeaders.UserAgent.ParseAdd("Securio/1.0");
     client.Timeout = TimeSpan.FromSeconds(10);
 });
-builder.Services.AddScoped<IHibpService, HibpService>();
 
 // 4. Register your Managers/Logic as Scoped (new instance created per request)
 builder.Services.AddScoped<UserManager>();

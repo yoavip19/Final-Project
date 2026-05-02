@@ -25,7 +25,7 @@ namespace SecurioBackendFunction.ServerFunctions
         /// <summary>Runs the password-health check for the specified user.</summary>
         [Function("PasswordCheck")]
         public async Task<IActionResult> PasswordCheck(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
             try
             {

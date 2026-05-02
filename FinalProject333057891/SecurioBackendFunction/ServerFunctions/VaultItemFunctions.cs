@@ -28,7 +28,7 @@ namespace SecurioBackendFunction.ServerFunctions
         /// <summary>Receives an encrypted vault item from the client, validates the session, and stores it.</summary>
         [Function("AddVaultItem")]
         public async Task<IActionResult> AddVaultItem(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
             try
             {
@@ -83,7 +83,7 @@ namespace SecurioBackendFunction.ServerFunctions
         /// <summary>Receives an updated vault item from the client, validates the session, and persists the changes.</summary>
         [Function("UpdateVaultItem")]
         public async Task<IActionResult> UpdateVaultItem(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
             try
             {
@@ -137,7 +137,7 @@ namespace SecurioBackendFunction.ServerFunctions
         /// <summary>Returns all vault items for the authenticated user.</summary>
         [Function("GetVaultItems")]
         public async Task<IActionResult> GetVaultItems(
-            [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
             try
             {
@@ -179,7 +179,7 @@ namespace SecurioBackendFunction.ServerFunctions
         /// <summary>Permanently deletes a vault item owned by the authenticated user.</summary>
         [Function("DeleteVaultItem")]
         public async Task<IActionResult> DeleteVaultItem(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
             try
             {
