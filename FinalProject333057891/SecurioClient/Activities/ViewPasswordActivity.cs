@@ -137,7 +137,7 @@ namespace SecurioClient.Activities
             {
                 if (!string.IsNullOrEmpty(decryptedPassword))
                 {
-                    CopyToClipboard("password", decryptedPassword);
+                    ClipboardGuard.CopySensitive(this, decryptedPassword);
                     Toast.MakeText(this, GetString(Resource.String.view_copied_password), ToastLength.Short).Show();
                 }
             };

@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace SecurioClient
 {
-    /// <summary>Foreground service that performs a password-health check once every 24 hours.</summary>
+    /// <summary>Foreground service that performs a password-health check once every 24 hours
+    /// and registers a screen-off receiver for emergency clipboard purging.</summary>
     [Service(Exported = false)]
     public class PasswordMonitorService : Service
     {
@@ -15,8 +16,10 @@ namespace SecurioClient
 
         private Android.OS.Handler _handler;
         private Java.Lang.Runnable _runnable;
+        private ScreenOffReceiver _screenOffReceiver;
 
-        /// <summary>Creates the notification channel, starts the foreground notification, and schedules the first check.</summary>
+        /// <summary>Creates the notification channel, starts the foreground notification, schedules the first check,
+        /// and registers the screen-off receiver for emergency clipboard clearing.</summary>
         public override void OnCreate()
         {
             base.OnCreate();
@@ -33,6 +36,11 @@ namespace SecurioClient
 
             // Run the first check immediately, then repeat every 24 h.
             _handler.Post(_runnable);
+
+            // Register the screen-off receiver dynamically (ACTION_SCREEN_OFF cannot be
+            // declared in the manifest; it must be registered at runtime).
+            _screenOffReceiver = new ScreenOffReceiver();
+            RegisterReceiver(_screenOffReceiver, new IntentFilter(Intent.ActionScreenOff));
         }
 
         /// <summary>Returns START_STICKY so Android restarts the service if it is killed.</summary>
@@ -45,10 +53,16 @@ namespace SecurioClient
         /// <summary>Not a bound service; returns null.</summary>
         public override IBinder OnBind(Intent intent) => null;
 
-        /// <summary>Removes pending callbacks and cleans up when the service is destroyed.</summary>
+        /// <summary>Removes pending callbacks, unregisters the screen-off receiver, and cleans up when the service is destroyed.</summary>
         public override void OnDestroy()
         {
             _handler?.RemoveCallbacks(_runnable);
+            if (_screenOffReceiver != null)
+            {
+                try { UnregisterReceiver(_screenOffReceiver); }
+                catch { /* receiver was never registered or already unregistered */ }
+                _screenOffReceiver = null;
+            }
             base.OnDestroy();
         }
 
@@ -75,6 +89,20 @@ namespace SecurioClient
             if (result == null) return;
 
             NotificationHelper.PostCheckResult(context, result);
+        }
+
+        /// <summary>
+        /// BroadcastReceiver that listens for <c>ACTION_SCREEN_OFF</c> and immediately
+        /// purges the clipboard so sensitive credentials are not accessible while the
+        /// device is unattended or in a pocket.
+        /// </summary>
+        private sealed class ScreenOffReceiver : BroadcastReceiver
+        {
+            public override void OnReceive(Context context, Intent intent)
+            {
+                if (intent?.Action == Intent.ActionScreenOff)
+                    ClipboardGuard.ClearNow(context);
+            }
         }
     }
 }
