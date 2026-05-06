@@ -67,7 +67,6 @@
   <ItemGroup>
     <Compile Include="PasswordOptionsBottomSheet.cs" />
     <Compile Include="PasswordMonitorService.cs" />
-    <Compile Include="BootReceiver.cs" />
     <Compile Include="Helpers\ServerHelpers\AuthService.cs" />
     <Compile Include="Helpers\ServerHelpers\BaseService.cs" />
     <Compile Include="Helpers\ServerHelpers\ProfileService.cs" />
