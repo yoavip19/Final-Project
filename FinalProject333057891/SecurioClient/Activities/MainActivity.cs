@@ -117,7 +117,7 @@ namespace SecurioClient.Activities
         /// <summary>Starts the PasswordMonitorService as a foreground service if it is not already running.</summary>
         public static void StartPasswordMonitor(Android.Content.Context context)
         {
-            var serviceIntent = new Android.Content.Intent(context, typeof(PasswordMonitorService));
+            var serviceIntent = new Android.Content.Intent(context, typeof(MonitorService));
             context.StartForegroundService(serviceIntent);
         }
     }

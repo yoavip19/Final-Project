@@ -65,8 +65,9 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\ClipboardGuard.cs" />
     <Compile Include="PasswordOptionsBottomSheet.cs" />
-    <Compile Include="PasswordMonitorService.cs" />
+    <Compile Include="MonitorService.cs" />
     <Compile Include="Helpers\ServerHelpers\AuthService.cs" />
     <Compile Include="Helpers\ServerHelpers\BaseService.cs" />
     <Compile Include="Helpers\ServerHelpers\ProfileService.cs" />
