@@ -21,6 +21,7 @@ namespace SecurioClient.Helpers
         private const string ExtraGboardCanSkipHistory = "com.google.android.inputmethod.latin.CAN_SKIP_HISTORY";
         private const long ClearDelayMs = 60_000L; // 60 seconds
 
+        private static readonly object _sync = new object();
         private static readonly Handler _handler = new Handler(Looper.MainLooper);
         private static Java.Lang.Runnable _clearRunnable;
 
@@ -51,10 +52,13 @@ namespace SecurioClient.Helpers
         {
             // Use application context so the lambda does not retain an Activity reference.
             var appContext = context.ApplicationContext;
-            if (_clearRunnable != null)
-                _handler.RemoveCallbacks(_clearRunnable);
-            _clearRunnable = new Java.Lang.Runnable(() => ClearNow(appContext));
-            _handler.PostDelayed(_clearRunnable, ClearDelayMs);
+            lock (_sync)
+            {
+                if (_clearRunnable != null)
+                    _handler.RemoveCallbacks(_clearRunnable);
+                _clearRunnable = new Java.Lang.Runnable(() => ClearNow(appContext));
+                _handler.PostDelayed(_clearRunnable, ClearDelayMs);
+            }
         }
 
         /// <summary>
@@ -63,8 +67,12 @@ namespace SecurioClient.Helpers
         /// </summary>
         internal static void ClearNow(Context context)
         {
-            if (_clearRunnable != null)
-                _handler.RemoveCallbacks(_clearRunnable);
+            lock (_sync)
+            {
+                if (_clearRunnable != null)
+                    _handler.RemoveCallbacks(_clearRunnable);
+                _clearRunnable = null;
+            }
             var clipboard = (ClipboardManager)context.GetSystemService(Context.ClipboardService);
             if (clipboard == null) return;
 
