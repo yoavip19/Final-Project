@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SecurioClient
 {
     /// <summary>Foreground service that performs a password-health check every 24 hours and clears the clipboard on screen-off.</summary>
-    [Service(Name = "com.companyname.securioclient.PasswordMonitorService", Exported = false)]
+    [Service(Name = "com.companyname.securioclient.MonitorService", Exported = false)]
     public class MonitorService : Service
     {
         private const long IntervalMs = 24 * 60 * 60 * 1000L; // 24 hours
@@ -58,7 +58,7 @@ namespace SecurioClient
         {
             if (!_isScreenOffReceiverRegistered || _screenOffReceiver == null) return;
             try { UnregisterReceiver(_screenOffReceiver); }
-            catch { /* already unregistered */ }
+            catch (Java.Lang.IllegalArgumentException) { /* already unregistered */ }
             _isScreenOffReceiverRegistered = false;
             _screenOffReceiver = null;
         }
