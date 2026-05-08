@@ -17,6 +17,8 @@ namespace SecurioClient.Helpers
     {
         // Value of ClipDescription.EXTRA_IS_SENSITIVE (added in API 33).
         private const string ExtraIsSensitive = "android.content.extra.IS_SENSITIVE";
+        // Gboard-specific hint to skip saving this clip in keyboard history.
+        private const string ExtraGboardCanSkipHistory = "com.google.android.inputmethod.latin.CAN_SKIP_HISTORY";
         private const long ClearDelayMs = 60_000L; // 60 seconds
 
         private static readonly Handler _handler = new Handler(Looper.MainLooper);
@@ -34,6 +36,7 @@ namespace SecurioClient.Helpers
             // Instruct modern IMEs to bypass their history / suggestion buffers.
             var extras = new PersistableBundle();
             extras.PutBoolean(ExtraIsSensitive, true);
+            extras.PutBoolean(ExtraGboardCanSkipHistory, true);
             clip.Description.Extras = extras;
 
             clipboard.PrimaryClip = clip;
@@ -63,6 +66,10 @@ namespace SecurioClient.Helpers
             if (_clearRunnable != null)
                 _handler.RemoveCallbacks(_clearRunnable);
             var clipboard = (ClipboardManager)context.GetSystemService(Context.ClipboardService);
+            if (clipboard == null) return;
+
+            // Overwrite first so old IME/history implementations are more likely to evict the previous value.
+            clipboard.PrimaryClip = ClipData.NewPlainText(string.Empty, string.Empty);
             clipboard.ClearPrimaryClip();
         }
     }
