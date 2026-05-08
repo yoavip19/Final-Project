@@ -17,7 +17,8 @@ namespace SecurioClient.Helpers
     {
         // Value of ClipDescription.EXTRA_IS_SENSITIVE (added in API 33).
         private const string ExtraIsSensitive = "android.content.extra.IS_SENSITIVE";
-        // Gboard-specific hint to skip saving this clip in keyboard history.
+        // Undocumented Gboard-specific hint to skip saving this clip in keyboard history.
+        // This is not part of a stable public API and may be ignored by other keyboards/future versions.
         private const string ExtraGboardCanSkipHistory = "com.google.android.inputmethod.latin.CAN_SKIP_HISTORY";
         private const long ClearDelayMs = 60_000L; // 60 seconds
 
@@ -32,6 +33,7 @@ namespace SecurioClient.Helpers
         internal static void CopySensitive(Context context, string password)
         {
             var clipboard = (ClipboardManager)context.GetSystemService(Context.ClipboardService);
+            if (clipboard == null) return;
             var clip = ClipData.NewPlainText("password", password);
 
             // Instruct modern IMEs to bypass their history / suggestion buffers.

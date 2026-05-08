@@ -56,6 +56,11 @@ namespace SecurioClient
 
         private void UnregisterScreenOffReceiver()
         {
+            if (!_isScreenOffReceiverRegistered)
+            {
+                _screenOffReceiver = null;
+                return;
+            }
             if (_screenOffReceiver == null) return;
             try { UnregisterReceiver(_screenOffReceiver); }
             catch (Java.Lang.IllegalArgumentException) { /* already unregistered */ }
