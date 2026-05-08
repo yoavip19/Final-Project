@@ -66,6 +66,12 @@ namespace SecurioClient.Helpers
         /// <summary>
         /// Immediately clears the system clipboard and cancels any pending auto-purge timer.
         /// Called both by the scheduled runnable and by the screen-off receiver.
+        /// <para>
+        /// We call <c>ClearPrimaryClip()</c> directly rather than first writing an empty clip.
+        /// Writing any clip via <c>PrimaryClip = …</c> from a background context on API 33+
+        /// triggers the system "Copied to clipboard" overlay; <c>ClearPrimaryClip()</c> does not.
+        /// Because <c>minSdkVersion = 33</c>, <c>ClearPrimaryClip()</c> is always available.
+        /// </para>
         /// </summary>
         internal static void ClearNow(Context context)
         {
@@ -76,11 +82,7 @@ namespace SecurioClient.Helpers
                 _clearRunnable = null;
             }
             var clipboard = (ClipboardManager)context.GetSystemService(Context.ClipboardService);
-            if (clipboard == null) return;
-
-            // Overwrite first so old IME/history implementations are more likely to evict the previous value.
-            clipboard.PrimaryClip = ClipData.NewPlainText(string.Empty, string.Empty);
-            clipboard.ClearPrimaryClip();
+            clipboard?.ClearPrimaryClip();
         }
     }
 }
