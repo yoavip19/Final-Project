@@ -1,4 +1,5 @@
 using Android.Content;
+using Android.OS;
 
 namespace SecurioClient.Helpers
 {
@@ -18,7 +19,7 @@ namespace SecurioClient.Helpers
         private const string ExtraIsSensitive = "android.content.extra.IS_SENSITIVE";
         // Undocumented Gboard-specific hint to skip saving this clip in keyboard history.
         // This is not part of a stable public API and may be ignored by other keyboards/future versions.
-        // We still set it as a best-effort complement to EXTRA_IS_SENSITIVE because no public Android API
+        // Still set as a best-effort complement to EXTRA_IS_SENSITIVE because no public Android API
         // exists for purging third-party keyboard history after the copy already happened.
         private const string ExtraGboardCanSkipHistory = "com.google.android.inputmethod.latin.CAN_SKIP_HISTORY";
         /// <summary>
