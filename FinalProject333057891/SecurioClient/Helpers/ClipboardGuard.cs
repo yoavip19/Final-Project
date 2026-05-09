@@ -1,5 +1,4 @@
 using Android.Content;
-using Android.OS;
 
 namespace SecurioClient.Helpers
 {
@@ -8,9 +7,9 @@ namespace SecurioClient.Helpers
     /// <list type="bullet">
     ///   <item>Marks password clips with <c>EXTRA_IS_SENSITIVE</c> so modern IMEs skip their
     ///         internal history buffers (Gboard, Samsung Keyboard, etc.).</item>
-    ///   <item>Schedules an automatic clipboard purge 60 seconds after each copy, with debounce
+    ///   <item>Requests a service-owned 60-second auto-purge after each copy, with debounce
     ///         so rapid successive copies reset the timer.</item>
-    ///   <item>Exposes <see cref="ClearNow"/> for the screen-off emergency purge.</item>
+    ///   <item>Exposes <see cref="ClearNow"/> for the service's clear commands.</item>
     /// </list>
     /// </summary>
     internal static class ClipboardGuard
@@ -20,15 +19,9 @@ namespace SecurioClient.Helpers
         // Undocumented Gboard-specific hint to skip saving this clip in keyboard history.
         // This is not part of a stable public API and may be ignored by other keyboards/future versions.
         private const string ExtraGboardCanSkipHistory = "com.google.android.inputmethod.latin.CAN_SKIP_HISTORY";
-        private const long ClearDelayMs = 60_000L; // 60 seconds
-
-        private static readonly object _sync = new object();
-        private static readonly Handler _handler = new Handler(Looper.MainLooper);
-        private static Java.Lang.Runnable _clearRunnable;
-
         /// <summary>
         /// Copies <paramref name="password"/> to the clipboard with the sensitive flag set,
-        /// then (re-)starts the 60-second auto-purge timer.
+        /// then asks the foreground monitor service to (re-)start the 60-second auto-purge timer.
         /// </summary>
         internal static void CopySensitive(Context context, string password)
         {
@@ -43,29 +36,12 @@ namespace SecurioClient.Helpers
             clip.Description.Extras = extras;
 
             clipboard.PrimaryClip = clip;
-            ScheduleClear(context);
+            PasswordMonitorService.ScheduleClipboardClear(context);
         }
 
         /// <summary>
-        /// (Re-)schedules a clipboard purge 60 seconds from now.
-        /// Calling this again before the timer fires resets the countdown (debounce).
-        /// </summary>
-        internal static void ScheduleClear(Context context)
-        {
-            // Use application context so the lambda does not retain an Activity reference.
-            var appContext = context.ApplicationContext;
-            lock (_sync)
-            {
-                if (_clearRunnable != null)
-                    _handler.RemoveCallbacks(_clearRunnable);
-                _clearRunnable = new Java.Lang.Runnable(() => ClearNow(appContext));
-                _handler.PostDelayed(_clearRunnable, ClearDelayMs);
-            }
-        }
-
-        /// <summary>
-        /// Immediately clears the system clipboard and cancels any pending auto-purge timer.
-        /// Called both by the scheduled runnable and by the screen-off receiver.
+        /// Immediately clears the system clipboard.
+        /// Called by the monitor service when a scheduled or screen-off clear command fires.
         /// <para>
         /// We call <c>ClearPrimaryClip()</c> directly rather than first writing an empty clip.
         /// Writing any clip via <c>PrimaryClip = …</c> from a background context on API 33+
@@ -75,12 +51,6 @@ namespace SecurioClient.Helpers
         /// </summary>
         internal static void ClearNow(Context context)
         {
-            lock (_sync)
-            {
-                if (_clearRunnable != null)
-                    _handler.RemoveCallbacks(_clearRunnable);
-                _clearRunnable = null;
-            }
             var clipboard = (ClipboardManager)context.GetSystemService(Context.ClipboardService);
             clipboard?.ClearPrimaryClip();
         }

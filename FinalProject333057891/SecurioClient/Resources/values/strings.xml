@@ -106,7 +106,7 @@
     <string name="view_label_notes">Notes</string>
     <string name="view_no_notes">No notes</string>
     <string name="view_copied_username">Username copied to clipboard</string>
-    <string name="view_copied_password">Password copied to clipboard</string>
+    <string name="view_copied_password">Password copied. Clipboard clears in 60 seconds; some keyboards may still keep history.</string>
     <string name="view_decrypt_error">Unable to decrypt password</string>
 
     <!-- Warnings page strings -->

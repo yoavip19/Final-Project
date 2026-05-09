@@ -114,11 +114,10 @@ namespace SecurioClient.Activities
             Finish();
         }
 
-        /// <summary>Starts the MonitorService as a foreground service if it is not already running. The service performs 24-hour password-health checks and clears the clipboard when the screen turns off.</summary>
+        /// <summary>Starts the PasswordMonitorService as a foreground service if it is not already running. The service performs 24-hour password-health checks and clipboard-protection commands.</summary>
         public static void StartPasswordMonitor(Android.Content.Context context)
         {
-            var serviceIntent = new Android.Content.Intent(context, typeof(MonitorService));
-            context.StartForegroundService(serviceIntent);
+            PasswordMonitorService.StartMonitoring(context);
         }
     }
 }
