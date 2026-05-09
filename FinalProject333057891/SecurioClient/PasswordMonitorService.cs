@@ -25,7 +25,7 @@ namespace SecurioClient
         private Handler _handler;
         private Java.Lang.Runnable _passwordCheckRunnable;
         private Java.Lang.Runnable _clipboardClearRunnable;
-        private ScreenOffReceiver _screenOffReceiver;
+        private ScreenOffClipboardReceiver _screenOffReceiver;
         private bool _isScreenOffReceiverRegistered;
         private IDictionary<string, Func<Task>> _commands;
 
@@ -107,7 +107,7 @@ namespace SecurioClient
         private void RegisterScreenOffReceiver()
         {
             if (_isScreenOffReceiverRegistered) return;
-            _screenOffReceiver ??= new ScreenOffReceiver();
+            _screenOffReceiver ??= new ScreenOffClipboardReceiver();
             RegisterReceiver(_screenOffReceiver, new IntentFilter(Intent.ActionScreenOff));
             _isScreenOffReceiverRegistered = true;
         }
@@ -260,19 +260,5 @@ namespace SecurioClient
             NotificationHelper.PostCheckResult(context, result);
         }
 
-        /// <summary>
-        /// Receiver that reacts to screen-off events and immediately clears the system clipboard.
-        /// </summary>
-        private sealed class ScreenOffReceiver : BroadcastReceiver
-        {
-            /// <summary>Handles dynamic broadcasts and clears clipboard content when the screen turns off.</summary>
-            /// <param name="context">Broadcast context.</param>
-            /// <param name="intent">Broadcast intent.</param>
-            public override void OnReceive(Context context, Intent intent)
-            {
-                if (intent?.Action == Intent.ActionScreenOff)
-                    ClearClipboard(context);
-            }
-        }
     }
 }
