@@ -6,6 +6,8 @@ using Android.Widget;
 using AndroidX.AppCompat.App;
 using SecurioClient.Helpers;
 using System;
+using static System.Net.Mime.MediaTypeNames;
+using System.Reflection.Emit;
 
 namespace SecurioClient.Activities
 {
@@ -121,7 +123,9 @@ namespace SecurioClient.Activities
 
             buttonCopyUsername.Click += (s, e) =>
             {
-                CopyToClipboard("username", textViewUsername.Text);
+                var clipboard = (ClipboardManager)GetSystemService(ClipboardService);
+                var clip = ClipData.NewPlainText("username", textViewUsername.Text);
+                clipboard.PrimaryClip = clip;
                 Toast.MakeText(this, GetString(Resource.String.view_copied_username), ToastLength.Short).Show();
             };
 
@@ -152,13 +156,6 @@ namespace SecurioClient.Activities
             textViewPassword.Text = passwordVisible
                 ? decryptedPassword
                 : new string('•', decryptedPassword.Length);
-        }
-
-        private void CopyToClipboard(string label, string text)
-        {
-            var clipboard = (ClipboardManager)GetSystemService(ClipboardService);
-            var clip = ClipData.NewPlainText(label, text);
-            clipboard.PrimaryClip = clip;
         }
 
         /// <summary>Displays an on-page security notice after password copy so that long warnings are fully readable.</summary>
