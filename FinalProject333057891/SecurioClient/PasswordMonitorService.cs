@@ -42,10 +42,9 @@ namespace SecurioClient
                 NotificationHelper.ForegroundNotificationId,
                 NotificationHelper.BuildForegroundNotification(this));
 
-            var appContext = ApplicationContext;
             _handler = new Handler(Looper.MainLooper);
-            _passwordCheckRunnable = new Java.Lang.Runnable(() => StartCommand(appContext, ActionRunPasswordCheck));
-            _clipboardClearRunnable = new Java.Lang.Runnable(() => StartCommand(appContext, ActionClearClipboard));
+            _passwordCheckRunnable = new Java.Lang.Runnable(() => StartCommand(ApplicationContext, ActionRunPasswordCheck));
+            _clipboardClearRunnable = new Java.Lang.Runnable(() => StartCommand(ApplicationContext, ActionClearClipboard));
             _commands = new Dictionary<string, Func<Task>>(StringComparer.OrdinalIgnoreCase)
             {
                 [ActionStartMonitoring] = ExecuteStartMonitoringAsync,
