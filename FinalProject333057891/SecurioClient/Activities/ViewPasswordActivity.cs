@@ -1,6 +1,7 @@
 using Android.App;
 using Android.Content;
 using Android.OS;
+using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
 using SecurioClient.Helpers;
@@ -28,6 +29,8 @@ namespace SecurioClient.Activities
         private TextView textViewPassword;
         private TextView textViewNotes;
         private TextView textViewLastChanged;
+        private View clipboardNoticeCard;
+        private TextView textViewClipboardNotice;
         private ImageView buttonCopyUsername;
         private ImageView buttonTogglePassword;
         private ImageView buttonCopyPassword;
@@ -61,6 +64,8 @@ namespace SecurioClient.Activities
             textViewPassword = FindViewById<TextView>(Resource.Id.textViewViewPassword);
             textViewNotes = FindViewById<TextView>(Resource.Id.textViewViewNotes);
             textViewLastChanged = FindViewById<TextView>(Resource.Id.textViewViewLastChanged);
+            clipboardNoticeCard = FindViewById<View>(Resource.Id.cardViewClipboardNotice);
+            textViewClipboardNotice = FindViewById<TextView>(Resource.Id.textViewClipboardNotice);
             buttonCopyUsername = FindViewById<ImageView>(Resource.Id.buttonCopyUsername);
             buttonTogglePassword = FindViewById<ImageView>(Resource.Id.buttonTogglePassword);
             buttonCopyPassword = FindViewById<ImageView>(Resource.Id.buttonCopyPassword);
@@ -112,6 +117,9 @@ namespace SecurioClient.Activities
                 decryptedPassword = null;
             }
 
+            if (clipboardNoticeCard != null)
+                clipboardNoticeCard.Visibility = ViewStates.Gone;
+
             // Show masked password by default.
             passwordVisible = false;
             UpdatePasswordDisplay();
@@ -138,7 +146,7 @@ namespace SecurioClient.Activities
                 if (!string.IsNullOrEmpty(decryptedPassword))
                 {
                     ClipboardGuard.CopySensitive(this, decryptedPassword);
-                    Toast.MakeText(this, GetString(Resource.String.view_copied_password), ToastLength.Short).Show();
+                    ShowClipboardNotice(GetString(Resource.String.view_copied_password_notice));
                 }
             };
         }
@@ -163,6 +171,15 @@ namespace SecurioClient.Activities
             var clipboard = (ClipboardManager)GetSystemService(ClipboardService);
             var clip = ClipData.NewPlainText(label, text);
             clipboard.PrimaryClip = clip;
+        }
+
+        /// <summary>Displays an on-page security notice after password copy so long warnings are fully readable.</summary>
+        private void ShowClipboardNotice(string message)
+        {
+            if (clipboardNoticeCard == null || textViewClipboardNotice == null) return;
+
+            textViewClipboardNotice.Text = message;
+            clipboardNoticeCard.Visibility = ViewStates.Visible;
         }
     }
 }
