@@ -153,6 +153,7 @@ namespace SecurioClient
             }
             catch (Exception)
             {
+                // Fail-open behavior: only ensure periodic password checks continue scheduling.
                 if (action == ActionRunPasswordCheck)
                     ScheduleNextPasswordCheck(immediate: false);
             }
