@@ -173,7 +173,7 @@ namespace SecurioClient.Activities
             clipboard.PrimaryClip = clip;
         }
 
-        /// <summary>Displays an on-page security notice after password copy so long warnings are fully readable.</summary>
+        /// <summary>Displays an on-page security notice after password copy so that long warnings are fully readable.</summary>
         private void ShowClipboardNotice(string message)
         {
             if (clipboardNoticeCard == null || textViewClipboardNotice == null) return;
