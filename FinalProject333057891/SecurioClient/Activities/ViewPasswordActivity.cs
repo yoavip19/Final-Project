@@ -1,10 +1,13 @@
 using Android.App;
 using Android.Content;
 using Android.OS;
+using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
 using SecurioClient.Helpers;
 using System;
+using static System.Net.Mime.MediaTypeNames;
+using System.Reflection.Emit;
 
 namespace SecurioClient.Activities
 {
@@ -12,7 +15,6 @@ namespace SecurioClient.Activities
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class ViewPasswordActivity : AppCompatActivity
     {
-        // Intent extras used to pass the item data into this activity.
         public const string ExtraSiteName = "EXTRA_SITE_NAME";
         public const string ExtraUsername = "EXTRA_USERNAME";
         public const string ExtraNotes = "EXTRA_NOTES";
@@ -21,22 +23,20 @@ namespace SecurioClient.Activities
         public const string ExtraCipherText = "EXTRA_CIPHER_TEXT";
         public const string ExtraLastUpdate = "EXTRA_LAST_UPDATE";
 
-        // ── Views ──────────────────────────────────────────────
         private ImageView imageViewBack;
         private TextView textViewSiteName;
         private TextView textViewUsername;
         private TextView textViewPassword;
         private TextView textViewNotes;
         private TextView textViewLastChanged;
+        private View clipboardNoticeCard;
+        private TextView textViewClipboardNotice;
         private ImageView buttonCopyUsername;
         private ImageView buttonTogglePassword;
         private ImageView buttonCopyPassword;
 
-        // The decrypted password; kept in memory only for the lifetime of this activity.
         private string decryptedPassword;
         private bool passwordVisible;
-
-        // ── Lifecycle ──────────────────────────────────────────
 
         /// <summary>Initializes the activity, inflates the layout, populates fields, and wires up event handlers.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
@@ -50,8 +50,6 @@ namespace SecurioClient.Activities
             SetupEventHandlers();
         }
 
-        // ── Setup helpers ──────────────────────────────────────
-
         /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
         {
@@ -61,6 +59,8 @@ namespace SecurioClient.Activities
             textViewPassword = FindViewById<TextView>(Resource.Id.textViewViewPassword);
             textViewNotes = FindViewById<TextView>(Resource.Id.textViewViewNotes);
             textViewLastChanged = FindViewById<TextView>(Resource.Id.textViewViewLastChanged);
+            clipboardNoticeCard = FindViewById<View>(Resource.Id.cardViewClipboardNotice);
+            textViewClipboardNotice = FindViewById<TextView>(Resource.Id.textViewClipboardNotice);
             buttonCopyUsername = FindViewById<ImageView>(Resource.Id.buttonCopyUsername);
             buttonTogglePassword = FindViewById<ImageView>(Resource.Id.buttonTogglePassword);
             buttonCopyPassword = FindViewById<ImageView>(Resource.Id.buttonCopyPassword);
@@ -78,7 +78,6 @@ namespace SecurioClient.Activities
                 ? GetString(Resource.String.view_no_notes)
                 : notes;
 
-            // Display "Last changed" date.
             long lastUpdateTicks = Intent.GetLongExtra(ExtraLastUpdate, 0L);
             if (lastUpdateTicks > 0)
             {
@@ -90,7 +89,6 @@ namespace SecurioClient.Activities
                 textViewLastChanged.Text = "—";
             }
 
-            // Decrypt the password.
             string iv = Intent.GetStringExtra(ExtraIV) ?? string.Empty;
             string tag = Intent.GetStringExtra(ExtraTag) ?? string.Empty;
             string cipherText = Intent.GetStringExtra(ExtraCipherText) ?? string.Empty;
@@ -112,7 +110,9 @@ namespace SecurioClient.Activities
                 decryptedPassword = null;
             }
 
-            // Show masked password by default.
+            if (clipboardNoticeCard != null)
+                clipboardNoticeCard.Visibility = ViewStates.Gone;
+
             passwordVisible = false;
             UpdatePasswordDisplay();
         }
@@ -123,7 +123,9 @@ namespace SecurioClient.Activities
 
             buttonCopyUsername.Click += (s, e) =>
             {
-                CopyToClipboard("username", textViewUsername.Text);
+                var clipboard = (ClipboardManager)GetSystemService(ClipboardService);
+                var clip = ClipData.NewPlainText("username", textViewUsername.Text);
+                clipboard.PrimaryClip = clip;
                 Toast.MakeText(this, GetString(Resource.String.view_copied_username), ToastLength.Short).Show();
             };
 
@@ -137,13 +139,11 @@ namespace SecurioClient.Activities
             {
                 if (!string.IsNullOrEmpty(decryptedPassword))
                 {
-                    CopyToClipboard("password", decryptedPassword);
-                    Toast.MakeText(this, GetString(Resource.String.view_copied_password), ToastLength.Short).Show();
+                    ClipboardGuard.CopySensitive(this, decryptedPassword);
+                    ShowClipboardNotice(GetString(Resource.String.view_copied_password_notice));
                 }
             };
         }
-
-        // ── Helpers ────────────────────────────────────────────
 
         private void UpdatePasswordDisplay()
         {
@@ -158,11 +158,13 @@ namespace SecurioClient.Activities
                 : new string('•', decryptedPassword.Length);
         }
 
-        private void CopyToClipboard(string label, string text)
+        /// <summary>Displays an on-page security notice after password copy so that long warnings are fully readable.</summary>
+        private void ShowClipboardNotice(string message)
         {
-            var clipboard = (ClipboardManager)GetSystemService(ClipboardService);
-            var clip = ClipData.NewPlainText(label, text);
-            clipboard.PrimaryClip = clip;
+            if (clipboardNoticeCard == null || textViewClipboardNotice == null) return;
+
+            textViewClipboardNotice.Text = message;
+            clipboardNoticeCard.Visibility = ViewStates.Visible;
         }
     }
 }

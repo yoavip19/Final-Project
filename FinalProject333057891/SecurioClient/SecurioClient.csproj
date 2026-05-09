@@ -65,6 +65,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\ClipboardGuard.cs" />
     <Compile Include="PasswordOptionsBottomSheet.cs" />
     <Compile Include="PasswordMonitorService.cs" />
     <Compile Include="Helpers\ServerHelpers\AuthService.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Activities\EditAccountActivity.cs" />
     <Compile Include="Activities\SignupActivity.cs" />
+    <Compile Include="ScreenOffClipboardReceiver.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
