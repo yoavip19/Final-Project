@@ -15,12 +15,7 @@ namespace SecurioClient.Helpers
     /// </summary>
     internal static class ClipboardGuard
     {
-        // Value of ClipDescription.EXTRA_IS_SENSITIVE (added in API 33).
         private const string ExtraIsSensitive = "android.content.extra.IS_SENSITIVE";
-        // Undocumented Gboard-specific hint to skip saving this clip in keyboard history.
-        // This is not part of a stable public API and may be ignored by other keyboards/future versions.
-        // Still set as a best-effort complement to EXTRA_IS_SENSITIVE because no public Android API
-        // exists for purging third-party keyboard history after the copy already happened.
         private const string ExtraGboardCanSkipHistory = "com.google.android.inputmethod.latin.CAN_SKIP_HISTORY";
         /// <summary>
         /// Copies <paramref name="password"/> to the clipboard with the sensitive flag set,
@@ -32,7 +27,6 @@ namespace SecurioClient.Helpers
             if (clipboard == null) return;
             var clip = ClipData.NewPlainText("password", password);
 
-            // Instruct modern IMEs to bypass their history / suggestion buffers.
             var extras = new PersistableBundle();
             extras.PutBoolean(ExtraIsSensitive, true);
             extras.PutBoolean(ExtraGboardCanSkipHistory, true);
