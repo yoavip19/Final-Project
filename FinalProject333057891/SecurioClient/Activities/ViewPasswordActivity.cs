@@ -13,6 +13,7 @@ namespace SecurioClient.Activities
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class ViewPasswordActivity : AppCompatActivity
     {
+        // Intent extras used to pass the item data into this activity.
         public const string ExtraSiteName = "EXTRA_SITE_NAME";
         public const string ExtraUsername = "EXTRA_USERNAME";
         public const string ExtraNotes = "EXTRA_NOTES";
@@ -21,6 +22,7 @@ namespace SecurioClient.Activities
         public const string ExtraCipherText = "EXTRA_CIPHER_TEXT";
         public const string ExtraLastUpdate = "EXTRA_LAST_UPDATE";
 
+        // ── Views ──────────────────────────────────────────────
         private ImageView imageViewBack;
         private TextView textViewSiteName;
         private TextView textViewUsername;
@@ -33,8 +35,11 @@ namespace SecurioClient.Activities
         private ImageView buttonTogglePassword;
         private ImageView buttonCopyPassword;
 
+        // The decrypted password; kept in memory only for the lifetime of this activity.
         private string decryptedPassword;
         private bool passwordVisible;
+
+        // ── Lifecycle ──────────────────────────────────────────
 
         /// <summary>Initializes the activity, inflates the layout, populates fields, and wires up event handlers.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
@@ -47,6 +52,8 @@ namespace SecurioClient.Activities
             PopulateFields();
             SetupEventHandlers();
         }
+
+        // ── Setup helpers ──────────────────────────────────────
 
         /// <summary>Finds and assigns all view references from the layout.</summary>
         private void InitializeViews()
@@ -76,6 +83,7 @@ namespace SecurioClient.Activities
                 ? GetString(Resource.String.view_no_notes)
                 : notes;
 
+            // Display "Last changed" date.
             long lastUpdateTicks = Intent.GetLongExtra(ExtraLastUpdate, 0L);
             if (lastUpdateTicks > 0)
             {
@@ -87,6 +95,7 @@ namespace SecurioClient.Activities
                 textViewLastChanged.Text = "—";
             }
 
+            // Decrypt the password.
             string iv = Intent.GetStringExtra(ExtraIV) ?? string.Empty;
             string tag = Intent.GetStringExtra(ExtraTag) ?? string.Empty;
             string cipherText = Intent.GetStringExtra(ExtraCipherText) ?? string.Empty;
@@ -111,6 +120,7 @@ namespace SecurioClient.Activities
             if (clipboardNoticeCard != null)
                 clipboardNoticeCard.Visibility = ViewStates.Gone;
 
+            // Show masked password by default.
             passwordVisible = false;
             UpdatePasswordDisplay();
         }
@@ -140,6 +150,8 @@ namespace SecurioClient.Activities
                 }
             };
         }
+
+        // ── Helpers ────────────────────────────────────────────
 
         private void UpdatePasswordDisplay()
         {

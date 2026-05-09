@@ -13,8 +13,8 @@ namespace SecurioClient
     [Service(Name = ServiceName, Exported = false)]
     public class PasswordMonitorService : Service
     {
-        private const long IntervalMs = 24 * 60 * 60 * 1000L;
-        private const long ClipboardClearDelayMs = 60_000L;
+        private const long IntervalMs = 24 * 60 * 60 * 1000L; // 24 hours
+        private const long ClipboardClearDelayMs = 60_000L; // 60 seconds
 
         public const string ServiceName = "com.companyname.securioclient.PasswordMonitorService";
         internal const string ActionStartMonitoring = ServiceName + ".action.START_MONITORING";
@@ -117,7 +117,10 @@ namespace SecurioClient
         {
             if (!_isScreenOffReceiverRegistered) return;
             try { UnregisterReceiver(_screenOffReceiver); }
-            catch (Java.Lang.IllegalArgumentException) { }
+            catch (Java.Lang.IllegalArgumentException)
+            {
+                System.Diagnostics.Debug.WriteLine("PasswordMonitorService screen-off receiver was already unregistered.");
+            }
             finally
             {
                 _isScreenOffReceiverRegistered = false;
@@ -145,14 +148,19 @@ namespace SecurioClient
         private async Task ExecuteCommandAsync(string action)
         {
             if (!_commands.TryGetValue(action, out var command))
+            {
+                System.Diagnostics.Debug.WriteLine($"PasswordMonitorService received unknown action '{action}'. Falling back to {ActionStartMonitoring}.");
                 command = _commands[ActionStartMonitoring];
+            }
 
             try
             {
                 await command();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"PasswordMonitorService command failed: {action}. {ex}");
+
                 if (action == ActionRunPasswordCheck)
                     ScheduleNextPasswordCheck(immediate: false);
             }
