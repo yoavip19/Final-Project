@@ -27,7 +27,7 @@ namespace SecurioClient
         private Java.Lang.Runnable _clipboardClearRunnable;
         private ScreenOffReceiver _screenOffReceiver;
         private bool _isScreenOffReceiverRegistered;
-        private IDictionary<string, Action> _commands;
+        private IDictionary<string, Func<Task>> _commands;
 
         public override void OnCreate()
         {
@@ -38,13 +38,16 @@ namespace SecurioClient
                 NotificationHelper.ForegroundNotificationId,
                 NotificationHelper.BuildForegroundNotification(this));
 
+            var appContext = ApplicationContext;
             _handler = new Handler(Looper.MainLooper);
-            _commands = new Dictionary<string, Action>(StringComparer.Ordinal)
+            _passwordCheckRunnable = new Java.Lang.Runnable(() => StartCommand(appContext, ActionRunPasswordCheck));
+            _clipboardClearRunnable = new Java.Lang.Runnable(() => StartCommand(appContext, ActionClearClipboard));
+            _commands = new Dictionary<string, Func<Task>>(StringComparer.OrdinalIgnoreCase)
             {
-                [ActionStartMonitoring] = StartMonitoringLoop,
-                [ActionRunPasswordCheck] = () => _ = RunPasswordCheckAsync(),
-                [ActionScheduleClipboardClear] = ScheduleClipboardClear,
-                [ActionClearClipboard] = ClearClipboardNow
+                [ActionStartMonitoring] = ExecuteStartMonitoringAsync,
+                [ActionRunPasswordCheck] = RunPasswordCheckAsync,
+                [ActionScheduleClipboardClear] = ExecuteScheduleClipboardClearAsync,
+                [ActionClearClipboard] = ExecuteClearClipboardAsync
             };
         }
 
@@ -52,11 +55,7 @@ namespace SecurioClient
         {
             RegisterScreenOffReceiver();
 
-            var action = intent?.Action ?? ActionStartMonitoring;
-            if (!_commands.TryGetValue(action, out var command))
-                command = _commands[ActionStartMonitoring];
-
-            command();
+            _ = ExecuteCommandAsync(intent?.Action ?? ActionStartMonitoring);
             return StartCommandResult.Sticky;
         }
 
@@ -90,9 +89,11 @@ namespace SecurioClient
         private void UnregisterScreenOffReceiver()
         {
             if (!_isScreenOffReceiverRegistered) return;
-            if (_screenOffReceiver == null) return;
             try { UnregisterReceiver(_screenOffReceiver); }
-            catch (Java.Lang.IllegalArgumentException) { /* already unregistered */ }
+            catch (Java.Lang.IllegalArgumentException)
+            {
+                System.Diagnostics.Debug.WriteLine("PasswordMonitorService screen-off receiver was already unregistered.");
+            }
             finally
             {
                 _isScreenOffReceiverRegistered = false;
@@ -108,6 +109,45 @@ namespace SecurioClient
             appContext.StartForegroundService(intent);
         }
 
+        private async Task ExecuteCommandAsync(string action)
+        {
+            if (!_commands.TryGetValue(action, out var command))
+            {
+                System.Diagnostics.Debug.WriteLine($"PasswordMonitorService received unknown action '{action}'. Falling back to {ActionStartMonitoring}.");
+                command = _commands[ActionStartMonitoring];
+            }
+
+            try
+            {
+                await command();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"PasswordMonitorService command failed: {action}. {ex}");
+
+                if (action == ActionRunPasswordCheck)
+                    ScheduleNextPasswordCheck(immediate: false);
+            }
+        }
+
+        private Task ExecuteStartMonitoringAsync()
+        {
+            StartMonitoringLoop();
+            return Task.CompletedTask;
+        }
+
+        private Task ExecuteScheduleClipboardClearAsync()
+        {
+            ScheduleClipboardClear();
+            return Task.CompletedTask;
+        }
+
+        private Task ExecuteClearClipboardAsync()
+        {
+            ClearClipboardNow();
+            return Task.CompletedTask;
+        }
+
         private void StartMonitoringLoop()
         {
             ScheduleNextPasswordCheck(immediate: true);
@@ -116,7 +156,6 @@ namespace SecurioClient
         private void ScheduleNextPasswordCheck(bool immediate)
         {
             CancelPasswordCheck();
-            _passwordCheckRunnable = new Java.Lang.Runnable(() => StartCommand(this, ActionRunPasswordCheck));
             if (immediate)
                 _handler.Post(_passwordCheckRunnable);
             else
@@ -125,9 +164,7 @@ namespace SecurioClient
 
         private void CancelPasswordCheck()
         {
-            if (_passwordCheckRunnable != null)
-                _handler?.RemoveCallbacks(_passwordCheckRunnable);
-            _passwordCheckRunnable = null;
+            CancelCallback(_passwordCheckRunnable);
         }
 
         private async Task RunPasswordCheckAsync()
@@ -141,15 +178,18 @@ namespace SecurioClient
         private void ScheduleClipboardClear()
         {
             CancelClipboardClear();
-            _clipboardClearRunnable = new Java.Lang.Runnable(() => StartCommand(this, ActionClearClipboard));
             _handler.PostDelayed(_clipboardClearRunnable, ClipboardClearDelayMs);
         }
 
         private void CancelClipboardClear()
         {
-            if (_clipboardClearRunnable != null)
-                _handler?.RemoveCallbacks(_clipboardClearRunnable);
-            _clipboardClearRunnable = null;
+            CancelCallback(_clipboardClearRunnable);
+        }
+
+        private void CancelCallback(Java.Lang.Runnable runnable)
+        {
+            if (_handler != null && runnable != null)
+                _handler.RemoveCallbacks(runnable);
         }
 
         private void ClearClipboardNow()
