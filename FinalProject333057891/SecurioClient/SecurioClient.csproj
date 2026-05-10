@@ -66,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helpers\ClipboardGuard.cs" />
+    <Compile Include="Helpers\AppLockManager.cs" />
     <Compile Include="PasswordOptionsBottomSheet.cs" />
     <Compile Include="PasswordMonitorService.cs" />
     <Compile Include="Helpers\ServerHelpers\AuthService.cs" />
@@ -87,6 +88,8 @@
     <Compile Include="Helpers\PasswordCheckDecision.cs" />
     <Compile Include="Activities\LoginActivity.cs" />
     <Compile Include="Activities\MainActivity.cs" />
+    <Compile Include="Activities\SecuredAppCompatActivity.cs" />
+    <Compile Include="Activities\LockScreenActivity.cs" />
     <Compile Include="PasswordBannerAdapter.cs" />
     <Compile Include="BottomNavFragment.cs" />
     <Compile Include="Activities\AddPasswordActivity.cs" />
@@ -108,6 +111,9 @@
     <None Include="Assets\AboutAssets.txt" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidResource Include="Resources\layout\activity_lock_screen.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
     <AndroidResource Include="Resources\layout\bottom_sheet_password_options.xml">
       <SubType>Designer</SubType>
     </AndroidResource>

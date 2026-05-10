@@ -101,6 +101,10 @@ namespace SecurioClient.Activities
 
                 if (result.Success)
                 {
+                    // Clear any stale lock state and arm the inactivity timer for the new session.
+                    AppLockManager.Unlock();
+                    AppLockManager.ResetAutoLockTimer();
+
                     MainActivity.StartPasswordMonitor(this);
                     var intent = new Android.Content.Intent(this, typeof(VaultActivity));
                     intent.SetFlags(Android.Content.ActivityFlags.NewTask | Android.Content.ActivityFlags.ClearTask);

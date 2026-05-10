@@ -19,7 +19,7 @@ namespace SecurioClient.Activities
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     /// <summary>Activity that allows the user to update their username, email, and optionally their master password.</summary>
-    public class EditAccountActivity : AppCompatActivity
+    public class EditAccountActivity : SecuredAppCompatActivity
     {
         // Request code used when launching this activity from ProfileActivity.
         public const int RequestCodeEditAccount = 2001;

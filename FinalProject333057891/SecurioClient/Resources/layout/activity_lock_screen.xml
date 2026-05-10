@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@color/signupBackground"
+    android:padding="40dp">
+
+    <!-- Lock icon -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🔒"
+        android:textSize="72sp"
+        android:gravity="center"
+        android:layout_marginBottom="24dp" />
+
+    <!-- App name -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="32sp"
+        android:textColor="@color/signupTitleText"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:layout_marginBottom="8dp" />
+
+    <!-- "Session Locked" heading -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/lock_screen_title"
+        android:textSize="20sp"
+        android:textColor="@color/signupSubtitleText"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Subtitle / instruction -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/lock_screen_subtitle"
+        android:textSize="14sp"
+        android:textColor="@color/vaultEmptyText"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:layout_marginBottom="48dp" />
+
+    <!-- Unlock button — also shown as a fallback when the auto-prompt is dismissed -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonUnlock"
+        android:layout_width="wrap_content"
+        android:layout_height="52dp"
+        android:text="@string/lock_screen_button_unlock"
+        android:textSize="16sp"
+        android:textColor="@color/signupButtonText"
+        android:textStyle="bold"
+        android:textAllCaps="false"
+        android:fontFamily="sans-serif-medium"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
+        android:backgroundTint="@color/signupButtonBackground"
+        app:cornerRadius="26dp"
+        app:elevation="4dp" />
+
+</LinearLayout>

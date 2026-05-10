@@ -14,7 +14,7 @@ namespace SecurioClient.Activities
     /// if the cache has been invalidated the counters are recomputed on-the-fly.
     /// </summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
-    public class WarningsActivity : AppCompatActivity
+    public class WarningsActivity : SecuredAppCompatActivity
     {
         private TextView textViewLeakedCount;
         private TextView textViewWeakCount;
