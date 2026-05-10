@@ -18,7 +18,7 @@ namespace SecurioClient.Activities
 {
     /// <summary>Activity for adding a new password entry to the vault using the shared activity_entry.xml layout.</summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
-    public class AddPasswordActivity : AppCompatActivity
+    public class AddPasswordActivity : SecuredAppCompatActivity
     {
         // Result extras returned to the caller.
         public const string ResultEntryId = "RESULT_ENTRY_ID";

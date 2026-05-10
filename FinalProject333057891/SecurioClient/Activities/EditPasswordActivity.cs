@@ -19,7 +19,7 @@ namespace SecurioClient.Activities
 {
     /// <summary>Activity for editing an existing password entry in the vault using the shared activity_entry.xml layout.</summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
-    public class EditPasswordActivity : AppCompatActivity
+    public class EditPasswordActivity : SecuredAppCompatActivity
     {
         // Intent extras used to pass the item data into this activity.
         public const string ExtraEntryId = "EXTRA_ENTRY_ID";

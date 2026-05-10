@@ -15,7 +15,7 @@ namespace SecurioClient.Activities
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     /// <summary>Activity that displays the user's profile information with options to edit, log out, or delete the account.</summary>
-    public class ProfileActivity : AppCompatActivity
+    public class ProfileActivity : SecuredAppCompatActivity
     {
         private TextView textViewProfileUsername;
         private TextView textViewProfileEmail;
@@ -206,6 +206,8 @@ namespace SecurioClient.Activities
         /// <summary>Clears the session and navigates to LoginActivity.</summary>
         private async void PerformLogout()
         {
+            AppLockManager.CancelAutoLockTimer();
+            AppLockManager.Unlock();
             SessionHelper.EndSession();
             await StorageHelper.ClearSessionAsync();
 
@@ -244,6 +246,8 @@ namespace SecurioClient.Activities
                 {
                     Toast.MakeText(this, Resource.String.profile_deleted_toast, ToastLength.Short).Show();
 
+                    AppLockManager.CancelAutoLockTimer();
+                    AppLockManager.Unlock();
                     SessionHelper.EndSession();
                     StorageHelper.ClearAll();
 

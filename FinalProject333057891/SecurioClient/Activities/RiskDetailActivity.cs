@@ -23,7 +23,7 @@ namespace SecurioClient.Activities
     /// <see cref="PasswordEntryActionsHelper"/>.
     /// </summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
-    public class RiskDetailActivity : AppCompatActivity
+    public class RiskDetailActivity : SecuredAppCompatActivity
     {
         /// <summary>Intent extra key for the risk category string ("leaked", "weak", "reused", "old").</summary>
         public const string ExtraRiskCategory = "EXTRA_RISK_CATEGORY";

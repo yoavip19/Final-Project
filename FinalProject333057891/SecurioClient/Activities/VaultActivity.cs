@@ -16,7 +16,7 @@ namespace SecurioClient.Activities
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     /// <summary>Activity that displays the user's password vault entries with search and management capabilities.</summary>
-    public class VaultActivity : AppCompatActivity
+    public class VaultActivity : SecuredAppCompatActivity
     {
         private const int RequestCodeNotificationPermission = 9001;
         private const string PostNotificationsPermission = "android.permission.POST_NOTIFICATIONS";

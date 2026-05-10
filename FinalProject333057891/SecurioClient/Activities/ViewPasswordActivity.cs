@@ -13,7 +13,7 @@ namespace SecurioClient.Activities
 {
     /// <summary>Read-only activity that displays a single vault entry's details with the password decrypted client-side.</summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
-    public class ViewPasswordActivity : AppCompatActivity
+    public class ViewPasswordActivity : SecuredAppCompatActivity
     {
         public const string ExtraSiteName = "EXTRA_SITE_NAME";
         public const string ExtraUsername = "EXTRA_USERNAME";

@@ -51,6 +51,10 @@ namespace SecurioClient.Activities
                     }
 
                     _pendingVaultNavigation = true;
+
+                    // Lock the session immediately: the user must pass biometric / device-PIN
+                    // authentication before accessing vault data after an app restart.
+                    AppLockManager.Lock();
                 }
                 else
                 {
