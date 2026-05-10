@@ -182,6 +182,6 @@
     <string name="lock_screen_title">Session Locked</string>
     <string name="lock_screen_subtitle">Verify your identity to continue</string>
     <string name="lock_screen_biometric_title">Unlock Securio</string>
-    <string name="lock_screen_biometric_subtitle">Use your fingerprint, Face ID, or device PIN</string>
+    <string name="lock_screen_biometric_subtitle">Use your fingerprint or device PIN</string>
     <string name="lock_screen_button_unlock">Unlock</string>
 </resources>

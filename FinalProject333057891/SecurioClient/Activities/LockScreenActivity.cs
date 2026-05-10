@@ -95,7 +95,7 @@ namespace SecurioClient.Activities
         {
             // Security: block back navigation. The only exit is successful authentication.
             // Minimise the entire task rather than finishing this activity.
-            MoveTaskToBack(false);
+            MoveTaskToBack(true);
         }
 
         // ─── Inner helpers ─────────────────────────────────────────────────────────
