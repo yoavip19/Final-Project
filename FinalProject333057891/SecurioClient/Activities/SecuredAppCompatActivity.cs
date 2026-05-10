@@ -34,7 +34,6 @@ namespace SecurioClient.Activities
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-            // Prevent sensitive data from appearing in the recent-apps thumbnail and block screenshots.
             Window.SetFlags(WindowManagerFlags.Secure, WindowManagerFlags.Secure);
         }
 

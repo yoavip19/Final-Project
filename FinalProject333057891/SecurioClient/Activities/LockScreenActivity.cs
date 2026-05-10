@@ -40,7 +40,6 @@ namespace SecurioClient.Activities
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-            // Prevent screenshots and app-switcher previews of the lock screen.
             Window.SetFlags(WindowManagerFlags.Secure, WindowManagerFlags.Secure);
             SetContentView(Resource.Layout.activity_lock_screen);
 
@@ -51,7 +50,6 @@ namespace SecurioClient.Activities
         protected override void OnResume()
         {
             base.OnResume();
-            // Automatically trigger the biometric prompt each time this screen becomes visible.
             ShowBiometricPrompt();
         }
 
@@ -97,8 +95,6 @@ namespace SecurioClient.Activities
             // Minimise the entire task rather than finishing this activity.
             MoveTaskToBack(true);
         }
-
-        // ─── Inner helpers ─────────────────────────────────────────────────────────
 
         /// <summary>Runs <see cref="Java.Util.Concurrent.IExecutor"/> commands on the given Handler's thread.</summary>
         private sealed class HandlerExecutor : Java.Lang.Object, Java.Util.Concurrent.IExecutor
