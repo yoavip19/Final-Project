@@ -133,8 +133,8 @@ namespace SecurioClient.Activities
             public override void OnAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result)
                 => _onSuccess?.Invoke();
 
-            public override void OnAuthenticationError(int errorCode, Java.Lang.ICharSequence errString)
-                => _onError?.Invoke(errorCode, errString?.ToString());
+            public override void OnAuthenticationError(int errorCode, string errString)
+                => _onError?.Invoke(errorCode, errString);
 
             public override void OnAuthenticationFailed()
             {
