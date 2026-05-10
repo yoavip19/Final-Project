@@ -72,8 +72,10 @@ namespace SecurioClient.Activities
                 _lockScreenPending = false;
                 if (resultCode == Result.Ok)
                 {
-                    AppLockManager.Unlock();
+                    // Reset the timer before unlocking to eliminate any window where
+                    // the activity is unlocked but the new countdown has not started yet.
                     AppLockManager.ResetAutoLockTimer();
+                    AppLockManager.Unlock();
                 }
             }
         }

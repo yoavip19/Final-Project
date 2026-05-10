@@ -15,8 +15,11 @@ namespace SecurioClient.Helpers
         private const long AutoLockDelayMs = 2 * 60 * 1000L; // 2 minutes
 
         private static bool _isLocked;
-        private static Handler _handler;
-        private static Java.Lang.Runnable _lockRunnable;
+
+        // A single Handler + Runnable pair ensures RemoveCallbacks always targets
+        // the correct pending callback and avoids orphaned runnable instances.
+        private static readonly Handler _handler = new Handler(Looper.MainLooper);
+        private static readonly Java.Lang.Runnable _lockRunnable = new Java.Lang.Runnable(Lock);
 
         /// <summary>Gets a value indicating whether the app is currently locked.</summary>
         public static bool IsLocked => _isLocked;
@@ -42,8 +45,7 @@ namespace SecurioClient.Helpers
             _isLocked = false;
         }
 
-        /// <summary>
-        /// Resets the 2-minute inactivity timer. Call this from
+        /// <summary>Resets the 2-minute inactivity timer. Call this from
         /// <c>OnUserInteraction</c> in every protected activity.
         /// Has no effect when no session is active.
         /// </summary>
@@ -52,23 +54,14 @@ namespace SecurioClient.Helpers
             if (!SessionHelper.IsAuthenticated)
                 return;
 
-            CancelAutoLockTimer();
-
-            if (_handler == null)
-                _handler = new Handler(Looper.MainLooper);
-
-            _lockRunnable = new Java.Lang.Runnable(Lock);
+            _handler.RemoveCallbacks(_lockRunnable);
             _handler.PostDelayed(_lockRunnable, AutoLockDelayMs);
         }
 
         /// <summary>Cancels any pending auto-lock countdown without changing the locked state.</summary>
         public static void CancelAutoLockTimer()
         {
-            if (_handler != null && _lockRunnable != null)
-            {
-                _handler.RemoveCallbacks(_lockRunnable);
-                _lockRunnable = null;
-            }
+            _handler.RemoveCallbacks(_lockRunnable);
         }
     }
 }

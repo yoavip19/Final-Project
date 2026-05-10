@@ -26,10 +26,11 @@ namespace SecurioClient.Activities
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", NoHistory = false)]
     public class LockScreenActivity : AppCompatActivity
     {
-        // Authenticator flags matching android.hardware.biometrics.BiometricManager.Authenticators
-        // (available from Android API 30, which is within our minSdkVersion 33).
-        private const int AuthBiometricStrong = 0x000F;
-        private const int AuthDeviceCredential = 0x8000;
+        // Authenticator type flags from android.hardware.biometrics.BiometricManager.Authenticators (API 30+).
+        // Values are stable platform constants; using them directly ensures compatibility
+        // across Xamarin.Android binding versions.
+        private const int BiometricStrong = 15;    // BiometricManager.Authenticators.BIOMETRIC_STRONG
+        private const int DeviceCredential = 32768; // BiometricManager.Authenticators.DEVICE_CREDENTIAL
 
         private MaterialButton buttonUnlock;
 
@@ -85,7 +86,7 @@ namespace SecurioClient.Activities
                 // BIOMETRIC_STRONG | DEVICE_CREDENTIAL: tries biometrics first and falls back
                 // to the device PIN / pattern / password if biometrics are unavailable.
                 // SetNegativeButton must NOT be called when DeviceCredential is included.
-                .SetAllowedAuthenticators(AuthBiometricStrong | AuthDeviceCredential)
+                .SetAllowedAuthenticators(BiometricStrong | DeviceCredential)
                 .Build()
                 .Authenticate(cancellationSignal, executor, callback);
         }
