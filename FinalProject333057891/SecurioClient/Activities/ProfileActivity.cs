@@ -3,7 +3,6 @@ using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
-using AndroidX.AppCompat.App;
 using Google.Android.Material.Button;
 using SecurioClient.Helpers;
 using SecurioClient.Helpers.ServerHelpers;
@@ -191,31 +190,7 @@ namespace SecurioClient.Activities
 
         /// <summary>Shows a confirmation dialog before logging out.</summary>
         private void ConfirmLogout()
-        {
-            new AndroidX.AppCompat.App.AlertDialog.Builder(this)
-                .SetTitle(Resource.String.profile_logout_confirm_title)
-                .SetMessage(Resource.String.profile_logout_confirm_message)
-                .SetPositiveButton(Resource.String.profile_logout_confirm_yes, (s, e) =>
-                {
-                    PerformLogout();
-                })
-                .SetNegativeButton(Resource.String.profile_logout_confirm_no, (s, e) => { })
-                .Show();
-        }
-
-        /// <summary>Clears the session and navigates to LoginActivity.</summary>
-        private async void PerformLogout()
-        {
-            AppLockManager.CancelAutoLockTimer();
-            AppLockManager.Unlock();
-            SessionHelper.EndSession();
-            await StorageHelper.ClearSessionAsync();
-
-            var intent = new Intent(this, typeof(LoginActivity));
-            intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
-            StartActivity(intent);
-            Finish();
-        }
+            => LogoutHelper.ShowLogoutConfirmation(this);
 
         /// <summary>Shows a confirmation dialog before deleting the account.</summary>
         private void ConfirmDeleteAccount()

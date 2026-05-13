@@ -67,6 +67,7 @@
   <ItemGroup>
     <Compile Include="Helpers\ClipboardGuard.cs" />
     <Compile Include="Helpers\AppLockManager.cs" />
+    <Compile Include="Helpers\LogoutHelper.cs" />
     <Compile Include="PasswordOptionsBottomSheet.cs" />
     <Compile Include="PasswordMonitorService.cs" />
     <Compile Include="Helpers\ServerHelpers\AuthService.cs" />
