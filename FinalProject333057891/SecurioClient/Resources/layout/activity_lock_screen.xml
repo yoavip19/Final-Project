@@ -68,4 +68,21 @@
         app:cornerRadius="26dp"
         app:elevation="4dp" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonLockLogout"
+        android:layout_width="wrap_content"
+        android:layout_height="52dp"
+        android:layout_marginTop="12dp"
+        android:text="@string/lock_screen_button_logout"
+        android:textSize="16sp"
+        android:textColor="@color/entryButtonText"
+        android:textStyle="bold"
+        android:textAllCaps="false"
+        android:fontFamily="sans-serif-medium"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
+        android:backgroundTint="@color/profileLogoutButton"
+        app:cornerRadius="26dp"
+        app:elevation="4dp" />
+
 </LinearLayout>

@@ -33,6 +33,7 @@ namespace SecurioClient.Activities
         private const int DeviceCredential = 32768; // BiometricManager.Authenticators.DEVICE_CREDENTIAL
 
         private MaterialButton buttonUnlock;
+        private MaterialButton buttonLogout;
 
         // Guards against launching a second concurrent biometric prompt.
         private bool _promptShowing;
@@ -44,7 +45,9 @@ namespace SecurioClient.Activities
             SetContentView(Resource.Layout.activity_lock_screen);
 
             buttonUnlock = FindViewById<MaterialButton>(Resource.Id.buttonUnlock);
+            buttonLogout = FindViewById<MaterialButton>(Resource.Id.buttonLockLogout);
             buttonUnlock.Click += (s, e) => ShowBiometricPrompt();
+            buttonLogout.Click += (s, e) => LogoutHelper.ShowLogoutConfirmation(this);
         }
 
         protected override void OnResume()
