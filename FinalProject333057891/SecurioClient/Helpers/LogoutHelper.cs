@@ -12,7 +12,7 @@ namespace SecurioClient.Helpers
         /// <summary>Shows the shared logout confirmation dialog.</summary>
         public static void ShowLogoutConfirmation(AppCompatActivity activity)
         {
-            new AlertDialog.Builder(activity)
+            new AndroidX.AppCompat.App.AlertDialog.Builder(activity)
                 .SetTitle(Resource.String.profile_logout_confirm_title)
                 .SetMessage(Resource.String.profile_logout_confirm_message)
                 .SetPositiveButton(Resource.String.profile_logout_confirm_yes, async (sender, e) =>
