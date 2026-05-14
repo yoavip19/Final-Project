@@ -179,8 +179,8 @@
     <string name="edit_account_password_reused">This password has been used recently. Please choose a different one.</string>
 
     <!-- Notification toggle strings -->
-    <string name="profile_button_notifications_on">🔔 Notifications: Enabled</string>
-    <string name="profile_button_notifications_off">🔕 Notifications: Disabled</string>
+    <string name="profile_button_notifications_on">Notifications: Enabled</string>
+    <string name="profile_button_notifications_off">Notifications: Disabled</string>
 
     <!-- Lock screen strings -->
     <string name="lock_screen_title">Session Locked</string>
