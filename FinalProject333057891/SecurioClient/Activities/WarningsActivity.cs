@@ -59,16 +59,20 @@ namespace SecurioClient.Activities
 
         private void SetupBottomNavFragment(Bundle savedInstanceState)
         {
-            if (savedInstanceState == null)
+            var fragment = SupportFragmentManager.FindFragmentById(Resource.Id.frameBottomNav) as BottomNavFragment;
+
+            if (fragment == null)
             {
-                var fragment = BottomNavFragment.NewInstance("warnings");
-                fragment.TabSelected += OnBottomNavTabSelected;
+                fragment = BottomNavFragment.NewInstance("warnings");
 
                 SupportFragmentManager
                     .BeginTransaction()
                     .Replace(Resource.Id.frameBottomNav, fragment)
                     .Commit();
             }
+
+            fragment.TabSelected -= OnBottomNavTabSelected;
+            fragment.TabSelected += OnBottomNavTabSelected;
         }
 
         private void SetupViewAllButtons()

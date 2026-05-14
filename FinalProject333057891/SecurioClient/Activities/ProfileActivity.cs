@@ -44,6 +44,7 @@ namespace SecurioClient.Activities
             SetupBottomNavFragment(savedInstanceState);
             SetupEventHandlers();
 
+            await RestoreSessionStateIfNeededAsync();
             await LoadProfileAsync();
         }
 
@@ -75,16 +76,20 @@ namespace SecurioClient.Activities
         /// <summary>Adds the BottomNavFragment on first creation to avoid duplicate fragments on configuration change.</summary>
         private void SetupBottomNavFragment(Bundle savedInstanceState)
         {
-            if (savedInstanceState == null)
+            var fragment = SupportFragmentManager.FindFragmentById(Resource.Id.frameBottomNav) as BottomNavFragment;
+
+            if (fragment == null)
             {
-                var fragment = BottomNavFragment.NewInstance("profile");
-                fragment.TabSelected += OnBottomNavTabSelected;
+                fragment = BottomNavFragment.NewInstance("profile");
 
                 SupportFragmentManager
                     .BeginTransaction()
                     .Replace(Resource.Id.frameBottomNav, fragment)
                     .Commit();
             }
+
+            fragment.TabSelected -= OnBottomNavTabSelected;
+            fragment.TabSelected += OnBottomNavTabSelected;
         }
 
         /// <summary>Wires up click handlers for the edit, notifications, logout, and delete account buttons.</summary>
@@ -183,6 +188,21 @@ namespace SecurioClient.Activities
             }
         }
 
+        /// <summary>Restores the in-memory session key and vault cache after activity/process recreation when secure storage still has credentials.</summary>
+        private async Task RestoreSessionStateIfNeededAsync()
+        {
+            if (SessionHelper.IsAuthenticated)
+                return;
+
+            string jwt = await StorageHelper.GetJwt();
+            string vaultKey = await StorageHelper.GetVaultKey();
+            if (string.IsNullOrEmpty(jwt) || string.IsNullOrEmpty(vaultKey))
+                return;
+
+            SessionHelper.StartSession(vaultKey);
+            await AuthService.FetchAndCacheVaultAsync();
+        }
+
         /// <summary>Populates the UI text views with the given user profile data.</summary>
         private void DisplayProfile(User profile)
         {
@@ -191,9 +211,19 @@ namespace SecurioClient.Activities
             textViewProfileLastLogin.Text = FormatDate(profile.LastLogin);
             textViewProfileLastPasswordChange.Text = FormatDate(profile.LastPasswordUpdate);
             textViewProfileCreatedAt.Text = FormatDate(profile.CreatedAt);
-            // Always derive the count from the live vault so it stays accurate
-            // after additions or deletions, regardless of what the server returned.
-            textViewProfilePasswordCount.Text = SessionHelper.CachedVault.Count.ToString();
+            textViewProfilePasswordCount.Text = GetDisplayedPasswordCount(profile).ToString();
+        }
+
+        /// <summary>Uses the live session vault count when available, otherwise falls back to the profile payload/cache.</summary>
+        private int GetDisplayedPasswordCount(User profile)
+        {
+            if (SessionHelper.IsAuthenticated &&
+                (SessionHelper.CachedVault.Count > 0 || (profile?.PasswordCount ?? 0) == 0))
+            {
+                return SessionHelper.CachedVault.Count;
+            }
+
+            return Math.Max(0, profile?.PasswordCount ?? 0);
         }
 
         /// <summary>Formats a DateTime as a locale-friendly string, returning "—" for the minimum value.</summary>

@@ -93,17 +93,21 @@ namespace SecurioClient.Activities
         /// <summary>Adds the BottomNavFragment on first creation to avoid duplicate fragments on configuration change.</summary>
         private void SetupBottomNavFragment(Bundle savedInstanceState)
         {
+            var fragment = SupportFragmentManager.FindFragmentById(Resource.Id.frameBottomNav) as BottomNavFragment;
+
             // Only add the fragment on fresh creation to avoid duplicates on configuration change.
-            if (savedInstanceState == null)
+            if (fragment == null)
             {
-                var fragment = BottomNavFragment.NewInstance("vault");
-                fragment.TabSelected += OnBottomNavTabSelected;
+                fragment = BottomNavFragment.NewInstance("vault");
 
                 SupportFragmentManager
                     .BeginTransaction()
                     .Replace(Resource.Id.frameBottomNav, fragment)
                     .Commit();
             }
+
+            fragment.TabSelected -= OnBottomNavTabSelected;
+            fragment.TabSelected += OnBottomNavTabSelected;
         }
 
         /// <summary>Wires up the search field and FAB click handlers.</summary>
