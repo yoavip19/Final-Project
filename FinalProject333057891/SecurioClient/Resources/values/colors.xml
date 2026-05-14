@@ -63,4 +63,5 @@
     <color name="profileStatLabel">#9E9E9E</color>
     <color name="profileLogoutButton">#E67E22</color>
     <color name="profileDeleteButton">#E74C3C</color>
+    <color name="profileNotificationButton">#27AE60</color>
 </resources>

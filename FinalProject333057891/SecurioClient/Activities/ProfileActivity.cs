@@ -23,6 +23,7 @@ namespace SecurioClient.Activities
         private TextView textViewProfileCreatedAt;
         private TextView textViewProfilePasswordCount;
         private MaterialButton buttonProfileEdit;
+        private MaterialButton buttonProfileNotifications;
         private MaterialButton buttonProfileLogout;
         private MaterialButton buttonProfileDelete;
         private ProgressBar progressBarProfile;
@@ -51,9 +52,12 @@ namespace SecurioClient.Activities
             textViewProfileCreatedAt = FindViewById<TextView>(Resource.Id.textViewProfileCreatedAt);
             textViewProfilePasswordCount = FindViewById<TextView>(Resource.Id.textViewProfilePasswordCount);
             buttonProfileEdit = FindViewById<MaterialButton>(Resource.Id.buttonProfileEdit);
+            buttonProfileNotifications = FindViewById<MaterialButton>(Resource.Id.buttonProfileNotifications);
             buttonProfileLogout = FindViewById<MaterialButton>(Resource.Id.buttonProfileLogout);
             buttonProfileDelete = FindViewById<MaterialButton>(Resource.Id.buttonProfileDelete);
             progressBarProfile = FindViewById<ProgressBar>(Resource.Id.progressBarProfile);
+
+            UpdateNotificationButton();
         }
 
         /// <summary>Adds the BottomNavFragment on first creation to avoid duplicate fragments on configuration change.</summary>
@@ -71,7 +75,7 @@ namespace SecurioClient.Activities
             }
         }
 
-        /// <summary>Wires up click handlers for the edit, logout, and delete account buttons.</summary>
+        /// <summary>Wires up click handlers for the edit, notifications, logout, and delete account buttons.</summary>
         private void SetupEventHandlers()
         {
             buttonProfileEdit.Click += (sender, e) =>
@@ -80,6 +84,7 @@ namespace SecurioClient.Activities
                 StartActivityForResult(intent, EditAccountActivity.RequestCodeEditAccount);
             };
 
+            buttonProfileNotifications.Click += (sender, e) => ToggleNotifications();
             buttonProfileLogout.Click += (sender, e) => ConfirmLogout();
             buttonProfileDelete.Click += (sender, e) => ConfirmDeleteAccount();
         }
@@ -186,6 +191,21 @@ namespace SecurioClient.Activities
                 return "—";
 
             return date.ToLocalTime().ToString("MMM dd, yyyy  h:mm tt");
+        }
+
+        /// <summary>Updates the notification button text to reflect the current notification preference.</summary>
+        private void UpdateNotificationButton()
+        {
+            buttonProfileNotifications.Text = NotificationPreferenceHelper.IsEnabled
+                ? GetString(Resource.String.profile_button_notifications_on)
+                : GetString(Resource.String.profile_button_notifications_off);
+        }
+
+        /// <summary>Toggles the in-app notification preference and updates the button label.</summary>
+        private void ToggleNotifications()
+        {
+            NotificationPreferenceHelper.SetEnabled(!NotificationPreferenceHelper.IsEnabled);
+            UpdateNotificationButton();
         }
 
         /// <summary>Shows a confirmation dialog before logging out.</summary>

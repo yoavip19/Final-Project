@@ -178,6 +178,10 @@
     <string name="edit_account_current_password_required">Current password is required to change your master password.</string>
     <string name="edit_account_password_reused">This password has been used recently. Please choose a different one.</string>
 
+    <!-- Notification toggle strings -->
+    <string name="profile_button_notifications_on">🔔 Notifications: On</string>
+    <string name="profile_button_notifications_off">🔕 Notifications: Off</string>
+
     <!-- Lock screen strings -->
     <string name="lock_screen_title">Session Locked</string>
     <string name="lock_screen_subtitle">Verify your identity to continue</string>
