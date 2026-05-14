@@ -37,10 +37,7 @@ namespace SecurioClient
         {
             base.OnCreate();
 
-            NotificationHelper.CreateChannel(this);
-            StartForeground(
-                NotificationHelper.ForegroundNotificationId,
-                NotificationHelper.BuildForegroundNotification(this));
+            EnsureForegroundNotification();
 
             _handler = new Handler(Looper.MainLooper);
             _passwordCheckRunnable = new Java.Lang.Runnable(() => StartCommand(this, ActionRunPasswordCheck));
@@ -65,6 +62,7 @@ namespace SecurioClient
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
             RegisterScreenOffReceiver();
+            EnsureForegroundNotification();
 
             _ = ExecuteCommandAsync(intent?.Action ?? ActionStartMonitoring);
             return StartCommandResult.Sticky;
@@ -136,6 +134,15 @@ namespace SecurioClient
             var intent = new Intent(appContext, typeof(PasswordMonitorService));
             intent.SetAction(action);
             appContext.StartForegroundService(intent);
+        }
+
+        /// <summary>Ensures the foreground-service notification is posted again whenever the service receives a new start command.</summary>
+        private void EnsureForegroundNotification()
+        {
+            NotificationHelper.CreateChannel(this);
+            StartForeground(
+                NotificationHelper.ForegroundNotificationId,
+                NotificationHelper.BuildForegroundNotification(this));
         }
 
         /// <summary>
