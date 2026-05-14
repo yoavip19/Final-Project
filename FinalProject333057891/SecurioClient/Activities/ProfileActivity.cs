@@ -249,8 +249,6 @@ namespace SecurioClient.Activities
             {
                 var intent = new Intent(Settings.ActionAppNotificationSettings);
                 intent.PutExtra(Settings.ExtraAppPackage, PackageName);
-                intent.PutExtra("app_package", PackageName);
-                intent.PutExtra("app_uid", ApplicationInfo.Uid);
                 StartActivity(intent);
             }
             catch (ActivityNotFoundException)
