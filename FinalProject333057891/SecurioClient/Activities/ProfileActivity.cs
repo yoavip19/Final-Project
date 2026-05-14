@@ -204,8 +204,11 @@ namespace SecurioClient.Activities
         /// <summary>Toggles the in-app notification preference and updates the button label.</summary>
         private void ToggleNotifications()
         {
-            NotificationPreferenceHelper.SetEnabled(!NotificationPreferenceHelper.IsEnabled);
-            UpdateNotificationButton();
+            bool enabled = !NotificationPreferenceHelper.IsEnabled;
+            NotificationPreferenceHelper.SetEnabled(enabled);
+            buttonProfileNotifications.Text = enabled
+                ? GetString(Resource.String.profile_button_notifications_on)
+                : GetString(Resource.String.profile_button_notifications_off);
         }
 
         /// <summary>Shows a confirmation dialog before logging out.</summary>
