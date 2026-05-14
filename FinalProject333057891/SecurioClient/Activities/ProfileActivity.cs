@@ -217,7 +217,7 @@ namespace SecurioClient.Activities
         /// <summary>Uses the live session vault count when available, otherwise falls back to the profile payload/cache.</summary>
         private int GetDisplayedPasswordCount(User profile)
         {
-            if (ShouldUseLiveVaultCount(profile))
+            if (CanTrustLiveVaultCount(profile))
             {
                 return SessionHelper.CachedVault.Count;
             }
@@ -226,11 +226,13 @@ namespace SecurioClient.Activities
         }
 
         /// <summary>Determines whether the live in-memory vault count is trustworthy for the current session.</summary>
-        private bool ShouldUseLiveVaultCount(User profile)
+        private bool CanTrustLiveVaultCount(User profile)
         {
             if (!SessionHelper.IsAuthenticated)
                 return false;
 
+            // Trust the live cache when it has entries, or when both the live cache and
+            // the profile payload indicate an empty vault (0 is a legitimate value).
             return SessionHelper.CachedVault.Count > 0 || (profile?.PasswordCount ?? 0) == 0;
         }
 
@@ -269,6 +271,7 @@ namespace SecurioClient.Activities
         /// <summary>Returns whether Android 13+ notification runtime permission still needs to be requested.</summary>
         private bool ShouldRequestNotificationPermission()
         {
+            // Android 13 (Tiramisu) introduced POST_NOTIFICATIONS as a runtime permission.
             return Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu &&
                    CheckSelfPermission(Android.Manifest.Permission.PostNotifications) != Permission.Granted;
         }
