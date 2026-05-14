@@ -1,6 +1,9 @@
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.OS;
+using Android.Provider;
+using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Google.Android.Material.Button;
@@ -16,6 +19,8 @@ namespace SecurioClient.Activities
     /// <summary>Activity that displays the user's profile information with options to edit, log out, or delete the account.</summary>
     public class ProfileActivity : SecuredAppCompatActivity
     {
+        private const int RequestCodeNotificationPermission = 1003;
+
         private TextView textViewProfileUsername;
         private TextView textViewProfileEmail;
         private TextView textViewProfileLastLogin;
@@ -23,6 +28,7 @@ namespace SecurioClient.Activities
         private TextView textViewProfileCreatedAt;
         private TextView textViewProfilePasswordCount;
         private MaterialButton buttonProfileEdit;
+        private MaterialButton buttonProfileNotifications;
         private MaterialButton buttonProfileLogout;
         private MaterialButton buttonProfileDelete;
         private ProgressBar progressBarProfile;
@@ -38,7 +44,16 @@ namespace SecurioClient.Activities
             SetupBottomNavFragment(savedInstanceState);
             SetupEventHandlers();
 
+            await RestoreSessionStateIfNeededAsync();
             await LoadProfileAsync();
+        }
+
+        /// <summary>Refreshes UI state when returning from external screens such as system notification settings.</summary>
+        protected override void OnResume()
+        {
+            base.OnResume();
+            EnsurePasswordMonitorNotification();
+            UpdateNotificationButton();
         }
 
         /// <summary>Finds and assigns all view references from the layout.</summary>
@@ -51,27 +66,34 @@ namespace SecurioClient.Activities
             textViewProfileCreatedAt = FindViewById<TextView>(Resource.Id.textViewProfileCreatedAt);
             textViewProfilePasswordCount = FindViewById<TextView>(Resource.Id.textViewProfilePasswordCount);
             buttonProfileEdit = FindViewById<MaterialButton>(Resource.Id.buttonProfileEdit);
+            buttonProfileNotifications = FindViewById<MaterialButton>(Resource.Id.buttonProfileNotifications);
             buttonProfileLogout = FindViewById<MaterialButton>(Resource.Id.buttonProfileLogout);
             buttonProfileDelete = FindViewById<MaterialButton>(Resource.Id.buttonProfileDelete);
             progressBarProfile = FindViewById<ProgressBar>(Resource.Id.progressBarProfile);
+
+            UpdateNotificationButton();
         }
 
         /// <summary>Adds the BottomNavFragment on first creation to avoid duplicate fragments on configuration change.</summary>
         private void SetupBottomNavFragment(Bundle savedInstanceState)
         {
-            if (savedInstanceState == null)
+            var fragment = SupportFragmentManager.FindFragmentById(Resource.Id.frameBottomNav) as BottomNavFragment;
+
+            if (fragment == null)
             {
-                var fragment = BottomNavFragment.NewInstance("profile");
-                fragment.TabSelected += OnBottomNavTabSelected;
+                fragment = BottomNavFragment.NewInstance("profile");
 
                 SupportFragmentManager
                     .BeginTransaction()
                     .Replace(Resource.Id.frameBottomNav, fragment)
                     .Commit();
             }
+
+            fragment.TabSelected -= OnBottomNavTabSelected;
+            fragment.TabSelected += OnBottomNavTabSelected;
         }
 
-        /// <summary>Wires up click handlers for the edit, logout, and delete account buttons.</summary>
+        /// <summary>Wires up click handlers for the edit, notifications, logout, and delete account buttons.</summary>
         private void SetupEventHandlers()
         {
             buttonProfileEdit.Click += (sender, e) =>
@@ -80,6 +102,7 @@ namespace SecurioClient.Activities
                 StartActivityForResult(intent, EditAccountActivity.RequestCodeEditAccount);
             };
 
+            buttonProfileNotifications.Click += (sender, e) => ManageNotifications();
             buttonProfileLogout.Click += (sender, e) => ConfirmLogout();
             buttonProfileDelete.Click += (sender, e) => ConfirmDeleteAccount();
         }
@@ -166,6 +189,21 @@ namespace SecurioClient.Activities
             }
         }
 
+        /// <summary>Restores the in-memory session key and vault cache after activity/process recreation when secure storage still has credentials.</summary>
+        private async Task RestoreSessionStateIfNeededAsync()
+        {
+            if (SessionHelper.IsAuthenticated)
+                return;
+
+            string jwt = await StorageHelper.GetJwt();
+            string vaultKey = await StorageHelper.GetVaultKey();
+            if (string.IsNullOrEmpty(jwt) || string.IsNullOrEmpty(vaultKey))
+                return;
+
+            SessionHelper.StartSession(vaultKey);
+            await AuthService.FetchAndCacheVaultAsync();
+        }
+
         /// <summary>Populates the UI text views with the given user profile data.</summary>
         private void DisplayProfile(User profile)
         {
@@ -174,9 +212,29 @@ namespace SecurioClient.Activities
             textViewProfileLastLogin.Text = FormatDate(profile.LastLogin);
             textViewProfileLastPasswordChange.Text = FormatDate(profile.LastPasswordUpdate);
             textViewProfileCreatedAt.Text = FormatDate(profile.CreatedAt);
-            // Always derive the count from the live vault so it stays accurate
-            // after additions or deletions, regardless of what the server returned.
-            textViewProfilePasswordCount.Text = SessionHelper.CachedVault.Count.ToString();
+            textViewProfilePasswordCount.Text = GetDisplayedPasswordCount(profile).ToString();
+        }
+
+        /// <summary>Uses the live session vault count when available, otherwise falls back to the profile payload/cache.</summary>
+        private int GetDisplayedPasswordCount(User profile)
+        {
+            if (CanTrustLiveVaultCount(profile))
+            {
+                return SessionHelper.CachedVault.Count;
+            }
+
+            return Math.Max(0, profile?.PasswordCount ?? 0);
+        }
+
+        /// <summary>Determines whether the live in-memory vault count is trustworthy for the current session.</summary>
+        private bool CanTrustLiveVaultCount(User profile)
+        {
+            if (!SessionHelper.IsAuthenticated)
+                return false;
+
+            // Trust the live cache when it has entries, or when both the live cache and
+            // the profile payload indicate an empty vault (0 is a legitimate value).
+            return SessionHelper.CachedVault.Count > 0 || (profile?.PasswordCount ?? 0) == 0;
         }
 
         /// <summary>Formats a DateTime as a locale-friendly string, returning "—" for the minimum value.</summary>
@@ -186,6 +244,74 @@ namespace SecurioClient.Activities
                 return "—";
 
             return date.ToLocalTime().ToString("MMM dd, yyyy  h:mm tt");
+        }
+
+        /// <summary>Updates the notification button text to reflect the app's current system notification state.</summary>
+        private void UpdateNotificationButton()
+        {
+            bool enabled = NotificationHelper.AreNotificationsEnabled(this);
+            buttonProfileNotifications.Text = enabled
+                ? GetString(Resource.String.profile_button_notifications_on)
+                : GetString(Resource.String.profile_button_notifications_off);
+        }
+
+        /// <summary>Ensures the foreground monitor service (and its persistent notification) is running whenever notifications are enabled.</summary>
+        private void EnsurePasswordMonitorNotification()
+        {
+            if (NotificationHelper.AreNotificationsEnabled(this))
+                PasswordMonitorService.StartMonitoring(this);
+        }
+
+        /// <summary>Requests notification permission when needed and then opens the app's notification settings screen.</summary>
+        private void ManageNotifications()
+        {
+            if (ShouldRequestNotificationPermission())
+            {
+                RequestPermissions(
+                    new[] { Android.Manifest.Permission.PostNotifications },
+                    RequestCodeNotificationPermission);
+                return;
+            }
+
+            OpenNotificationSettings();
+        }
+
+        /// <summary>Returns whether Android 13+ notification runtime permission still needs to be requested.</summary>
+        private bool ShouldRequestNotificationPermission()
+        {
+            // Android 13 (Tiramisu) introduced POST_NOTIFICATIONS as a runtime permission.
+            return Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu &&
+                   CheckSelfPermission(Android.Manifest.Permission.PostNotifications) != Permission.Granted;
+        }
+
+        /// <summary>Handles runtime permission results for the notification button flow.</summary>
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
+        {
+            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
+            if (requestCode == RequestCodeNotificationPermission)
+            {
+                OpenNotificationSettings();
+                UpdateNotificationButton();
+            }
+        }
+
+        /// <summary>Opens this app's notification settings screen so the user can enable/disable notifications at OS level.</summary>
+        private void OpenNotificationSettings()
+        {
+            try
+            {
+                var intent = new Intent(Settings.ActionAppNotificationSettings);
+                intent.PutExtra(Settings.ExtraAppPackage, PackageName);
+                StartActivity(intent);
+            }
+            catch (ActivityNotFoundException)
+            {
+                var fallbackIntent = new Intent(Settings.ActionApplicationDetailsSettings);
+                fallbackIntent.SetData(Android.Net.Uri.Parse("package:" + PackageName));
+                StartActivity(fallbackIntent);
+            }
         }
 
         /// <summary>Shows a confirmation dialog before logging out.</summary>

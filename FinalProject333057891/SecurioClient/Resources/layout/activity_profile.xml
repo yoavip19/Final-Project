@@ -239,6 +239,21 @@
                 app:cornerRadius="12dp"
                 android:layout_marginBottom="12dp" />
 
+            <!-- Notifications toggle button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonProfileNotifications"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="@string/profile_button_notifications_on"
+                android:textSize="16sp"
+                android:textColor="@color/entryButtonText"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:fontFamily="sans-serif-medium"
+                android:backgroundTint="@color/profileNotificationButton"
+                app:cornerRadius="12dp"
+                android:layout_marginBottom="12dp" />
+
             <!-- Log Out button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonProfileLogout"
