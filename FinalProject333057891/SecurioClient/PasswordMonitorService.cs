@@ -210,7 +210,7 @@ namespace SecurioClient
         /// </summary>
         private async Task RunPasswordCheckAsync()
         {
-            if (NotificationHelper.AreNotificationsEnabled(this) && NotificationPreferenceHelper.IsEnabled)
+            if (NotificationHelper.AreNotificationsEnabled(this))
                 await PerformCheckAsync(this);
 
             ScheduleNextPasswordCheck(immediate: false);

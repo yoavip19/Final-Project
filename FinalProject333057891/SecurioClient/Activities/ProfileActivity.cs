@@ -1,6 +1,9 @@
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.OS;
+using Android.Provider;
+using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Google.Android.Material.Button;
@@ -16,6 +19,8 @@ namespace SecurioClient.Activities
     /// <summary>Activity that displays the user's profile information with options to edit, log out, or delete the account.</summary>
     public class ProfileActivity : SecuredAppCompatActivity
     {
+        private const int RequestCodeNotificationPermission = 1003;
+
         private TextView textViewProfileUsername;
         private TextView textViewProfileEmail;
         private TextView textViewProfileLastLogin;
@@ -40,6 +45,13 @@ namespace SecurioClient.Activities
             SetupEventHandlers();
 
             await LoadProfileAsync();
+        }
+
+        /// <summary>Refreshes UI state when returning from external screens such as system notification settings.</summary>
+        protected override void OnResume()
+        {
+            base.OnResume();
+            UpdateNotificationButton();
         }
 
         /// <summary>Finds and assigns all view references from the layout.</summary>
@@ -84,7 +96,7 @@ namespace SecurioClient.Activities
                 StartActivityForResult(intent, EditAccountActivity.RequestCodeEditAccount);
             };
 
-            buttonProfileNotifications.Click += (sender, e) => ToggleNotifications();
+            buttonProfileNotifications.Click += (sender, e) => ManageNotifications();
             buttonProfileLogout.Click += (sender, e) => ConfirmLogout();
             buttonProfileDelete.Click += (sender, e) => ConfirmDeleteAccount();
         }
@@ -193,22 +205,60 @@ namespace SecurioClient.Activities
             return date.ToLocalTime().ToString("MMM dd, yyyy  h:mm tt");
         }
 
-        /// <summary>Updates the notification button text to reflect the current notification preference.</summary>
+        /// <summary>Updates the notification button text to reflect the app's current system notification state.</summary>
         private void UpdateNotificationButton()
         {
-            buttonProfileNotifications.Text = NotificationPreferenceHelper.IsEnabled
+            bool enabled = NotificationHelper.AreNotificationsEnabled(this);
+            buttonProfileNotifications.Text = enabled
                 ? GetString(Resource.String.profile_button_notifications_on)
                 : GetString(Resource.String.profile_button_notifications_off);
         }
 
-        /// <summary>Toggles the in-app notification preference and updates the button label.</summary>
-        private void ToggleNotifications()
+        /// <summary>Requests notification permission when needed and then opens the app's notification settings screen.</summary>
+        private void ManageNotifications()
         {
-            bool enabled = !NotificationPreferenceHelper.IsEnabled;
-            NotificationPreferenceHelper.SetEnabled(enabled);
-            buttonProfileNotifications.Text = enabled
-                ? GetString(Resource.String.profile_button_notifications_on)
-                : GetString(Resource.String.profile_button_notifications_off);
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu &&
+                CheckSelfPermission(Android.Manifest.Permission.PostNotifications) != Permission.Granted)
+            {
+                RequestPermissions(
+                    new[] { Android.Manifest.Permission.PostNotifications },
+                    RequestCodeNotificationPermission);
+                return;
+            }
+
+            OpenNotificationSettings();
+        }
+
+        /// <summary>Handles runtime permission results for the notification button flow.</summary>
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
+        {
+            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
+            if (requestCode == RequestCodeNotificationPermission)
+            {
+                OpenNotificationSettings();
+                UpdateNotificationButton();
+            }
+        }
+
+        /// <summary>Opens this app's notification settings screen so the user can enable/disable notifications at OS level.</summary>
+        private void OpenNotificationSettings()
+        {
+            try
+            {
+                var intent = new Intent(Settings.ActionAppNotificationSettings);
+                intent.PutExtra(Settings.ExtraAppPackage, PackageName);
+                intent.PutExtra("app_package", PackageName);
+                intent.PutExtra("app_uid", ApplicationInfo.Uid);
+                StartActivity(intent);
+            }
+            catch (ActivityNotFoundException)
+            {
+                var fallbackIntent = new Intent(Settings.ActionApplicationDetailsSettings);
+                fallbackIntent.SetData(Android.Net.Uri.Parse("package:" + PackageName));
+                StartActivity(fallbackIntent);
+            }
         }
 
         /// <summary>Shows a confirmation dialog before logging out.</summary>
