@@ -217,13 +217,21 @@ namespace SecurioClient.Activities
         /// <summary>Uses the live session vault count when available, otherwise falls back to the profile payload/cache.</summary>
         private int GetDisplayedPasswordCount(User profile)
         {
-            if (SessionHelper.IsAuthenticated &&
-                (SessionHelper.CachedVault.Count > 0 || (profile?.PasswordCount ?? 0) == 0))
+            if (ShouldUseLiveVaultCount(profile))
             {
                 return SessionHelper.CachedVault.Count;
             }
 
             return Math.Max(0, profile?.PasswordCount ?? 0);
+        }
+
+        /// <summary>Determines whether the live in-memory vault count is trustworthy for the current session.</summary>
+        private bool ShouldUseLiveVaultCount(User profile)
+        {
+            if (!SessionHelper.IsAuthenticated)
+                return false;
+
+            return SessionHelper.CachedVault.Count > 0 || (profile?.PasswordCount ?? 0) == 0;
         }
 
         /// <summary>Formats a DateTime as a locale-friendly string, returning "—" for the minimum value.</summary>
@@ -247,8 +255,7 @@ namespace SecurioClient.Activities
         /// <summary>Requests notification permission when needed and then opens the app's notification settings screen.</summary>
         private void ManageNotifications()
         {
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu &&
-                CheckSelfPermission(Android.Manifest.Permission.PostNotifications) != Permission.Granted)
+            if (ShouldRequestNotificationPermission())
             {
                 RequestPermissions(
                     new[] { Android.Manifest.Permission.PostNotifications },
@@ -257,6 +264,13 @@ namespace SecurioClient.Activities
             }
 
             OpenNotificationSettings();
+        }
+
+        /// <summary>Returns whether Android 13+ notification runtime permission still needs to be requested.</summary>
+        private bool ShouldRequestNotificationPermission()
+        {
+            return Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu &&
+                   CheckSelfPermission(Android.Manifest.Permission.PostNotifications) != Permission.Granted;
         }
 
         /// <summary>Handles runtime permission results for the notification button flow.</summary>
