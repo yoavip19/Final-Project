@@ -52,6 +52,7 @@ namespace SecurioClient.Activities
         protected override void OnResume()
         {
             base.OnResume();
+            EnsurePasswordMonitorNotification();
             UpdateNotificationButton();
         }
 
@@ -252,6 +253,13 @@ namespace SecurioClient.Activities
             buttonProfileNotifications.Text = enabled
                 ? GetString(Resource.String.profile_button_notifications_on)
                 : GetString(Resource.String.profile_button_notifications_off);
+        }
+
+        /// <summary>Ensures the foreground monitor service (and its persistent notification) is running whenever notifications are enabled.</summary>
+        private void EnsurePasswordMonitorNotification()
+        {
+            if (NotificationHelper.AreNotificationsEnabled(this))
+                PasswordMonitorService.StartMonitoring(this);
         }
 
         /// <summary>Requests notification permission when needed and then opens the app's notification settings screen.</summary>
