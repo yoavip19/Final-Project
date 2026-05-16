@@ -410,7 +410,7 @@ namespace SecurioClient.Activities
             return isValid;
         }
 
-        // ── UI helpers delegating to the shared FormUiHelper (DRY) ──
+        // -- UI helpers delegating to the shared FormUiHelper (DRY) --
 
         /// <summary>Hides all field-level and general error messages.</summary>
         private void ClearErrors()

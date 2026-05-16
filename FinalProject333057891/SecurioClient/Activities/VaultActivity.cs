@@ -131,9 +131,9 @@ namespace SecurioClient.Activities
         private void OnBottomNavTabSelected(object sender, string tab)
             => BottomNavHelper.Navigate(this, tab, "vault");
 
-        // ──────────────────────────────────────────
+        // ------------------------------------------
         //  Activity result handling
-        // ──────────────────────────────────────────
+        // ------------------------------------------
 
         /// <summary>Handles results from AddPasswordActivity and EditPasswordActivity, updating the local vault list.</summary>
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
@@ -192,9 +192,9 @@ namespace SecurioClient.Activities
             }
         }
 
-        // ──────────────────────────────────────────
+        // ------------------------------------------
         //  Data helpers
-        // ──────────────────────────────────────────
+        // ------------------------------------------
 
         /// <summary>Loads vault entries from the in-memory session cache into the local list and refreshes the RecyclerView.</summary>
         private void LoadVaultFromSession()

@@ -43,7 +43,7 @@ namespace SecurioClient.Activities
 
         public const int RequestCodeEdit = 1002;
 
-        // ── Edit-mode-specific views ────────────────────────────
+        // -- Edit-mode-specific views ----------------------------
         private TextInputLayout textInputLayoutPassword;
         private TextInputLayout textInputLayoutConfirmPassword;
 
@@ -58,7 +58,7 @@ namespace SecurioClient.Activities
         private const string PasswordPlaceholder = "••••••••";
         private bool _passwordIsPlaceholder;
 
-        // ── Lifecycle ──────────────────────────────────────────
+        // -- Lifecycle ------------------------------------------
 
         /// <summary>Initializes the activity, inflates the layout, and sets up views and event handlers.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
@@ -75,7 +75,7 @@ namespace SecurioClient.Activities
             ConfigurePasswordPlaceholder();
         }
 
-        // ── Setup helpers ──────────────────────────────────────
+        // -- Setup helpers --------------------------------------
 
         /// <summary>Finds and assigns all view references from the layout, including edit-mode-specific inputs.</summary>
         protected override void InitializeViews()
@@ -202,7 +202,7 @@ namespace SecurioClient.Activities
             };
         }
 
-        // ── Update logic ───────────────────────────────────────
+        // -- Update logic ---------------------------------------
 
         /// <summary>Validates inputs, optionally re-encrypts the password, and submits the vault entry update.</summary>
         private async Task OnUpdateClicked()
@@ -311,7 +311,7 @@ namespace SecurioClient.Activities
             }
         }
 
-        // ── Validation ─────────────────────────────────────────
+        // -- Validation -----------------------------------------
 
         /// <summary>Validates all entry form fields and shows errors for any invalid values.</summary>
         private bool ValidateInputs(string siteName, string username, string password, string confirmPassword)

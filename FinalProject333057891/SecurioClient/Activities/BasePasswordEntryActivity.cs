@@ -16,7 +16,7 @@ namespace SecurioClient.Activities
     /// </summary>
     public abstract class BasePasswordEntryActivity : SecuredAppCompatActivity
     {
-        // ── Shared view fields ─────────────────────────────────
+        // -- Shared view fields ---------------------------------
         protected ImageView imageViewBack;
         protected TextView textViewTitle;
         protected TextView textViewSubtitle;
@@ -40,7 +40,7 @@ namespace SecurioClient.Activities
         protected MaterialButton buttonSave;
         protected ProgressBar progressBar;
 
-        // ── View initialisation ────────────────────────────────
+        // -- View initialisation --------------------------------
 
         /// <summary>Finds and assigns all view references that are shared between Add and Edit modes.</summary>
         protected virtual void InitializeViews()
@@ -69,7 +69,7 @@ namespace SecurioClient.Activities
             progressBar = FindViewById<ProgressBar>(Resource.Id.progressBarEntry);
         }
 
-        // ── Password strength indicator ────────────────────────
+        // -- Password strength indicator ------------------------
 
         /// <summary>Updates the password strength progress bar and hint text based on the given password.</summary>
         protected void UpdatePasswordStrengthIndicator(string password)
@@ -111,7 +111,7 @@ namespace SecurioClient.Activities
             }
         }
 
-        // ── Validation helpers ─────────────────────────────────
+        // -- Validation helpers ---------------------------------
 
         /// <summary>Validates that the confirm password field matches the password field and shows or hides the error accordingly.</summary>
         protected void ValidatePasswordsMatch()
@@ -129,7 +129,7 @@ namespace SecurioClient.Activities
                 FormUiHelper.HideError(textViewConfirmPasswordError);
         }
 
-        // ── UI helpers ─────────────────────────────────────────
+        // -- UI helpers -----------------------------------------
 
         /// <summary>Hides all field-level and general error messages.</summary>
         protected void ClearErrors()

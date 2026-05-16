@@ -34,7 +34,7 @@ namespace SecurioClient.Activities
         public const string CategoryReused = "reused";
         public const string CategoryOld    = "old";
 
-        // ── Views ──────────────────────────────────────────────
+        // -- Views ----------------------------------------------
         private ImageView imageViewBack;
         private TextView textViewEmoji;
         private TextView textViewTitle;
@@ -47,7 +47,7 @@ namespace SecurioClient.Activities
         private List<VaultItem> riskEntries = new List<VaultItem>();
         private string category;
 
-        // ── Lifecycle ──────────────────────────────────────────
+        // -- Lifecycle ------------------------------------------
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -65,7 +65,7 @@ namespace SecurioClient.Activities
             _ = LoadRiskEntriesAsync();
         }
 
-        // ── Setup helpers ──────────────────────────────────────
+        // -- Setup helpers --------------------------------------
 
         private void InitializeViews()
         {
@@ -150,7 +150,7 @@ namespace SecurioClient.Activities
             }));
         }
 
-        // ── Activity result ────────────────────────────────────
+        // -- Activity result ------------------------------------
 
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
@@ -186,7 +186,7 @@ namespace SecurioClient.Activities
             }
         }
 
-        // ── Data loading ───────────────────────────────────────
+        // -- Data loading ---------------------------------------
 
         /// <summary>
         /// Filters the cached vault to only items that match the current risk category.
@@ -210,7 +210,7 @@ namespace SecurioClient.Activities
             RefreshList();
         }
 
-        // ── Search / filter helpers ────────────────────────────
+        // -- Search / filter helpers ----------------------------
 
         private void FilterPasswords(string query)
         {

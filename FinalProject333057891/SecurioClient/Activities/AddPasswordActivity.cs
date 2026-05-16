@@ -32,7 +32,7 @@ namespace SecurioClient.Activities
         // O(1) duplicate-check set built from the live vault cache in PopulateExistingEntries.
         private HashSet<string> _existingEntryKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        // ── Lifecycle ──────────────────────────────────────────
+        // -- Lifecycle ------------------------------------------
 
         /// <summary>Initializes the activity, inflates the layout, and sets up views and event handlers.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
@@ -47,7 +47,7 @@ namespace SecurioClient.Activities
             SetupEventHandlers();
         }
 
-        // ── Setup helpers ──────────────────────────────────────
+        // -- Setup helpers --------------------------------------
 
         /// <summary>Sets the title, subtitle, and button label for add mode.</summary>
         private void ConfigureForAddMode()
@@ -124,7 +124,7 @@ namespace SecurioClient.Activities
             }));
         }
 
-        // ── Save logic ─────────────────────────────────────────
+        // -- Save logic -----------------------------------------
 
         /// <summary>Validates inputs, encrypts the password, checks for breaches, and saves the new vault entry.</summary>
         private async Task OnSaveClicked()
@@ -210,7 +210,7 @@ namespace SecurioClient.Activities
             }
         }
 
-        // ── Validation ─────────────────────────────────────────
+        // -- Validation -----------------------------------------
 
         /// <summary>Validates all entry form fields and shows errors for any invalid values.</summary>
         private bool ValidateInputs(string siteName, string username, string password, string confirmPassword)

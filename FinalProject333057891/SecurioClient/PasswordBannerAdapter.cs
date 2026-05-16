@@ -64,9 +64,9 @@ namespace SecurioClient
             NotifyDataSetChanged();
         }
 
-        // ────────────────────────────────────────────────────────
+        // --------------------------------------------------------
         //  ViewHolder
-        // ────────────────────────────────────────────────────────
+        // --------------------------------------------------------
         private class PasswordBannerViewHolder : RecyclerView.ViewHolder
         {
             public TextView TextViewIcon { get; }

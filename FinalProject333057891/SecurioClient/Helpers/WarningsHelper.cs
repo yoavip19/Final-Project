@@ -52,7 +52,7 @@ namespace SecurioClient.Helpers
             if (vault == null || vault.Count == 0)
                 return new WarningsData();
 
-            int leaked = vault.Count(item => item.IsLeaked);
+            int leaked = GetLeakedItems(vault).Count;
             int weak = GetWeakItems(vault, vaultKey).Count;
             int reused = GetReusedItems(vault).Count;
             int old = GetOldItems(vault).Count;
@@ -80,7 +80,7 @@ namespace SecurioClient.Helpers
 
             int leaked = 0;
 
-            // ── Leaked ────────────────────────────────────────
+            // -- Leaked ----------------------------------------
             // Query HIBP for each password's SHA-1 hash using the k-anonymity
             // model so only the first 5 characters are ever transmitted.
             // The IsLeaked flag on each item is updated so that subsequent
@@ -149,6 +149,7 @@ namespace SecurioClient.Helpers
         private static List<VaultItem> GetWeakItems(IList<VaultItem> vault, string vaultKey)
         {
             var result = new List<VaultItem>();
+            string plaintext;
             foreach (var item in vault)
             {
                 try
@@ -158,7 +159,7 @@ namespace SecurioClient.Helpers
                         string.IsNullOrEmpty(item.CipherText))
                         continue;
 
-                    string plaintext = EncryptionHelper.DecryptAesGcm(
+                    plaintext = EncryptionHelper.DecryptAesGcm(
                         item.IV, item.Tag, item.CipherText, vaultKey);
 
                     var validationResult = ValidationHelper.ValidatePassword(plaintext);
@@ -168,6 +169,12 @@ namespace SecurioClient.Helpers
                 catch
                 {
                     // Skip items that cannot be decrypted.
+                }
+                finally
+                {
+                    //Remove the plaintext password from memory
+                    plaintext = null;
+                    GC.Collect();
                 }
             }
             return result;
