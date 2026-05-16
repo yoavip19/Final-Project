@@ -13,15 +13,7 @@ using System.Linq;
 
 namespace SecurioClient.Activities
 {
-    /// <summary>
-    /// Displays the list of vault passwords that fall under a specific risk category
-    /// (leaked, weak, reused, or old). Receives the category via an Intent extra and
-    /// filters <see cref="SessionHelper.CachedVault"/> accordingly.
-    /// Reuses the same <see cref="PasswordBannerAdapter"/> and search-bar pattern as
-    /// <see cref="VaultActivity"/>. The kebab icon on each banner opens the same
-    /// <see cref="PasswordOptionsBottomSheet"/> as the vault via
-    /// <see cref="PasswordEntryActionsHelper"/>.
-    /// </summary>
+    /// <summary>Displays the list of vault passwords that fall under a specific risk category (leaked, weak, reused, or old) filtered from the session cache.</summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class RiskDetailActivity : SecuredAppCompatActivity
     {
@@ -78,9 +70,7 @@ namespace SecurioClient.Activities
             layoutEmpty      = FindViewById<LinearLayout>(Resource.Id.layoutRiskEmpty);
         }
 
-        /// <summary>
-        /// Configures the header text and emoji based on the risk category.
-        /// </summary>
+        /// <summary>Configures the header text and emoji based on the risk category.</summary>
         private void ConfigureHeader()
         {
             switch (category)
@@ -119,10 +109,7 @@ namespace SecurioClient.Activities
             adapter.EditClick += (sender, position) => OnBannerActionAt(position);
         }
 
-        /// <summary>
-        /// Resolves the entry at <paramref name="position"/> and opens the options
-        /// bottom sheet via the shared <see cref="PasswordEntryActionsHelper"/>.
-        /// </summary>
+        /// <summary>Resolves the entry at the given position and opens the options bottom sheet via PasswordEntryActionsHelper.</summary>
         private void OnBannerActionAt(int position)
         {
             var displayed = GetDisplayedEntries();
@@ -188,9 +175,7 @@ namespace SecurioClient.Activities
 
         // -- Data loading ---------------------------------------
 
-        /// <summary>
-        /// Filters the cached vault to only items that match the current risk category.
-        /// </summary>
+        /// <summary>Filters the cached vault to only items that match the current risk category.</summary>
         private async System.Threading.Tasks.Task LoadRiskEntriesAsync()
         {
             RiskCategory riskCategory;

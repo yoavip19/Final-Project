@@ -4,20 +4,10 @@ using SecurioClient.Activities;
 
 namespace SecurioClient.Helpers
 {
-    /// <summary>
-    /// Shared helper for bottom-navigation tab switching.
-    /// Centralises the mapping of tab name → activity so that each host activity
-    /// only needs a single call instead of duplicating a switch/if chain.
-    /// </summary>
+    /// <summary>Shared helper for bottom-navigation tab switching that centralises the mapping of tab name to activity.</summary>
     public static class BottomNavHelper
     {
-        /// <summary>
-        /// Navigates from <paramref name="activity"/> to the activity that corresponds
-        /// to <paramref name="tab"/>.  If <paramref name="tab"/> equals
-        /// <paramref name="currentTab"/> the call is a no-op (user re-tapped the
-        /// active tab).  The current activity is finished so the back-stack does not
-        /// accumulate stacked instances of the same main screens.
-        /// </summary>
+        /// <summary>Navigates from the current activity to the activity corresponding to the given tab; no-op if tab equals currentTab.</summary>
         public static void Navigate(AppCompatActivity activity, string tab, string currentTab)
         {
             if (tab == currentTab)

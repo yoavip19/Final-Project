@@ -10,19 +10,7 @@ using System;
 
 namespace SecurioClient.Activities
 {
-    /// <summary>
-    /// Full-screen lock screen that hides all vault data and requires the user to verify
-    /// their identity via biometrics (fingerprint / Face ID) or the device screen-lock PIN
-    /// before returning to their session.
-    /// <para>
-    /// • Back navigation is disabled — the only exit is successful authentication or
-    ///   moving the entire task to the background.<br/>
-    /// • <c>FLAG_SECURE</c> prevents this screen from being captured in screenshots or
-    ///   appearing in the recent-apps switcher.<br/>
-    /// • The biometric prompt is triggered automatically on <c>OnResume</c> and can be
-    ///   re-triggered manually via the "Unlock" button.
-    /// </para>
-    /// </summary>
+    /// <summary>Full-screen lock screen that hides all vault data and requires biometric or device-credential authentication before returning to the session.</summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", NoHistory = false)]
     public class LockScreenActivity : AppCompatActivity
     {
@@ -99,7 +87,7 @@ namespace SecurioClient.Activities
             MoveTaskToBack(true);
         }
 
-        /// <summary>Runs <see cref="Java.Util.Concurrent.IExecutor"/> commands on the given Handler's thread.</summary>
+        /// <summary>Runs IExecutor commands on the given Handler's thread.</summary>
         private sealed class HandlerExecutor : Java.Lang.Object, Java.Util.Concurrent.IExecutor
         {
             private readonly Handler _handler;

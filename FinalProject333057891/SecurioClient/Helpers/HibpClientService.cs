@@ -4,11 +4,7 @@ using System.Threading.Tasks;
 
 namespace SecurioClient.Helpers
 {
-    /// <summary>
-    /// Client-side HIBP Pwned Passwords check using the k-anonymity model.
-    /// Only the first 5 characters of the SHA-1 hash are ever transmitted
-    /// to the remote API; the full hash never leaves the device.
-    /// </summary>
+    /// <summary>Client-side HIBP Pwned Passwords check using the k-anonymity model where only the first 5 characters of the SHA-1 hash are transmitted.</summary>
     public static class HibpClientService
     {
         private const string ApiBase = "https://api.pwnedpasswords.com/range/";
@@ -17,12 +13,7 @@ namespace SecurioClient.Helpers
         // AndroidHttpClientHandlerType in the .csproj) is used automatically on Android.
         private static readonly HttpClient _http = new HttpClient();
 
-        /// <summary>
-        /// Returns <c>true</c> if the given 40-character uppercase SHA-1 hex hash
-        /// appears in the HIBP Pwned Passwords dataset.
-        /// Returns <c>false</c> on any error (fail-open), so a temporary outage
-        /// never produces false positives or blocks the user.
-        /// </summary>
+        /// <summary>Returns true if the given 40-character uppercase SHA-1 hex hash appears in the HIBP Pwned Passwords dataset; returns false on any error (fail-open).</summary>
         public static async Task<bool> IsPasswordPwnedAsync(string sha1Hash)
         {
             if (string.IsNullOrWhiteSpace(sha1Hash) || sha1Hash.Length != 40)

@@ -17,8 +17,8 @@ using System.Threading.Tasks;
 
 namespace SecurioClient.Activities
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     /// <summary>Activity that allows the user to update their username, email, and optionally their master password.</summary>
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class EditAccountActivity : SecuredAppCompatActivity
     {
         // Request code used when launching this activity from ProfileActivity.

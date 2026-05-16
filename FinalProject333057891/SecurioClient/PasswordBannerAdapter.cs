@@ -7,9 +7,7 @@ using System.Collections.Generic;
 
 namespace SecurioClient
 {
-    /// <summary>
-    /// Adapter that feeds <see cref="VaultItem"/> items into the vault RecyclerView.
-    /// </summary>
+    /// <summary>Adapter that feeds VaultItem items into the vault RecyclerView.</summary>
     public class PasswordBannerAdapter : RecyclerView.Adapter
     {
         private List<VaultItem> items;
@@ -55,9 +53,7 @@ namespace SecurioClient
             vh.EditClickAction = pos => EditClick?.Invoke(this, pos);
         }
 
-        /// <summary>
-        /// Replaces the full data set and refreshes the list.
-        /// </summary>
+        /// <summary>Replaces the full data set and refreshes the list.</summary>
         public void UpdateData(List<VaultItem> newItems)
         {
             items = newItems ?? new List<VaultItem>();

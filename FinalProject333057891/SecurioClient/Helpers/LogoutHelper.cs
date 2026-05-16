@@ -23,7 +23,7 @@ namespace SecurioClient.Helpers
                 .Show();
         }
 
-        /// <summary>Clears session state and returns the user to <see cref="LoginActivity"/>.</summary>
+        /// <summary>Clears session state and returns the user to LoginActivity.</summary>
         public static async Task PerformLogoutAsync(Activity activity)
         {
             AppLockManager.CancelAutoLockTimer();

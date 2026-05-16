@@ -3,13 +3,7 @@ using System;
 
 namespace SecurioClient.Helpers
 {
-    /// <summary>
-    /// Manages the app-lock state and the 2-minute inactivity auto-lock timer.
-    /// The timer is reset on every user interaction in a protected activity and fires
-    /// after <see cref="AutoLockDelayMs"/> of silence, locking the session.
-    /// The <see cref="Locked"/> event notifies the foreground activity immediately so
-    /// the lock screen can appear even while the app is in the foreground.
-    /// </summary>
+    /// <summary>Manages the app-lock state and the 2-minute inactivity auto-lock timer that fires after AutoLockDelayMs of silence and notifies the foreground activity via the Locked event.</summary>
     public static class AppLockManager
     {
         private const long AutoLockDelayMs = 2 * 60 * 1000L; // 2 minutes
@@ -45,10 +39,7 @@ namespace SecurioClient.Helpers
             _isLocked = false;
         }
 
-        /// <summary>Resets the 2-minute inactivity timer. Call this from
-        /// <c>OnUserInteraction</c> in every protected activity.
-        /// Has no effect when no session is active.
-        /// </summary>
+        /// <summary>Resets the 2-minute inactivity timer; call this from OnUserInteraction in every protected activity.</summary>
         public static void ResetAutoLockTimer()
         {
             if (!SessionHelper.IsAuthenticated)

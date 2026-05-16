@@ -6,10 +6,7 @@ using System;
 
 namespace SecurioClient
 {
-    /// <summary>
-    /// Fragment that renders the bottom navigation bar with three tabs: Vault, Warnings, and Profile.
-    /// The host activity can subscribe to <see cref="TabSelected"/> to react to tab changes.
-    /// </summary>
+    /// <summary>Fragment that renders the bottom navigation bar with three tabs: Vault, Warnings, and Profile. The host activity can subscribe to TabSelected to react to tab changes.</summary>
     public class BottomNavFragment : AndroidX.Fragment.App.Fragment
     {
         /// <summary>Raised when the user selects a different tab. The string is "vault", "warnings", or "profile".</summary>
@@ -18,9 +15,7 @@ namespace SecurioClient
         private const string ArgSelectedTab = "selectedTab";
         private string currentTab = "vault";
 
-        /// <summary>
-        /// Creates a new <see cref="BottomNavFragment"/> with the specified tab pre-selected.
-        /// </summary>
+        /// <summary>Creates a new BottomNavFragment with the specified tab pre-selected.</summary>
         public static BottomNavFragment NewInstance(string selectedTab)
         {
             var fragment = new BottomNavFragment();

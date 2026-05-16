@@ -7,12 +7,7 @@ using SecurioClient.Helpers;
 
 namespace SecurioClient.Activities
 {
-    /// <summary>
-    /// Displays four password-risk warning cards (Leaked, Weak, Reused, Old)
-    /// with the number of affected passwords in each category.
-    /// Counters are read from <see cref="SessionHelper.CachedWarnings"/>;
-    /// if the cache has been invalidated the counters are recomputed on-the-fly.
-    /// </summary>
+    /// <summary>Displays four password-risk warning cards (Leaked, Weak, Reused, Old) with the number of affected passwords in each category, reading counters from CachedWarnings.</summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class WarningsActivity : SecuredAppCompatActivity
     {

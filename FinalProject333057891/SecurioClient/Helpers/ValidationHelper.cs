@@ -170,7 +170,7 @@ namespace SecurioClient.Helpers
             return score;
         }
 
-        /// <summary>Maps a cumulative score (0-5) to a <see cref="PasswordStrength"/> level.</summary>
+        /// <summary>Maps a cumulative score (0-5) to a PasswordStrength level.</summary>
         public static PasswordStrength GetPasswordStrength(string password)
         {
             int score = GetPasswordScore(password);
@@ -205,12 +205,7 @@ namespace SecurioClient.Helpers
         // Password generator
         // -----------------------------------------------------------------
 
-        /// <summary>
-        /// Generates a cryptographically random password that satisfies all five
-        /// complexity criteria.  The result is <paramref name="length"/> characters
-        /// long (minimum 12, default 16) and is NOT placed in the confirm-password
-        /// field automatically.
-        /// </summary>
+        /// <summary>Generates a cryptographically random password of the specified length satisfying all five complexity criteria.</summary>
         public static string GenerateStrongPassword(int length = 16)
         {
             if (length < 12) length = 12;

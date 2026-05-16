@@ -9,26 +9,10 @@ using SecurioClient.Activities;
 
 namespace SecurioClient.Helpers
 {
-    /// <summary>
-    /// Shared helper that encapsulates the View / Edit / Delete bottom-sheet logic
-    /// used by both <see cref="VaultActivity"/> and <see cref="RiskDetailActivity"/>.
-    /// </summary>
+    /// <summary>Shared helper that encapsulates the View / Edit / Delete bottom-sheet logic used by both VaultActivity and RiskDetailActivity.</summary>
     public static class PasswordEntryActionsHelper
     {
-        /// <summary>
-        /// Shows the <see cref="PasswordOptionsBottomSheet"/> for <paramref name="entry"/>
-        /// and wires up the View, Edit, and Delete callbacks.
-        /// </summary>
-        /// <param name="activity">The hosting activity (used for navigation and dialogs).</param>
-        /// <param name="entry">The vault item the user acted on.</param>
-        /// <param name="beforeEdit">
-        /// Optional action invoked just before starting <see cref="EditPasswordActivity"/>,
-        /// e.g. to sync the duplicate-check entry cache.
-        /// </param>
-        /// <param name="onDeleted">
-        /// Callback invoked (on the UI thread) after the entry has been successfully
-        /// deleted so the caller can update its local list.
-        /// </param>
+        /// <summary>Shows the PasswordOptionsBottomSheet for the given entry and wires up the View, Edit, and Delete callbacks.</summary>
         public static void ShowOptionsSheet(
             AppCompatActivity activity,
             VaultItem entry,

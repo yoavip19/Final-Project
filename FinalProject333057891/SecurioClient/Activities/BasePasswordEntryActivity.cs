@@ -9,11 +9,7 @@ using System;
 
 namespace SecurioClient.Activities
 {
-    /// <summary>
-    /// Shared base class for <see cref="AddPasswordActivity"/> and <see cref="EditPasswordActivity"/>.
-    /// Provides common view references, UI helpers, and form-validation logic so each
-    /// subclass only needs to implement mode-specific configuration and save/update behaviour.
-    /// </summary>
+    /// <summary>Shared base class for AddPasswordActivity and EditPasswordActivity that provides common view references, UI helpers, and form-validation logic.</summary>
     public abstract class BasePasswordEntryActivity : SecuredAppCompatActivity
     {
         // -- Shared view properties (subclass-readable, base-class-assigned) --

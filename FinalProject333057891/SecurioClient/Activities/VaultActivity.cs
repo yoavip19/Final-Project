@@ -14,8 +14,8 @@ using System.Linq;
 
 namespace SecurioClient.Activities
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     /// <summary>Activity that displays the user's password vault entries with search and management capabilities.</summary>
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class VaultActivity : SecuredAppCompatActivity
     {
         private const int RequestCodeNotificationPermission = 9001;
