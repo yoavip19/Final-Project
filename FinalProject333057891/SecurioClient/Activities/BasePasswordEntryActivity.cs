@@ -17,28 +17,48 @@ namespace SecurioClient.Activities
     public abstract class BasePasswordEntryActivity : SecuredAppCompatActivity
     {
         // -- Shared view fields ---------------------------------
-        protected ImageView imageViewBack;
-        protected TextView textViewTitle;
-        protected TextView textViewSubtitle;
+        private ImageView imageViewBack;
+        private TextView textViewTitle;
+        private TextView textViewSubtitle;
 
-        protected TextInputEditText editTextSiteName;
-        protected TextInputEditText editTextUsername;
-        protected TextInputEditText editTextPassword;
-        protected TextInputEditText editTextConfirmPassword;
-        protected TextInputEditText editTextNotes;
+        private TextInputEditText editTextSiteName;
+        private TextInputEditText editTextUsername;
+        private TextInputEditText editTextPassword;
+        private TextInputEditText editTextConfirmPassword;
+        private TextInputEditText editTextNotes;
 
-        protected TextView textViewSiteNameError;
-        protected TextView textViewUsernameError;
-        protected TextView textViewPasswordError;
-        protected TextView textViewConfirmPasswordError;
-        protected TextView textViewGeneralError;
+        private TextView textViewSiteNameError;
+        private TextView textViewUsernameError;
+        private TextView textViewPasswordError;
+        private TextView textViewConfirmPasswordError;
+        private TextView textViewGeneralError;
 
-        protected ProgressBar progressBarStrength;
-        protected TextView textViewStrengthHint;
+        private ProgressBar progressBarStrength;
+        private TextView textViewStrengthHint;
 
-        protected MaterialButton buttonGeneratePassword;
-        protected MaterialButton buttonSave;
-        protected ProgressBar progressBar;
+        private MaterialButton buttonGeneratePassword;
+        private MaterialButton buttonSave;
+        private ProgressBar progressBar;
+
+        // -- Protected property accessors -----------------------
+        protected ImageView ImageViewBack => imageViewBack;
+        protected TextView TextViewTitle => textViewTitle;
+        protected TextView TextViewSubtitle => textViewSubtitle;
+
+        protected TextInputEditText EditTextSiteName => editTextSiteName;
+        protected TextInputEditText EditTextUsername => editTextUsername;
+        protected TextInputEditText EditTextPassword => editTextPassword;
+        protected TextInputEditText EditTextConfirmPassword => editTextConfirmPassword;
+        protected TextInputEditText EditTextNotes => editTextNotes;
+
+        protected TextView TextViewSiteNameError => textViewSiteNameError;
+        protected TextView TextViewUsernameError => textViewUsernameError;
+        protected TextView TextViewPasswordError => textViewPasswordError;
+        protected TextView TextViewConfirmPasswordError => textViewConfirmPasswordError;
+        protected TextView TextViewGeneralError => textViewGeneralError;
+
+        protected MaterialButton ButtonGeneratePassword => buttonGeneratePassword;
+        protected MaterialButton ButtonSave => buttonSave;
 
         // -- View initialisation --------------------------------
 

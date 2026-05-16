@@ -88,9 +88,9 @@ namespace SecurioClient.Activities
         /// <summary>Sets the title, subtitle, button label, and hint text for edit mode.</summary>
         private void ConfigureForEditMode()
         {
-            textViewTitle.Text = GetString(Resource.String.entry_title_edit);
-            textViewSubtitle.Text = GetString(Resource.String.entry_subtitle_edit);
-            buttonSave.Text = GetString(Resource.String.entry_button_update);
+            TextViewTitle.Text = GetString(Resource.String.entry_title_edit);
+            TextViewSubtitle.Text = GetString(Resource.String.entry_subtitle_edit);
+            ButtonSave.Text = GetString(Resource.String.entry_button_update);
 
             // Update hints to make clear that the password field is optional in edit mode.
             textInputLayoutPassword.Hint = GetString(Resource.String.entry_password_edit_hint);
@@ -111,9 +111,9 @@ namespace SecurioClient.Activities
         /// <summary>Pre-fills the form fields with the data passed via the launching Intent.</summary>
         private void PopulateFieldsFromIntent()
         {
-            editTextSiteName.Text = Intent.GetStringExtra(ExtraSiteName) ?? string.Empty;
-            editTextUsername.Text = Intent.GetStringExtra(ExtraUsername) ?? string.Empty;
-            editTextNotes.Text = Intent.GetStringExtra(ExtraNotes) ?? string.Empty;
+            EditTextSiteName.Text = Intent.GetStringExtra(ExtraSiteName) ?? string.Empty;
+            EditTextUsername.Text = Intent.GetStringExtra(ExtraUsername) ?? string.Empty;
+            EditTextNotes.Text = Intent.GetStringExtra(ExtraNotes) ?? string.Empty;
             // Password and confirm password are intentionally left empty.
             // Existing encrypted data is carried via ExtraIV/ExtraTag/ExtraCipherText/ExtraSha1Hash.
         }
@@ -121,59 +121,59 @@ namespace SecurioClient.Activities
         /// <summary>Wires up click and text-change event handlers for the entry form controls.</summary>
         private void SetupEventHandlers()
         {
-            imageViewBack.Click += (s, e) =>
+            ImageViewBack.Click += (s, e) =>
             {
                 SetResult(Result.Canceled);
                 Finish();
             };
 
-            buttonGeneratePassword.Click += (s, e) =>
+            ButtonGeneratePassword.Click += (s, e) =>
             {
                 _passwordIsPlaceholder = false;
                 string generated = ValidationHelper.GenerateStrongPassword();
-                editTextPassword.Text = generated;
-                editTextConfirmPassword.Text = generated;
+                EditTextPassword.Text = generated;
+                EditTextConfirmPassword.Text = generated;
             };
 
-            buttonSave.Click += async (s, e) => await OnUpdateClicked();
+            ButtonSave.Click += async (s, e) => await OnUpdateClicked();
 
             // Real-time validation: site name
-            editTextSiteName.AddTextChangedListener(new SimpleTextWatcher(_ =>
+            EditTextSiteName.AddTextChangedListener(new SimpleTextWatcher(_ =>
             {
-                string site = editTextSiteName.Text?.Trim();
+                string site = EditTextSiteName.Text?.Trim();
                 if (string.IsNullOrWhiteSpace(site))
-                    FormUiHelper.ShowError(textViewSiteNameError, GetString(Resource.String.entry_error_site_required));
+                    FormUiHelper.ShowError(TextViewSiteNameError, GetString(Resource.String.entry_error_site_required));
                 else
-                    FormUiHelper.HideError(textViewSiteNameError);
+                    FormUiHelper.HideError(TextViewSiteNameError);
 
-                FormUiHelper.HideError(textViewGeneralError);
+                FormUiHelper.HideError(TextViewGeneralError);
             }));
 
             // Real-time validation: username
-            editTextUsername.AddTextChangedListener(new SimpleTextWatcher(_ =>
+            EditTextUsername.AddTextChangedListener(new SimpleTextWatcher(_ =>
             {
-                string username = editTextUsername.Text?.Trim();
+                string username = EditTextUsername.Text?.Trim();
                 if (string.IsNullOrWhiteSpace(username))
-                    FormUiHelper.ShowError(textViewUsernameError, GetString(Resource.String.entry_error_username_required));
+                    FormUiHelper.ShowError(TextViewUsernameError, GetString(Resource.String.entry_error_username_required));
                 else
-                    FormUiHelper.HideError(textViewUsernameError);
+                    FormUiHelper.HideError(TextViewUsernameError);
 
-                FormUiHelper.HideError(textViewGeneralError);
+                FormUiHelper.HideError(TextViewGeneralError);
             }));
 
             // Real-time validation: password strength (informational only, never blocks)
-            editTextPassword.AddTextChangedListener(new SimpleTextWatcher(text =>
+            EditTextPassword.AddTextChangedListener(new SimpleTextWatcher(text =>
             {
                 if (_passwordIsPlaceholder) return;
                 UpdatePasswordStrengthIndicator(text);
 
                 // Re-validate confirm password match whenever the password field changes.
-                if (!string.IsNullOrEmpty(editTextConfirmPassword.Text))
+                if (!string.IsNullOrEmpty(EditTextConfirmPassword.Text))
                     ValidatePasswordsMatch();
             }));
 
             // Real-time validation: confirm password
-            editTextConfirmPassword.AddTextChangedListener(new SimpleTextWatcher(_ =>
+            EditTextConfirmPassword.AddTextChangedListener(new SimpleTextWatcher(_ =>
             {
                 ValidatePasswordsMatch();
             }));
@@ -183,21 +183,21 @@ namespace SecurioClient.Activities
         private void ConfigurePasswordPlaceholder()
         {
             _passwordIsPlaceholder = true;
-            editTextPassword.Text = PasswordPlaceholder;
+            EditTextPassword.Text = PasswordPlaceholder;
 
-            editTextPassword.FocusChange += (s, e) =>
+            EditTextPassword.FocusChange += (s, e) =>
             {
                 if (e.HasFocus && _passwordIsPlaceholder)
                 {
                     // User tapped the field — clear the placeholder so they can type.
                     _passwordIsPlaceholder = false;
-                    editTextPassword.Text = string.Empty;
+                    EditTextPassword.Text = string.Empty;
                 }
-                else if (!e.HasFocus && string.IsNullOrEmpty(editTextPassword.Text))
+                else if (!e.HasFocus && string.IsNullOrEmpty(EditTextPassword.Text))
                 {
                     // User left the field without entering anything — restore the placeholder.
                     _passwordIsPlaceholder = true;
-                    editTextPassword.Text = PasswordPlaceholder;
+                    EditTextPassword.Text = PasswordPlaceholder;
                 }
             };
         }
@@ -209,19 +209,19 @@ namespace SecurioClient.Activities
         {
             ClearErrors();
 
-            string siteName = editTextSiteName.Text?.Trim();
-            string username = editTextUsername.Text?.Trim();
+            string siteName = EditTextSiteName.Text?.Trim();
+            string username = EditTextUsername.Text?.Trim();
             // Treat the placeholder as an empty field (user kept the existing password).
-            string password = _passwordIsPlaceholder ? string.Empty : editTextPassword.Text;
-            string confirmPassword = _passwordIsPlaceholder ? string.Empty : editTextConfirmPassword.Text;
-            string notes = editTextNotes.Text?.Trim();
+            string password = _passwordIsPlaceholder ? string.Empty : EditTextPassword.Text;
+            string confirmPassword = _passwordIsPlaceholder ? string.Empty : EditTextConfirmPassword.Text;
+            string notes = EditTextNotes.Text?.Trim();
 
             if (!ValidateInputs(siteName, username, password, confirmPassword))
                 return;
 
             if (IsDuplicate(siteName, username))
             {
-                FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.entry_error_duplicate));
+                FormUiHelper.ShowError(TextViewGeneralError, GetString(Resource.String.entry_error_duplicate));
                 return;
             }
 
@@ -298,12 +298,12 @@ namespace SecurioClient.Activities
                 }
                 else
                 {
-                    FormUiHelper.ShowError(textViewGeneralError, result.Message);
+                    FormUiHelper.ShowError(TextViewGeneralError, result.Message);
                 }
             }
             catch (Exception)
             {
-                FormUiHelper.ShowError(textViewGeneralError, GetString(Resource.String.entry_error_update_failed));
+                FormUiHelper.ShowError(TextViewGeneralError, GetString(Resource.String.entry_error_update_failed));
             }
             finally
             {
@@ -320,13 +320,13 @@ namespace SecurioClient.Activities
 
             if (string.IsNullOrWhiteSpace(siteName))
             {
-                FormUiHelper.ShowError(textViewSiteNameError, GetString(Resource.String.entry_error_site_required));
+                FormUiHelper.ShowError(TextViewSiteNameError, GetString(Resource.String.entry_error_site_required));
                 valid = false;
             }
 
             if (string.IsNullOrWhiteSpace(username))
             {
-                FormUiHelper.ShowError(textViewUsernameError, GetString(Resource.String.entry_error_username_required));
+                FormUiHelper.ShowError(TextViewUsernameError, GetString(Resource.String.entry_error_username_required));
                 valid = false;
             }
 
@@ -336,17 +336,17 @@ namespace SecurioClient.Activities
                 // If one is set, both must be set and equal.
                 if (string.IsNullOrEmpty(password))
                 {
-                    FormUiHelper.ShowError(textViewPasswordError, GetString(Resource.String.entry_error_password_required));
+                    FormUiHelper.ShowError(TextViewPasswordError, GetString(Resource.String.entry_error_password_required));
                     valid = false;
                 }
                 else if (string.IsNullOrEmpty(confirmPassword))
                 {
-                    FormUiHelper.ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_confirm_password_required));
+                    FormUiHelper.ShowError(TextViewConfirmPasswordError, GetString(Resource.String.entry_error_confirm_password_required));
                     valid = false;
                 }
                 else if (password != confirmPassword)
                 {
-                    FormUiHelper.ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
+                    FormUiHelper.ShowError(TextViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
                     valid = false;
                 }
             }
