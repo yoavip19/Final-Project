@@ -95,7 +95,6 @@ namespace SecurioClient.Activities
         private void OnBottomNavTabSelected(object sender, string tab)
             => BottomNavHelper.Navigate(this, tab, "warnings");
 
-
         /// <summary>
         /// Reads the cached warnings or recomputes them synchronously (using stored
         /// IsLeaked flags), then populates the four counter TextViews.
