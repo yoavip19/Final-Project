@@ -16,77 +16,58 @@ namespace SecurioClient.Activities
     /// </summary>
     public abstract class BasePasswordEntryActivity : SecuredAppCompatActivity
     {
-        // -- Shared view fields ---------------------------------
-        private ImageView imageViewBack;
-        private TextView textViewTitle;
-        private TextView textViewSubtitle;
+        // -- Shared view properties (subclass-readable, base-class-assigned) --
+        protected ImageView ImageViewBack { get; private set; }
+        protected TextView TextViewTitle { get; private set; }
+        protected TextView TextViewSubtitle { get; private set; }
 
-        private TextInputEditText editTextSiteName;
-        private TextInputEditText editTextUsername;
-        private TextInputEditText editTextPassword;
-        private TextInputEditText editTextConfirmPassword;
-        private TextInputEditText editTextNotes;
+        protected TextInputEditText EditTextSiteName { get; private set; }
+        protected TextInputEditText EditTextUsername { get; private set; }
+        protected TextInputEditText EditTextPassword { get; private set; }
+        protected TextInputEditText EditTextConfirmPassword { get; private set; }
+        protected TextInputEditText EditTextNotes { get; private set; }
 
-        private TextView textViewSiteNameError;
-        private TextView textViewUsernameError;
-        private TextView textViewPasswordError;
-        private TextView textViewConfirmPasswordError;
-        private TextView textViewGeneralError;
+        protected TextView TextViewSiteNameError { get; private set; }
+        protected TextView TextViewUsernameError { get; private set; }
+        protected TextView TextViewPasswordError { get; private set; }
+        protected TextView TextViewConfirmPasswordError { get; private set; }
+        protected TextView TextViewGeneralError { get; private set; }
 
-        private ProgressBar progressBarStrength;
-        private TextView textViewStrengthHint;
+        protected MaterialButton ButtonGeneratePassword { get; private set; }
+        protected MaterialButton ButtonSave { get; private set; }
 
-        private MaterialButton buttonGeneratePassword;
-        private MaterialButton buttonSave;
-        private ProgressBar progressBar;
-
-        // -- Protected property accessors -----------------------
-        protected ImageView ImageViewBack => imageViewBack;
-        protected TextView TextViewTitle => textViewTitle;
-        protected TextView TextViewSubtitle => textViewSubtitle;
-
-        protected TextInputEditText EditTextSiteName => editTextSiteName;
-        protected TextInputEditText EditTextUsername => editTextUsername;
-        protected TextInputEditText EditTextPassword => editTextPassword;
-        protected TextInputEditText EditTextConfirmPassword => editTextConfirmPassword;
-        protected TextInputEditText EditTextNotes => editTextNotes;
-
-        protected TextView TextViewSiteNameError => textViewSiteNameError;
-        protected TextView TextViewUsernameError => textViewUsernameError;
-        protected TextView TextViewPasswordError => textViewPasswordError;
-        protected TextView TextViewConfirmPasswordError => textViewConfirmPasswordError;
-        protected TextView TextViewGeneralError => textViewGeneralError;
-
-        protected MaterialButton ButtonGeneratePassword => buttonGeneratePassword;
-        protected MaterialButton ButtonSave => buttonSave;
+        // -- Base-class-internal view properties ----------------
+        private ProgressBar ProgressBarStrength { get; set; }
+        private TextView TextViewStrengthHint { get; set; }
+        private ProgressBar ProgressBarEntry { get; set; }
 
         // -- View initialisation --------------------------------
 
         /// <summary>Finds and assigns all view references that are shared between Add and Edit modes.</summary>
         protected virtual void InitializeViews()
         {
-            imageViewBack = FindViewById<ImageView>(Resource.Id.imageViewEntryBack);
-            textViewTitle = FindViewById<TextView>(Resource.Id.textViewEntryTitle);
-            textViewSubtitle = FindViewById<TextView>(Resource.Id.textViewEntrySubtitle);
+            ImageViewBack = FindViewById<ImageView>(Resource.Id.imageViewEntryBack);
+            TextViewTitle = FindViewById<TextView>(Resource.Id.textViewEntryTitle);
+            TextViewSubtitle = FindViewById<TextView>(Resource.Id.textViewEntrySubtitle);
 
-            editTextSiteName = FindViewById<TextInputEditText>(Resource.Id.editTextEntrySiteName);
-            editTextUsername = FindViewById<TextInputEditText>(Resource.Id.editTextEntryUsername);
-            editTextPassword = FindViewById<TextInputEditText>(Resource.Id.editTextEntryPassword);
-            editTextConfirmPassword = FindViewById<TextInputEditText>(Resource.Id.editTextEntryConfirmPassword);
-            editTextNotes = FindViewById<TextInputEditText>(Resource.Id.editTextEntryNotes);
+            EditTextSiteName = FindViewById<TextInputEditText>(Resource.Id.editTextEntrySiteName);
+            EditTextUsername = FindViewById<TextInputEditText>(Resource.Id.editTextEntryUsername);
+            EditTextPassword = FindViewById<TextInputEditText>(Resource.Id.editTextEntryPassword);
+            EditTextConfirmPassword = FindViewById<TextInputEditText>(Resource.Id.editTextEntryConfirmPassword);
+            EditTextNotes = FindViewById<TextInputEditText>(Resource.Id.editTextEntryNotes);
 
-            textViewSiteNameError = FindViewById<TextView>(Resource.Id.textViewEntrySiteNameError);
-            textViewUsernameError = FindViewById<TextView>(Resource.Id.textViewEntryUsernameError);
-            textViewPasswordError = FindViewById<TextView>(Resource.Id.textViewEntryPasswordError);
-            textViewConfirmPasswordError = FindViewById<TextView>(Resource.Id.textViewEntryConfirmPasswordError);
-            textViewGeneralError = FindViewById<TextView>(Resource.Id.textViewEntryGeneralError);
+            TextViewSiteNameError = FindViewById<TextView>(Resource.Id.textViewEntrySiteNameError);
+            TextViewUsernameError = FindViewById<TextView>(Resource.Id.textViewEntryUsernameError);
+            TextViewPasswordError = FindViewById<TextView>(Resource.Id.textViewEntryPasswordError);
+            TextViewConfirmPasswordError = FindViewById<TextView>(Resource.Id.textViewEntryConfirmPasswordError);
+            TextViewGeneralError = FindViewById<TextView>(Resource.Id.textViewEntryGeneralError);
 
-            progressBarStrength = FindViewById<ProgressBar>(Resource.Id.progressBarEntryStrength);
-            textViewStrengthHint = FindViewById<TextView>(Resource.Id.textViewEntryStrengthHint);
+            ProgressBarStrength = FindViewById<ProgressBar>(Resource.Id.progressBarEntryStrength);
+            TextViewStrengthHint = FindViewById<TextView>(Resource.Id.textViewEntryStrengthHint);
 
-            buttonGeneratePassword = FindViewById<MaterialButton>(Resource.Id.buttonEntryGeneratePassword);
-            buttonSave = FindViewById<MaterialButton>(Resource.Id.buttonEntrySave);
-            progressBar = FindViewById<ProgressBar>(Resource.Id.progressBarEntry);
+            ButtonGeneratePassword = FindViewById<MaterialButton>(Resource.Id.buttonEntryGeneratePassword);
+            ButtonSave = FindViewById<MaterialButton>(Resource.Id.buttonEntrySave);
+            ProgressBarEntry = FindViewById<ProgressBar>(Resource.Id.progressBarEntry);
         }
 
         // -- Password strength indicator ------------------------
@@ -96,22 +77,22 @@ namespace SecurioClient.Activities
         {
             if (string.IsNullOrEmpty(password))
             {
-                progressBarStrength.Visibility = ViewStates.Gone;
-                textViewStrengthHint.Visibility = ViewStates.Gone;
-                FormUiHelper.HideError(textViewPasswordError);
+                ProgressBarStrength.Visibility = ViewStates.Gone;
+                TextViewStrengthHint.Visibility = ViewStates.Gone;
+                FormUiHelper.HideError(TextViewPasswordError);
                 return;
             }
 
             int score = ValidationHelper.GetPasswordScore(password);
-            progressBarStrength.Visibility = ViewStates.Visible;
-            progressBarStrength.Progress = score;
-            progressBarStrength.ProgressTintList =
+            ProgressBarStrength.Visibility = ViewStates.Visible;
+            ProgressBarStrength.Progress = score;
+            ProgressBarStrength.ProgressTintList =
                 ColorStateList.ValueOf(new Android.Graphics.Color(Resources.GetColor(ScoreToColorRes(score))));
 
             string hint = ValidationHelper.GetMissingCriteriaHint(password);
-            textViewStrengthHint.Text = hint;
-            textViewStrengthHint.Visibility = ViewStates.Visible;
-            textViewStrengthHint.SetTextColor(new Android.Graphics.Color(
+            TextViewStrengthHint.Text = hint;
+            TextViewStrengthHint.Visibility = ViewStates.Visible;
+            TextViewStrengthHint.SetTextColor(new Android.Graphics.Color(
                 Resources.GetColor(score == 5
                     ? Resource.Color.passwordStrengthVeryStrong
                     : Resource.Color.signupHintText)));
@@ -136,17 +117,17 @@ namespace SecurioClient.Activities
         /// <summary>Validates that the confirm password field matches the password field and shows or hides the error accordingly.</summary>
         protected void ValidatePasswordsMatch()
         {
-            string password = editTextPassword.Text;
-            string confirm = editTextConfirmPassword.Text;
+            string password = EditTextPassword.Text;
+            string confirm = EditTextConfirmPassword.Text;
             if (string.IsNullOrEmpty(confirm))
             {
-                FormUiHelper.HideError(textViewConfirmPasswordError);
+                FormUiHelper.HideError(TextViewConfirmPasswordError);
                 return;
             }
             if (password != confirm)
-                FormUiHelper.ShowError(textViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
+                FormUiHelper.ShowError(TextViewConfirmPasswordError, GetString(Resource.String.entry_error_passwords_mismatch));
             else
-                FormUiHelper.HideError(textViewConfirmPasswordError);
+                FormUiHelper.HideError(TextViewConfirmPasswordError);
         }
 
         // -- UI helpers -----------------------------------------
@@ -154,24 +135,24 @@ namespace SecurioClient.Activities
         /// <summary>Hides all field-level and general error messages.</summary>
         protected void ClearErrors()
         {
-            FormUiHelper.HideError(textViewSiteNameError);
-            FormUiHelper.HideError(textViewUsernameError);
-            FormUiHelper.HideError(textViewPasswordError);
-            FormUiHelper.HideError(textViewConfirmPasswordError);
-            FormUiHelper.HideError(textViewGeneralError);
+            FormUiHelper.HideError(TextViewSiteNameError);
+            FormUiHelper.HideError(TextViewUsernameError);
+            FormUiHelper.HideError(TextViewPasswordError);
+            FormUiHelper.HideError(TextViewConfirmPasswordError);
+            FormUiHelper.HideError(TextViewGeneralError);
         }
 
         /// <summary>Toggles the loading state, showing the progress bar and disabling form controls.</summary>
         protected void SetLoadingState(bool isLoading)
         {
-            progressBar.Visibility = isLoading ? ViewStates.Visible : ViewStates.Gone;
-            buttonSave.Enabled = !isLoading;
-            buttonGeneratePassword.Enabled = !isLoading;
-            editTextSiteName.Enabled = !isLoading;
-            editTextUsername.Enabled = !isLoading;
-            editTextPassword.Enabled = !isLoading;
-            editTextConfirmPassword.Enabled = !isLoading;
-            editTextNotes.Enabled = !isLoading;
+            ProgressBarEntry.Visibility = isLoading ? ViewStates.Visible : ViewStates.Gone;
+            ButtonSave.Enabled = !isLoading;
+            ButtonGeneratePassword.Enabled = !isLoading;
+            EditTextSiteName.Enabled = !isLoading;
+            EditTextUsername.Enabled = !isLoading;
+            EditTextPassword.Enabled = !isLoading;
+            EditTextConfirmPassword.Enabled = !isLoading;
+            EditTextNotes.Enabled = !isLoading;
         }
     }
 }
