@@ -13,15 +13,7 @@ using System.Linq;
 
 namespace SecurioClient.Activities
 {
-    /// <summary>
-    /// Displays the list of vault passwords that fall under a specific risk category
-    /// (leaked, weak, reused, or old). Receives the category via an Intent extra and
-    /// filters <see cref="SessionHelper.CachedVault"/> accordingly.
-    /// Reuses the same <see cref="PasswordBannerAdapter"/> and search-bar pattern as
-    /// <see cref="VaultActivity"/>. The kebab icon on each banner opens the same
-    /// <see cref="PasswordOptionsBottomSheet"/> as the vault via
-    /// <see cref="PasswordEntryActionsHelper"/>.
-    /// </summary>
+    /// <summary>Displays the list of vault passwords that fall under a specific risk category (leaked, weak, reused, or old) filtered from the session cache.</summary>
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class RiskDetailActivity : SecuredAppCompatActivity
     {
@@ -44,11 +36,13 @@ namespace SecurioClient.Activities
         private LinearLayout layoutEmpty;
 
         private PasswordBannerAdapter adapter;
+        /// <summary>The list of vault items matching the current risk category.</summary>
         private List<VaultItem> riskEntries = new List<VaultItem>();
         private string category;
 
         // -- Lifecycle ------------------------------------------
 
+        /// <summary>Initializes the activity, loads risk entries from the vault cache, and sets up the UI.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -67,6 +61,7 @@ namespace SecurioClient.Activities
 
         // -- Setup helpers --------------------------------------
 
+        /// <summary>Finds and assigns view references from the layout.</summary>
         private void InitializeViews()
         {
             imageViewBack    = FindViewById<ImageView>(Resource.Id.imageViewRiskBack);
@@ -78,9 +73,7 @@ namespace SecurioClient.Activities
             layoutEmpty      = FindViewById<LinearLayout>(Resource.Id.layoutRiskEmpty);
         }
 
-        /// <summary>
-        /// Configures the header text and emoji based on the risk category.
-        /// </summary>
+        /// <summary>Configures the header text and emoji based on the risk category.</summary>
         private void ConfigureHeader()
         {
             switch (category)
@@ -108,6 +101,7 @@ namespace SecurioClient.Activities
             }
         }
 
+        /// <summary>Configures the RecyclerView with the password banner adapter.</summary>
         private void SetupRecyclerView()
         {
             adapter = new PasswordBannerAdapter(riskEntries);
@@ -119,10 +113,7 @@ namespace SecurioClient.Activities
             adapter.EditClick += (sender, position) => OnBannerActionAt(position);
         }
 
-        /// <summary>
-        /// Resolves the entry at <paramref name="position"/> and opens the options
-        /// bottom sheet via the shared <see cref="PasswordEntryActionsHelper"/>.
-        /// </summary>
+        /// <summary>Resolves the entry at the given position and opens the options bottom sheet via PasswordEntryActionsHelper.</summary>
         private void OnBannerActionAt(int position)
         {
             var displayed = GetDisplayedEntries();
@@ -134,12 +125,14 @@ namespace SecurioClient.Activities
                     OnEntryDeleted);
         }
 
+        /// <summary>Removes a deleted entry from the list and refreshes the display.</summary>
         private void OnEntryDeleted(VaultItem entry)
         {
             riskEntries.RemoveAll(x => x.Id == entry.Id);
             RefreshList();
         }
 
+        /// <summary>Wires up click and text-change event handlers.</summary>
         private void SetupEventHandlers()
         {
             imageViewBack.Click += (s, e) => Finish();
@@ -152,6 +145,7 @@ namespace SecurioClient.Activities
 
         // -- Activity result ------------------------------------
 
+        /// <summary>Handles the result from the edit-password screen and updates the entry in the list.</summary>
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
@@ -188,9 +182,7 @@ namespace SecurioClient.Activities
 
         // -- Data loading ---------------------------------------
 
-        /// <summary>
-        /// Filters the cached vault to only items that match the current risk category.
-        /// </summary>
+        /// <summary>Filters the cached vault to only items that match the current risk category.</summary>
         private async System.Threading.Tasks.Task LoadRiskEntriesAsync()
         {
             RiskCategory riskCategory;
@@ -212,6 +204,7 @@ namespace SecurioClient.Activities
 
         // -- Search / filter helpers ----------------------------
 
+        /// <summary>Applies the search query and refreshes the displayed list.</summary>
         private void FilterPasswords(string query)
         {
             if (string.IsNullOrWhiteSpace(query))
@@ -222,6 +215,7 @@ namespace SecurioClient.Activities
             UpdateEmptyState();
         }
 
+        /// <summary>Returns the subset of risk entries whose name or username contains the query.</summary>
         private List<VaultItem> GetFilteredEntries(string query)
         {
             return riskEntries
@@ -230,18 +224,21 @@ namespace SecurioClient.Activities
                 .ToList();
         }
 
+        /// <summary>Returns all entries when no query is active, or the filtered subset otherwise.</summary>
         private List<VaultItem> GetDisplayedEntries()
         {
             string query = editTextSearch.Text?.Trim();
             return string.IsNullOrWhiteSpace(query) ? riskEntries : GetFilteredEntries(query);
         }
 
+        /// <summary>Rebuilds the adapter data set and triggers a layout refresh.</summary>
         private void RefreshList()
         {
             string query = editTextSearch.Text?.Trim();
             FilterPasswords(query);
         }
 
+        /// <summary>Shows or hides the empty-state view based on whether the list has items.</summary>
         private void UpdateEmptyState()
         {
             bool isEmpty = adapter.ItemCount == 0;

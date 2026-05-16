@@ -7,8 +7,8 @@ using SecurioClient.Helpers.ServerHelpers;
 
 namespace SecurioClient.Activities
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
     /// <summary>Entry-point activity that validates the stored JWT and routes to VaultActivity or LoginActivity.</summary>
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
         private const int RequestCodeNotificationPermission = 1001;

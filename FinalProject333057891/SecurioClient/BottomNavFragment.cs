@@ -6,10 +6,7 @@ using System;
 
 namespace SecurioClient
 {
-    /// <summary>
-    /// Fragment that renders the bottom navigation bar with three tabs: Vault, Warnings, and Profile.
-    /// The host activity can subscribe to <see cref="TabSelected"/> to react to tab changes.
-    /// </summary>
+    /// <summary>Fragment that renders the bottom navigation bar with three tabs: Vault, Warnings, and Profile. The host activity can subscribe to TabSelected to react to tab changes.</summary>
     public class BottomNavFragment : AndroidX.Fragment.App.Fragment
     {
         /// <summary>Raised when the user selects a different tab. The string is "vault", "warnings", or "profile".</summary>
@@ -18,9 +15,7 @@ namespace SecurioClient
         private const string ArgSelectedTab = "selectedTab";
         private string currentTab = "vault";
 
-        /// <summary>
-        /// Creates a new <see cref="BottomNavFragment"/> with the specified tab pre-selected.
-        /// </summary>
+        /// <summary>Creates a new BottomNavFragment with the specified tab pre-selected.</summary>
         public static BottomNavFragment NewInstance(string selectedTab)
         {
             var fragment = new BottomNavFragment();
@@ -30,11 +25,13 @@ namespace SecurioClient
             return fragment;
         }
 
+        /// <summary>Inflates the bottom navigation bar layout.</summary>
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             return inflater.Inflate(Resource.Layout.fragment_bottom_nav, container, false);
         }
 
+        /// <summary>Binds tab click listeners and applies the initial active tab state.</summary>
         public override void OnViewCreated(View view, Bundle savedInstanceState)
         {
             base.OnViewCreated(view, savedInstanceState);
@@ -53,6 +50,7 @@ namespace SecurioClient
             SelectTab(view, currentTab);
         }
 
+        /// <summary>Updates the visual state of all tabs to reflect the selected one.</summary>
         private void SelectTab(View root, string tab)
         {
             currentTab = tab;

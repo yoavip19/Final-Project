@@ -14,8 +14,8 @@ using System.Threading.Tasks;
 
 namespace SecurioClient.Activities
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     /// <summary>Activity that provides the registration form and creates a new user account.</summary>
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class SignupActivity : AppCompatActivity
     {
         private TextInputEditText editTextUsername;

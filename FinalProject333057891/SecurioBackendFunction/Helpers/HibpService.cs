@@ -4,10 +4,7 @@ using System.Threading.Tasks;
 
 namespace SecurioBackendFunction.Helpers
 {
-    /// <summary>
-    /// Checks passwords against the Have I Been Pwned Pwned Passwords API using k-anonymity
-    /// (only the first 5 hex characters of the SHA-1 hash are sent over the network).
-    /// </summary>
+    /// <summary>Checks passwords against the Have I Been Pwned Pwned Passwords API using k-anonymity.</summary>
     public class HibpService : IHibpService
     {
         private const string BaseUrl = "https://api.pwnedpasswords.com/range/";
@@ -16,10 +13,7 @@ namespace SecurioBackendFunction.Helpers
         /// <summary>Initializes a new instance of HibpService with the provided HttpClient.</summary>
         public HibpService(HttpClient http) => _http = http;
 
-        /// <summary>
-        /// Returns true if the given SHA-1 hash appears in the HIBP breach database.
-        /// Invalid or empty hashes always return false (fail open).
-        /// </summary>
+        /// <summary>Returns true if the given SHA-1 hash appears in the HIBP breach database, or false for invalid or empty hashes.</summary>
         public async Task<bool> IsPasswordPwnedAsync(string sha1Hash)
         {
             if (string.IsNullOrWhiteSpace(sha1Hash) || sha1Hash.Length != 40)

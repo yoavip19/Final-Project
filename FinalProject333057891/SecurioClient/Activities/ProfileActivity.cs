@@ -15,8 +15,8 @@ using System.Threading.Tasks;
 
 namespace SecurioClient.Activities
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     /// <summary>Activity that displays the user's profile information with options to edit, log out, or delete the account.</summary>
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class ProfileActivity : SecuredAppCompatActivity
     {
         private const int RequestCodeNotificationPermission = 1003;
@@ -126,13 +126,7 @@ namespace SecurioClient.Activities
             }
         }
 
-        /// <summary>
-        /// Displays the user profile. Uses the in-memory session cache when available so
-        /// re-opening the page does not trigger a server round-trip. The password count is
-        /// always derived from the live vault cache so it stays accurate after vault edits.
-        /// The cache is populated on the first load and invalidated whenever the account is
-        /// edited (<see cref="OnActivityResult"/>).
-        /// </summary>
+        /// <summary>Displays the user profile using the in-memory session cache when available, or fetches from the server on cache miss.</summary>
         private async Task LoadProfileAsync()
         {
             var cached = SessionHelper.CachedProfile;

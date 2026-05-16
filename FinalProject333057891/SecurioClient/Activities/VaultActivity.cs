@@ -14,8 +14,8 @@ using System.Linq;
 
 namespace SecurioClient.Activities
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     /// <summary>Activity that displays the user's password vault entries with search and management capabilities.</summary>
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class VaultActivity : SecuredAppCompatActivity
     {
         private const int RequestCodeNotificationPermission = 9001;
@@ -28,6 +28,7 @@ namespace SecurioClient.Activities
         private LinearLayout layoutVaultEmpty;
 
         private PasswordBannerAdapter adapter;
+        /// <summary>The full list of vault items loaded for the current user.</summary>
         private List<VaultItem> allEntries = new List<VaultItem>();
 
         /// <summary>Initializes the activity, inflates the layout, and loads vault entries from the session cache.</summary>

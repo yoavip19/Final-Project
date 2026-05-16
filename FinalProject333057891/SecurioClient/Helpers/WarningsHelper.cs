@@ -26,12 +26,7 @@ namespace SecurioClient.Helpers
         public int OldCount { get; set; }
     }
 
-    /// <summary>
-    /// Computes password-health warning counters from the in-memory vault.
-    /// Counters are designed to be calculated once at login and cached in
-    /// <see cref="SessionHelper.CachedWarnings"/>; the cache is flushed
-    /// whenever the vault contents change.
-    /// </summary>
+    /// <summary>Computes password-health warning counters from the in-memory vault and caches results in CachedWarnings.</summary>
     public static class WarningsHelper
     {
         /// <summary>
@@ -41,12 +36,7 @@ namespace SecurioClient.Helpers
         /// </summary>
         private const int OldPasswordDays = 90;
 
-        /// <summary>
-        /// Synchronously computes warning counters from the vault using stored flags
-        /// (no live HIBP network calls). The leaked count uses each item's stored
-        /// <see cref="VaultItem.IsLeaked"/> flag, which is set by the server at
-        /// add/edit time. All other checks are computed locally.
-        /// </summary>
+        /// <summary>Synchronously computes warning counters using the stored IsLeaked flags and local password analysis; no live HIBP calls.</summary>
         public static WarningsData ComputeWarningsSync(IList<VaultItem> vault, string vaultKey)
         {
             if (vault == null || vault.Count == 0)
@@ -66,13 +56,7 @@ namespace SecurioClient.Helpers
             };
         }
 
-        /// <summary>
-        /// Analyses every item in <paramref name="vault"/> and returns aggregated
-        /// warning counters. Password decryption (needed for the "weak" check)
-        /// uses the provided <paramref name="vaultKey"/>.
-        /// The "leaked" check performs a live HIBP k-anonymity query for each
-        /// password's SHA-1 hash.
-        /// </summary>
+        /// <summary>Asynchronously analyses every vault item and returns aggregated warning counters, performing a live HIBP k-anonymity query for the leaked check.</summary>
         public static async Task<WarningsData> ComputeWarningsAsync(IList<VaultItem> vault, string vaultKey)
         {
             if (vault == null || vault.Count == 0)
@@ -104,10 +88,7 @@ namespace SecurioClient.Helpers
             };
         }
 
-        /// <summary>
-        /// Returns the subset of <paramref name="vault"/> items that fall under
-        /// the specified <paramref name="category"/> risk.
-        /// </summary>
+        /// <summary>Returns the subset of vault items that fall under the specified risk category.</summary>
         public static Task<List<VaultItem>> GetItemsAtRisk(
             IList<VaultItem> vault, string vaultKey, RiskCategory category)
         {
@@ -136,10 +117,7 @@ namespace SecurioClient.Helpers
             return System.Threading.Tasks.Task.FromResult(result);
         }
 
-        /// <summary>
-        /// Returns the subset of vault items whose password appears in a known data breach,
-        /// using the server-provided <see cref="VaultItem.IsLeaked"/> flag set at add/edit time.
-        /// </summary>
+        /// <summary>Returns the subset of vault items whose password appears in a known data breach, using the server-provided IsLeaked flag.</summary>
         private static List<VaultItem> GetLeakedItems(IList<VaultItem> vault)
         {
             return vault.Where(item => item.IsLeaked).ToList();

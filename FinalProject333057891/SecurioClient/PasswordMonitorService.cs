@@ -51,14 +51,7 @@ namespace SecurioClient
             };
         }
 
-        /// <summary>
-        /// Handles incoming service actions and routes each action to the appropriate command handler.
-        /// Unknown or missing actions fall back to monitor startup handling.
-        /// </summary>
-        /// <param name="intent">Incoming service intent containing the command action.</param>
-        /// <param name="flags">Additional start-request metadata supplied by Android.</param>
-        /// <param name="startId">Unique ID for this service start request.</param>
-        /// <returns><see cref="StartCommandResult.Sticky"/> so Android recreates the service if needed.</returns>
+        /// <summary>Handles incoming service actions and routes each action to the appropriate command handler.</summary>
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
             RegisterScreenOffReceiver();
@@ -69,8 +62,6 @@ namespace SecurioClient
         }
 
         /// <summary>Binding is not supported because this service is command-driven and runs in the foreground.</summary>
-        /// <param name="intent">Binding request intent.</param>
-        /// <returns>Always <c>null</c>.</returns>
         public override IBinder OnBind(Intent intent) => null;
 
         /// <summary>
@@ -85,23 +76,18 @@ namespace SecurioClient
         }
 
         /// <summary>Starts this service and triggers the monitoring bootstrap command.</summary>
-        /// <param name="context">Caller context used to start the foreground service.</param>
         public static void StartMonitoring(Context context)
             => StartCommand(context, ActionStartMonitoring);
 
-        /// <summary>
-        /// Requests the clipboard-clear timer command so the service purges the system clipboard in 60 seconds.
-        /// </summary>
-        /// <param name="context">Caller context used to dispatch the command.</param>
+        /// <summary>Requests the clipboard-clear timer command so the service purges the system clipboard in 60 seconds.</summary>
         internal static void ScheduleClipboardClear(Context context)
             => StartCommand(context, ActionScheduleClipboardClear);
 
         /// <summary>Requests an immediate clipboard purge command.</summary>
-        /// <param name="context">Caller context used to dispatch the command.</param>
         internal static void ClearClipboard(Context context)
             => StartCommand(context, ActionClearClipboard);
 
-        /// <summary>Registers the dynamic <c>ACTION_SCREEN_OFF</c> receiver once per service lifetime.</summary>
+        /// <summary>Registers the dynamic ACTION_SCREEN_OFF receiver once per service lifetime.</summary>
         private void RegisterScreenOffReceiver()
         {
             if (_isScreenOffReceiverRegistered) return;
@@ -123,11 +109,7 @@ namespace SecurioClient
             }
         }
 
-        /// <summary>
-        /// Starts this foreground service with the provided action so command handling remains centralized.
-        /// </summary>
-        /// <param name="context">Caller context.</param>
-        /// <param name="action">Action constant representing the command to execute.</param>
+        /// <summary>Starts this foreground service with the provided action so command handling remains centralized.</summary>
         private static void StartCommand(Context context, string action)
         {
             var appContext = context.ApplicationContext;
@@ -145,10 +127,7 @@ namespace SecurioClient
                 NotificationHelper.BuildForegroundNotification(this));
         }
 
-        /// <summary>
-        /// Executes a command handler for the provided action and applies fallback/error handling behavior.
-        /// </summary>
-        /// <param name="action">Action key used to resolve the command handler.</param>
+        /// <summary>Executes a command handler for the provided action and applies fallback and error handling behavior.</summary>
         private async Task ExecuteCommandAsync(string action)
         {
             if (!_commands.TryGetValue(action, out var command))
@@ -193,10 +172,7 @@ namespace SecurioClient
             ScheduleNextPasswordCheck(immediate: true);
         }
 
-        /// <summary>
-        /// Schedules the next password-check command either immediately or after the configured interval.
-        /// </summary>
-        /// <param name="immediate"><c>true</c> to run now; otherwise schedule for the 24-hour interval.</param>
+        /// <summary>Schedules the next password-check command either immediately or after the configured interval.</summary>
         private void ScheduleNextPasswordCheck(bool immediate)
         {
             CancelPasswordCheck();
@@ -236,10 +212,7 @@ namespace SecurioClient
             CancelCallback(_clipboardClearRunnable);
         }
 
-        /// <summary>
-        /// Removes a pending runnable callback from the service handler if both are available.
-        /// </summary>
-        /// <param name="runnable">Runnable callback to remove.</param>
+        /// <summary>Removes a pending runnable callback from the service handler if both are available.</summary>
         private void CancelCallback(Java.Lang.Runnable runnable)
         {
             if (_handler != null && runnable != null)
@@ -253,10 +226,7 @@ namespace SecurioClient
             ClipboardGuard.ClearNow(this);
         }
 
-        /// <summary>
-        /// Performs the server-backed password-health check and posts local notifications when needed.
-        /// </summary>
-        /// <param name="context">Application/service context.</param>
+        /// <summary>Performs the server-backed password-health check and posts local notifications when needed.</summary>
         internal static async Task PerformCheckAsync(Context context)
         {
             int userId = await StorageHelper.GetUserIdAsync();

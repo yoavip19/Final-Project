@@ -52,8 +52,11 @@ namespace SecurioClient.Helpers
                       RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // Password component detectors
+        /// <summary>Compiled regex that matches at least one uppercase letter.</summary>
         private static readonly Regex HasUppercase = new Regex(@"[A-Z]", RegexOptions.Compiled);
+        /// <summary>Compiled regex that matches at least one lowercase letter.</summary>
         private static readonly Regex HasLowercase = new Regex(@"[a-z]", RegexOptions.Compiled);
+        /// <summary>Compiled regex that matches at least one digit.</summary>
         private static readonly Regex HasDigit = new Regex(@"\d", RegexOptions.Compiled);
 
         // Accepted special characters: ! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
@@ -65,6 +68,7 @@ namespace SecurioClient.Helpers
         private const string UpperPool   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const string LowerPool   = "abcdefghijklmnopqrstuvwxyz";
         private const string DigitPool   = "0123456789";
+        /// <summary>Character pool of special characters used by the password generator.</summary>
         private const string SpecialPool = "!@#$%^&*()-_=+[]{}|;:,.<>?";
 
         // -----------------------------------------------------------------
@@ -170,7 +174,7 @@ namespace SecurioClient.Helpers
             return score;
         }
 
-        /// <summary>Maps a cumulative score (0-5) to a <see cref="PasswordStrength"/> level.</summary>
+        /// <summary>Maps a cumulative score (0-5) to a PasswordStrength level.</summary>
         public static PasswordStrength GetPasswordStrength(string password)
         {
             int score = GetPasswordScore(password);
@@ -205,12 +209,7 @@ namespace SecurioClient.Helpers
         // Password generator
         // -----------------------------------------------------------------
 
-        /// <summary>
-        /// Generates a cryptographically random password that satisfies all five
-        /// complexity criteria.  The result is <paramref name="length"/> characters
-        /// long (minimum 12, default 16) and is NOT placed in the confirm-password
-        /// field automatically.
-        /// </summary>
+        /// <summary>Generates a cryptographically random password of the specified length satisfying all five complexity criteria.</summary>
         public static string GenerateStrongPassword(int length = 16)
         {
             if (length < 12) length = 12;

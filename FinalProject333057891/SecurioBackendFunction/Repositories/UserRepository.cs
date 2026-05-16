@@ -16,12 +16,7 @@ namespace SecurioBackendFunction.Repositories
         /// <summary>Initializes a new instance of UserRepository.</summary>
         public UserRepository(string connectionString) => _connectionString = connectionString;
 
-        /// <summary>
-        /// Atomically inserts a new user record and returns the newly generated ID.
-        /// Uses INSERT...WHERE NOT EXISTS so the email uniqueness check and the write are a single
-        /// indivisible operation — no separate SELECT needed, no TOCTOU window.
-        /// Returns 0 if the email is already registered.
-        /// </summary>
+        /// <summary>Atomically inserts a new user record and returns the newly generated ID, or 0 if the email is already registered.</summary>
         public async Task<int> RegisterIfEmailFreeAsync(User user)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -112,11 +107,7 @@ namespace SecurioBackendFunction.Repositories
             return (int)await cmd.ExecuteScalarAsync() > 0;
         }
 
-        /// <summary>
-        /// Atomically verifies login credentials and stamps LastLogin in a single SQL statement.
-        /// The UPDATE runs only when both email AND MasterPasswordKey match; OUTPUT returns the full
-        /// user record so no second round-trip is needed. Returns null if not found or key is wrong.
-        /// </summary>
+        /// <summary>Atomically verifies login credentials and stamps LastLogin, returning the full user record on success or null if not found or key is wrong.</summary>
         public async Task<User> VerifyLoginAndUpdateLastLoginAsync(string email, string key)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -256,11 +247,7 @@ namespace SecurioBackendFunction.Repositories
             return result;
         }
 
-        /// <summary>
-        /// Atomically updates user credentials, archives the old password key, and re-encrypts all
-        /// vault items in a single SQL transaction.  A server crash at any point between the three
-        /// steps rolls back the whole unit so the database is never left in an inconsistent state.
-        /// </summary>
+        /// <summary>Atomically updates user credentials, archives the old password key, and re-encrypts all vault items in a single SQL transaction.</summary>
         public async Task<bool> UpdateUserAndVaultAsync(User user, string oldPasswordKey, string oldAuthSalt,
             DateTime archivedAt, List<VaultItem> reEncryptedItems, int userId)
         {

@@ -7,25 +7,10 @@ using SecurioClient.Helpers;
 
 namespace SecurioClient.Activities
 {
-    /// <summary>
-    /// Base activity for all screens that display sensitive vault data.
-    /// <para>
-    /// Responsibilities:
-    /// <list type="bullet">
-    ///   <item>Applies <c>FLAG_SECURE</c> to prevent the screen from appearing in the
-    ///         recent-apps thumbnail and to block screenshots.</item>
-    ///   <item>Checks the lock state on every resume and immediately launches
-    ///         <see cref="LockScreenActivity"/> if the session is locked.</item>
-    ///   <item>Subscribes to the <see cref="AppLockManager.Locked"/> event while in the
-    ///         foreground so the lock screen appears even during active use (timer fires
-    ///         after 2 min of inactivity).</item>
-    ///   <item>Resets the inactivity timer on every user interaction.</item>
-    /// </list>
-    /// </para>
-    /// </summary>
+    /// <summary>Base activity for all screens that display sensitive vault data, applying FLAG_SECURE and managing the auto-lock timer and lock screen.</summary>
     public abstract class SecuredAppCompatActivity : AppCompatActivity
     {
-        /// <summary>Request code used when starting <see cref="LockScreenActivity"/> for result.</summary>
+        /// <summary>Request code used when starting LockScreenActivity for result.</summary>
         protected const int RequestCodeUnlock = 9002;
 
         // True while LockScreenActivity is on top to prevent launching a second instance.
@@ -37,18 +22,21 @@ namespace SecurioClient.Activities
             Window.SetFlags(WindowManagerFlags.Secure, WindowManagerFlags.Secure);
         }
 
+        /// <summary>Subscribes to the AppLockManager.Locked event.</summary>
         protected override void OnStart()
         {
             base.OnStart();
             AppLockManager.Locked += OnAppLocked;
         }
 
+        /// <summary>Unsubscribes from the AppLockManager.Locked event.</summary>
         protected override void OnStop()
         {
             base.OnStop();
             AppLockManager.Locked -= OnAppLocked;
         }
 
+        /// <summary>Checks the lock state and launches the lock screen if the session is locked.</summary>
         protected override void OnResume()
         {
             base.OnResume();
@@ -57,12 +45,14 @@ namespace SecurioClient.Activities
                 LaunchLockScreen();
         }
 
+        /// <summary>Resets the auto-lock inactivity timer on every user interaction.</summary>
         public override void OnUserInteraction()
         {
             base.OnUserInteraction();
             AppLockManager.ResetAutoLockTimer();
         }
 
+        /// <summary>Handles the result from LockScreenActivity and unlocks the session on success.</summary>
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
@@ -80,10 +70,7 @@ namespace SecurioClient.Activities
             }
         }
 
-        /// <summary>
-        /// Handles the <see cref="AppLockManager.Locked"/> event fired when the inactivity
-        /// timer expires while this activity is in the foreground.
-        /// </summary>
+        /// <summary>Handles the Locked event fired when the inactivity timer expires while this activity is in the foreground.</summary>
         private void OnAppLocked()
         {
             RunOnUiThread(() =>
@@ -93,6 +80,7 @@ namespace SecurioClient.Activities
             });
         }
 
+        /// <summary>Starts LockScreenActivity for a result and sets the pending-lock flag.</summary>
         private void LaunchLockScreen()
         {
             _lockScreenPending = true;

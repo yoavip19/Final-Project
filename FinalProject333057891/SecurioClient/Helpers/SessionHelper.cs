@@ -21,19 +21,17 @@ namespace SecurioClient.Helpers
         // The AES key derived from the Master Password; kept in RAM and never saved to disk.
         public static string SessionVaultKey { get; private set; }
 
-        // Cached list of vault items for the authenticated user. Kept in RAM only.
-        // This is the single source of truth for the vault list during a session.
+        /// <summary>In-memory cache of vault items for the current session.</summary>
         public static List<VaultItem> CachedVault { get; set; } = new List<VaultItem>();
 
         // Cached password-risk warning counters.  Computed at login and
         // invalidated (set to null) whenever the vault contents change.
         public static WarningsData CachedWarnings { get; set; }
 
-        // Cached user profile fetched from the server.  Populated on first load and
-        // invalidated (set to null) whenever the profile is edited.
+        /// <summary>In-memory cache of the user's profile for the current session.</summary>
         public static SecurioModels.DataTransferObjects.User CachedProfile { get; set; }
 
-        // Indicates if the session is currently active with a valid key.
+        /// <summary>Returns true when a valid vault key is stored in the session.</summary>
         public static bool IsAuthenticated => !string.IsNullOrEmpty(SessionVaultKey);
 
         /// <summary>Starts a session by storing the derived AES key in memory.</summary>

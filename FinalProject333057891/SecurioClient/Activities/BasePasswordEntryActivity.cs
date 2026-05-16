@@ -9,11 +9,7 @@ using System;
 
 namespace SecurioClient.Activities
 {
-    /// <summary>
-    /// Shared base class for <see cref="AddPasswordActivity"/> and <see cref="EditPasswordActivity"/>.
-    /// Provides common view references, UI helpers, and form-validation logic so each
-    /// subclass only needs to implement mode-specific configuration and save/update behaviour.
-    /// </summary>
+    /// <summary>Shared base class for AddPasswordActivity and EditPasswordActivity that provides common view references, UI helpers, and form-validation logic.</summary>
     public abstract class BasePasswordEntryActivity : SecuredAppCompatActivity
     {
         // -- Shared view properties (subclass-readable, base-class-assigned) --
@@ -21,18 +17,29 @@ namespace SecurioClient.Activities
         protected TextView TextViewTitle { get; private set; }
         protected TextView TextViewSubtitle { get; private set; }
 
+        /// <summary>Input field for the account/site name.</summary>
         protected TextInputEditText EditTextSiteName { get; private set; }
+        /// <summary>Input field for the account username.</summary>
         protected TextInputEditText EditTextUsername { get; private set; }
+        /// <summary>Input field for the password.</summary>
         protected TextInputEditText EditTextPassword { get; private set; }
+        /// <summary>Input field for confirming the password.</summary>
         protected TextInputEditText EditTextConfirmPassword { get; private set; }
+        /// <summary>Input field for optional notes.</summary>
         protected TextInputEditText EditTextNotes { get; private set; }
 
+        /// <summary>Error label for the site name field.</summary>
         protected TextView TextViewSiteNameError { get; private set; }
+        /// <summary>Error label for the username field.</summary>
         protected TextView TextViewUsernameError { get; private set; }
+        /// <summary>Error label for the password field.</summary>
         protected TextView TextViewPasswordError { get; private set; }
+        /// <summary>Error label for the confirm password field.</summary>
         protected TextView TextViewConfirmPasswordError { get; private set; }
+        /// <summary>General error label shown below the form.</summary>
         protected TextView TextViewGeneralError { get; private set; }
 
+        /// <summary>Button that auto-generates a strong password.</summary>
         protected MaterialButton ButtonGeneratePassword { get; private set; }
         protected MaterialButton ButtonSave { get; private set; }
 

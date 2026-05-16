@@ -13,8 +13,8 @@ using System.Threading.Tasks;
 
 namespace SecurioClient.Activities
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     /// <summary>Activity that provides the login form and authenticates the user.</summary>
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar")]
     public class LoginActivity : AppCompatActivity
     {
         private TextInputEditText editTextEmail;

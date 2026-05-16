@@ -7,10 +7,7 @@ using System;
 
 namespace SecurioClient
 {
-    /// <summary>
-    /// BottomSheetDialogFragment that presents View, Edit, and Delete options
-    /// for a single <see cref="VaultItem"/> password entry.
-    /// </summary>
+    /// <summary>BottomSheetDialogFragment that presents View, Edit, and Delete options for a single VaultItem password entry.</summary>
     public class PasswordOptionsBottomSheet : BottomSheetDialogFragment
     {
         /// <summary>Tag used when showing the fragment via the support fragment manager.</summary>
@@ -27,9 +24,7 @@ namespace SecurioClient
         /// <summary>Raised when the user taps the Delete option.</summary>
         public event EventHandler DeleteClicked;
 
-        /// <summary>
-        /// Creates a new instance pre-loaded with the given vault entry.
-        /// </summary>
+        /// <summary>Creates a new instance pre-loaded with the given vault entry.</summary>
         public static PasswordOptionsBottomSheet NewInstance(VaultItem entry)
         {
             return new PasswordOptionsBottomSheet { _entry = entry };
