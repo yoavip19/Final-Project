@@ -44,6 +44,10 @@ namespace SecurioClient.Activities
 
         /// <summary>Initializes the activity, loads risk entries from the vault cache, and sets up the UI.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            Xamarin.Essentials.Platform.Init(this, savedInstanceState);
+            SetContentView(Resource.Layout.activity_risk_detail);
 
             category = Intent.GetStringExtra(ExtraRiskCategory) ?? CategoryLeaked;
 
@@ -59,6 +63,8 @@ namespace SecurioClient.Activities
 
         /// <summary>Finds and assigns view references from the layout.</summary>
         private void InitializeViews()
+        {
+            imageViewBack    = FindViewById<ImageView>(Resource.Id.imageViewRiskBack);
             textViewEmoji    = FindViewById<TextView>(Resource.Id.textViewRiskEmoji);
             textViewTitle    = FindViewById<TextView>(Resource.Id.textViewRiskTitle);
             textViewSubtitle = FindViewById<TextView>(Resource.Id.textViewRiskSubtitle);
@@ -97,6 +103,8 @@ namespace SecurioClient.Activities
 
         /// <summary>Configures the RecyclerView with the password banner adapter.</summary>
         private void SetupRecyclerView()
+        {
+            adapter = new PasswordBannerAdapter(riskEntries);
             recyclerView.SetLayoutManager(new LinearLayoutManager(this));
             recyclerView.SetAdapter(adapter);
 
@@ -119,11 +127,15 @@ namespace SecurioClient.Activities
 
         /// <summary>Removes a deleted entry from the list and refreshes the display.</summary>
         private void OnEntryDeleted(VaultItem entry)
+        {
+            riskEntries.RemoveAll(x => x.Id == entry.Id);
             RefreshList();
         }
 
         /// <summary>Wires up click and text-change event handlers.</summary>
         private void SetupEventHandlers()
+        {
+            imageViewBack.Click += (s, e) => Finish();
 
             editTextSearch.AddTextChangedListener(new SimpleTextWatcher(query =>
             {
@@ -135,6 +147,13 @@ namespace SecurioClient.Activities
 
         /// <summary>Handles the result from the edit-password screen and updates the entry in the list.</summary>
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+
+            if (resultCode != Result.Ok || data == null)
+                return;
+
+            if (requestCode == EditPasswordActivity.RequestCodeEdit)
             {
                 int editedId = data.GetIntExtra(EditPasswordActivity.ResultEntryId, 0);
                 var existing = riskEntries.FirstOrDefault(e => e.Id == editedId);
@@ -187,6 +206,9 @@ namespace SecurioClient.Activities
 
         /// <summary>Applies the search query and refreshes the displayed list.</summary>
         private void FilterPasswords(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                adapter.UpdateData(riskEntries);
             else
                 adapter.UpdateData(GetFilteredEntries(query));
 
@@ -195,6 +217,8 @@ namespace SecurioClient.Activities
 
         /// <summary>Returns the subset of risk entries whose name or username contains the query.</summary>
         private List<VaultItem> GetFilteredEntries(string query)
+        {
+            return riskEntries
                 .Where(e => (e.AccountName != null && e.AccountName.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
                          || (e.AccountUsername != null && e.AccountUsername.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0))
                 .ToList();
@@ -202,14 +226,22 @@ namespace SecurioClient.Activities
 
         /// <summary>Returns all entries when no query is active, or the filtered subset otherwise.</summary>
         private List<VaultItem> GetDisplayedEntries()
+        {
+            string query = editTextSearch.Text?.Trim();
+            return string.IsNullOrWhiteSpace(query) ? riskEntries : GetFilteredEntries(query);
         }
 
         /// <summary>Rebuilds the adapter data set and triggers a layout refresh.</summary>
         private void RefreshList()
+        {
+            string query = editTextSearch.Text?.Trim();
+            FilterPasswords(query);
         }
 
         /// <summary>Shows or hides the empty-state view based on whether the list has items.</summary>
         private void UpdateEmptyState()
+        {
+            bool isEmpty = adapter.ItemCount == 0;
             layoutEmpty.Visibility  = isEmpty ? ViewStates.Visible : ViewStates.Gone;
             recyclerView.Visibility = isEmpty ? ViewStates.Gone : ViewStates.Visible;
         }

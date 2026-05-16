@@ -24,24 +24,40 @@ namespace SecurioClient.Activities
 
         /// <summary>Subscribes to the AppLockManager.Locked event.</summary>
         protected override void OnStart()
+        {
+            base.OnStart();
+            AppLockManager.Locked += OnAppLocked;
         }
 
         /// <summary>Unsubscribes from the AppLockManager.Locked event.</summary>
         protected override void OnStop()
+        {
+            base.OnStop();
+            AppLockManager.Locked -= OnAppLocked;
         }
 
         /// <summary>Checks the lock state and launches the lock screen if the session is locked.</summary>
         protected override void OnResume()
+        {
+            base.OnResume();
+            _lockScreenPending = false;
             if (SessionHelper.IsAuthenticated && AppLockManager.IsLocked)
                 LaunchLockScreen();
         }
 
         /// <summary>Resets the auto-lock inactivity timer on every user interaction.</summary>
         public override void OnUserInteraction()
+        {
+            base.OnUserInteraction();
+            AppLockManager.ResetAutoLockTimer();
         }
 
         /// <summary>Handles the result from LockScreenActivity and unlocks the session on success.</summary>
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+
+            if (requestCode == RequestCodeUnlock)
             {
                 _lockScreenPending = false;
                 if (resultCode == Result.Ok)
@@ -66,6 +82,8 @@ namespace SecurioClient.Activities
 
         /// <summary>Starts LockScreenActivity for a result and sets the pending-lock flag.</summary>
         private void LaunchLockScreen()
+        {
+            _lockScreenPending = true;
             var intent = new Intent(this, typeof(LockScreenActivity));
             StartActivityForResult(intent, RequestCodeUnlock);
         }

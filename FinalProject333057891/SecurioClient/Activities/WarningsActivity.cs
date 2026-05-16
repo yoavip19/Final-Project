@@ -23,6 +23,10 @@ namespace SecurioClient.Activities
 
         /// <summary>Initializes the activity, inflates the layout, and populates warning counters.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            Xamarin.Essentials.Platform.Init(this, savedInstanceState);
+            SetContentView(Resource.Layout.activity_warnings);
 
             InitializeViews();
             SetupBottomNavFragment(savedInstanceState);
@@ -32,10 +36,15 @@ namespace SecurioClient.Activities
 
         /// <summary>Refreshes the displayed warning counts when the activity regains focus.</summary>
         protected override void OnResume()
+        {
+            base.OnResume();
+            DisplayWarnings();
         }
 
         /// <summary>Finds and assigns view references from the layout.</summary>
         private void InitializeViews()
+        {
+            textViewLeakedCount = FindViewById<TextView>(Resource.Id.textViewLeakedCount);
             textViewWeakCount   = FindViewById<TextView>(Resource.Id.textViewWeakCount);
             textViewReusedCount = FindViewById<TextView>(Resource.Id.textViewReusedCount);
             textViewOldCount    = FindViewById<TextView>(Resource.Id.textViewOldCount);
@@ -48,6 +57,8 @@ namespace SecurioClient.Activities
 
         /// <summary>Attaches the BottomNavFragment and subscribes to tab selection events.</summary>
         private void SetupBottomNavFragment(Bundle savedInstanceState)
+        {
+            var fragment = SupportFragmentManager.FindFragmentById(Resource.Id.frameBottomNav) as BottomNavFragment;
 
             if (fragment == null)
             {
@@ -65,6 +76,8 @@ namespace SecurioClient.Activities
 
         /// <summary>Wires up the View All buttons for each risk category.</summary>
         private void SetupViewAllButtons()
+        {
+            buttonViewAllLeaked.Click += (s, e) => OpenRiskDetail(RiskDetailActivity.CategoryLeaked);
             buttonViewAllWeak.Click   += (s, e) => OpenRiskDetail(RiskDetailActivity.CategoryWeak);
             buttonViewAllReused.Click += (s, e) => OpenRiskDetail(RiskDetailActivity.CategoryReused);
             buttonViewAllOld.Click    += (s, e) => OpenRiskDetail(RiskDetailActivity.CategoryOld);
@@ -72,12 +85,16 @@ namespace SecurioClient.Activities
 
         /// <summary>Launches RiskDetailActivity for the specified risk category.</summary>
         private void OpenRiskDetail(string category)
+        {
+            var intent = new Intent(this, typeof(RiskDetailActivity));
             intent.PutExtra(RiskDetailActivity.ExtraRiskCategory, category);
             StartActivity(intent);
         }
 
         /// <summary>Delegates bottom-navigation tab selection to BottomNavHelper.</summary>
         private void OnBottomNavTabSelected(object sender, string tab)
+            => BottomNavHelper.Navigate(this, tab, "warnings");
+
 
         /// <summary>
         /// Reads the cached warnings or recomputes them synchronously (using stored
