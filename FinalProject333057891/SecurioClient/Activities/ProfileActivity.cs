@@ -243,7 +243,9 @@ namespace SecurioClient.Activities
             if (date == DateTime.MinValue)
                 return "—";
 
-            return date.ToLocalTime().ToString("MMM dd, yyyy  h:mm tt");
+            return (date.Kind == DateTimeKind.Local ? date : DateTime.SpecifyKind(date, DateTimeKind.Utc))
+                .ToLocalTime()
+                .ToString("MMM dd, yyyy h:mm tt");
         }
 
         /// <summary>Updates the notification button text to reflect the app's current system notification state.</summary>
