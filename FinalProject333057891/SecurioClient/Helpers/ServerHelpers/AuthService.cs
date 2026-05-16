@@ -64,16 +64,16 @@ namespace SecurioClient.Helpers.ServerHelpers
         private async Task SetupAuthenticatedSession(AuthData data, string password, string salt)
         {
             // 1. Save to SecureStorage
-            await StorageHelper.SaveUserId(data.UserId);
-            await StorageHelper.SaveJwt(data.Token);
-            await StorageHelper.SaveUsername(data.Username);
+            await StorageHelper.SaveUserIdAsync(data.UserId);
+            await StorageHelper.SaveJwtAsync(data.Token);
+            await StorageHelper.SaveUsernameAsync(data.Username);
 
             // 2. Derive the vault key and start the in-memory session (PBKDF2 — run off the UI thread)
             string vaultKey = await Task.Run(() => EncryptionHelper.DeriveKey(password, salt));
             SessionHelper.StartSession(vaultKey);
 
             // 3. Persist the vault key so it can be restored after an app restart
-            await StorageHelper.SaveVaultKey(vaultKey);
+            await StorageHelper.SaveVaultKeyAsync(vaultKey);
 
             // 4. Fetch the user's vault items and cache them in memory
             await FetchAndCacheVaultAsync();

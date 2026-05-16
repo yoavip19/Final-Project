@@ -79,7 +79,7 @@ namespace SecurioClient.Activities
                 PasswordEntryActionsHelper.ShowOptionsSheet(
                     this,
                     displayed[position],
-                    SyncEntryCache,
+                    null,
                     OnEntryDeleted);
         }
 
@@ -122,7 +122,6 @@ namespace SecurioClient.Activities
             // FAB — open AddPasswordActivity.
             FindViewById(Resource.Id.fabAddPassword).Click += (sender, e) =>
             {
-                SyncEntryCache();
                 var intent = new Intent(this, typeof(AddPasswordActivity));
                 StartActivityForResult(intent, AddPasswordActivity.RequestCodeAdd);
             };
@@ -132,9 +131,9 @@ namespace SecurioClient.Activities
         private void OnBottomNavTabSelected(object sender, string tab)
             => BottomNavHelper.Navigate(this, tab, "vault");
 
-        // ──────────────────────────────────────────
+        // ------------------------------------------
         //  Activity result handling
-        // ──────────────────────────────────────────
+        // ------------------------------------------
 
         /// <summary>Handles results from AddPasswordActivity and EditPasswordActivity, updating the local vault list.</summary>
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
@@ -193,9 +192,9 @@ namespace SecurioClient.Activities
             }
         }
 
-        // ──────────────────────────────────────────
+        // ------------------------------------------
         //  Data helpers
-        // ──────────────────────────────────────────
+        // ------------------------------------------
 
         /// <summary>Loads vault entries from the in-memory session cache into the local list and refreshes the RecyclerView.</summary>
         private void LoadVaultFromSession()
@@ -248,12 +247,6 @@ namespace SecurioClient.Activities
             bool isEmpty = adapter.ItemCount == 0;
             layoutVaultEmpty.Visibility = isEmpty ? ViewStates.Visible : ViewStates.Gone;
             recyclerViewPasswords.Visibility = isEmpty ? ViewStates.Gone : ViewStates.Visible;
-        }
-
-        /// <summary>Pushes the current entry list into the static cache so that entry activities can perform duplicate checking.</summary>
-        private void SyncEntryCache()
-        {
-            VaultEntryCache.Entries = new List<VaultItem>(allEntries);
         }
 
         /// <summary>Requests the POST_NOTIFICATIONS runtime permission on Android 13+ if not already granted.</summary>

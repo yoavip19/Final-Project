@@ -9,8 +9,8 @@ namespace SecurioBackendFunction.Repositories
     {
         /// <summary>Inserts a new vault item and returns the newly generated ID.</summary>
         Task<int> AddVaultItemAsync(VaultItem item);
-        /// <summary>Updates an existing vault item.</summary>
-        Task<bool> UpdateVaultItemAsync(VaultItem item);
+        /// <summary>Updates an existing vault item. When <paramref name="passwordChanged"/> is true the server refreshes the LastUpdate timestamp.</summary>
+        Task<bool> UpdateVaultItemAsync(VaultItem item, bool passwordChanged);
         /// <summary>Retrieves all vault items for the specified user.</summary>
         Task<List<VaultItem>> GetVaultItemsByUserIdAsync(int userId);
         /// <summary>Deletes a vault item by ID.</summary>

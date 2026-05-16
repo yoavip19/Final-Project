@@ -51,8 +51,10 @@ namespace SecurioBackendFunction.Logic
         }
 
         /// <summary>Validates the updated vault item and persists the changes to the database.</summary>
-        public async Task<ServerResponse<VaultItem>> UpdateVaultItemAsync(VaultItem item)
+        public async Task<ServerResponse<VaultItem>> UpdateVaultItemAsync(UpdateVaultItemRequest request)
         {
+            var item = request.Item;
+
             if (item.Id <= 0)
                 return new ServerResponse<VaultItem> { Success = false, Message = "Item ID is required." };
 
@@ -71,11 +73,11 @@ namespace SecurioBackendFunction.Logic
             if (string.IsNullOrWhiteSpace(item.Sha1Hash))
                 return new ServerResponse<VaultItem> { Success = false, Message = "Sha1Hash is required." };
 
-            bool updated = await _repo.UpdateVaultItemAsync(item);
+            bool updated = await _repo.UpdateVaultItemAsync(item, request.PasswordChanged);
             if (!updated)
                 return new ServerResponse<VaultItem> { Success = false, Message = "Item not found or access denied." };
 
-            if (item.PasswordChanged)
+            if (request.PasswordChanged)
                 item.LastUpdate = DateTime.UtcNow;
             return new ServerResponse<VaultItem>
             {

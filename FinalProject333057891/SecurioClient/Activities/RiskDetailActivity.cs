@@ -34,7 +34,7 @@ namespace SecurioClient.Activities
         public const string CategoryReused = "reused";
         public const string CategoryOld    = "old";
 
-        // ── Views ──────────────────────────────────────────────
+        // -- Views ----------------------------------------------
         private ImageView imageViewBack;
         private TextView textViewEmoji;
         private TextView textViewTitle;
@@ -47,7 +47,7 @@ namespace SecurioClient.Activities
         private List<VaultItem> riskEntries = new List<VaultItem>();
         private string category;
 
-        // ── Lifecycle ──────────────────────────────────────────
+        // -- Lifecycle ------------------------------------------
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -65,7 +65,7 @@ namespace SecurioClient.Activities
             _ = LoadRiskEntriesAsync();
         }
 
-        // ── Setup helpers ──────────────────────────────────────
+        // -- Setup helpers --------------------------------------
 
         private void InitializeViews()
         {
@@ -130,7 +130,7 @@ namespace SecurioClient.Activities
                 PasswordEntryActionsHelper.ShowOptionsSheet(
                     this,
                     displayed[position],
-                    SyncEntryCache,
+                    null,
                     OnEntryDeleted);
         }
 
@@ -150,7 +150,7 @@ namespace SecurioClient.Activities
             }));
         }
 
-        // ── Activity result ────────────────────────────────────
+        // -- Activity result ------------------------------------
 
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
@@ -186,22 +186,31 @@ namespace SecurioClient.Activities
             }
         }
 
-        // ── Data loading ───────────────────────────────────────
+        // -- Data loading ---------------------------------------
 
         /// <summary>
         /// Filters the cached vault to only items that match the current risk category.
         /// </summary>
         private async System.Threading.Tasks.Task LoadRiskEntriesAsync()
         {
+            RiskCategory riskCategory;
+            switch (category)
+            {
+                case CategoryWeak:    riskCategory = RiskCategory.Weak;    break;
+                case CategoryReused:  riskCategory = RiskCategory.Reused;  break;
+                case CategoryOld:     riskCategory = RiskCategory.Old;     break;
+                default:              riskCategory = RiskCategory.Leaked;  break;
+            }
+
             riskEntries = await WarningsHelper.GetItemsAtRiskAsync(
                 SessionHelper.CachedVault,
                 SessionHelper.SessionVaultKey,
-                category);
+                riskCategory);
 
             RefreshList();
         }
 
-        // ── Search / filter helpers ────────────────────────────
+        // -- Search / filter helpers ----------------------------
 
         private void FilterPasswords(string query)
         {
@@ -239,15 +248,5 @@ namespace SecurioClient.Activities
             layoutEmpty.Visibility  = isEmpty ? ViewStates.Visible : ViewStates.Gone;
             recyclerView.Visibility = isEmpty ? ViewStates.Gone : ViewStates.Visible;
         }
-
-        /// <summary>
-        /// Pushes the full vault cache into <see cref="VaultEntryCache"/> so that
-        /// <see cref="EditPasswordActivity"/> can perform duplicate checking.
-        /// </summary>
-        private void SyncEntryCache()
-        {
-            VaultEntryCache.Entries = new List<VaultItem>(SessionHelper.CachedVault ?? new List<VaultItem>());
-        }
     }
 }
-

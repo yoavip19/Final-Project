@@ -322,8 +322,8 @@ namespace SecurioClient.Activities
                     {
                         // Update the session with the new vault key.
                         SessionHelper.StartSession(newVaultKey);
-                        await StorageHelper.SaveVaultKey(newVaultKey);
-                        await StorageHelper.SaveUsername(username);
+                        await StorageHelper.SaveVaultKeyAsync(newVaultKey);
+                        await StorageHelper.SaveUsernameAsync(username);
 
                         // Update the cached vault items with the new encryption.
                         for (int i = 0; i < SessionHelper.CachedVault.Count; i++)
@@ -357,7 +357,7 @@ namespace SecurioClient.Activities
 
                     if (result.Success)
                     {
-                        await StorageHelper.SaveUsername(username);
+                        await StorageHelper.SaveUsernameAsync(username);
 
                         Toast.MakeText(this, Resource.String.edit_account_success, ToastLength.Short).Show();
                         SetResult(Result.Ok, new Intent().PutExtra(ResultUpdated, true));
@@ -410,7 +410,7 @@ namespace SecurioClient.Activities
             return isValid;
         }
 
-        // ── UI helpers delegating to the shared FormUiHelper (DRY) ──
+        // -- UI helpers delegating to the shared FormUiHelper (DRY) --
 
         /// <summary>Hides all field-level and general error messages.</summary>
         private void ClearErrors()

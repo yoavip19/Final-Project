@@ -1,17 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using Xamarin.Essentials;
 using System.Threading.Tasks;
-using Java.Awt.Font;
 using SecurioModels.DataTransferObjects;
 
 namespace SecurioClient.Helpers
@@ -31,50 +21,50 @@ namespace SecurioClient.Helpers
         private const string KeyLastPasswordChange = "last_password_change";
 
         /// <summary>Saves the user's unique ID to secure storage.</summary>
-        public static async Task SaveUserId(int id)
+        public static async Task SaveUserIdAsync(int id)
         {
             await SecureStorage.SetAsync(KeyUserId, id.ToString());
         }
 
         /// <summary>Retrieves the user's unique ID from secure storage, returning 0 if not found or invalid.</summary>
-        public static async Task<int> GetUserId()
+        public static async Task<int> GetUserIdAsync()
         {
             var id = await SecureStorage.GetAsync(KeyUserId);
             return int.TryParse(id, out int result) ? result : 0;
         }
 
         /// <summary>Persists the user's display name to the device's secure storage.</summary>
-        public static async Task SaveUsername(string name)
+        public static async Task SaveUsernameAsync(string name)
         {
             await SecureStorage.SetAsync(KeyUsername, name);
         }
 
         /// <summary>Retrieves the stored display name for UI personalization.</summary>
-        public static async Task<string> GetUsername()
+        public static async Task<string> GetUsernameAsync()
         {
             return await SecureStorage.GetAsync(KeyUsername);
         }
 
         /// <summary>Saves the JSON Web Token to secure storage to maintain the user's authenticated session.</summary>
-        public static async Task SaveJwt(string token)
+        public static async Task SaveJwtAsync(string token)
         {
             await SecureStorage.SetAsync(KeyJwt, token);
         }
 
         /// <summary>Retrieves the JSON Web Token from secure storage, returning null if not found.</summary>
-        public static async Task<string> GetJwt()
+        public static async Task<string> GetJwtAsync()
         {
             return await SecureStorage.GetAsync(KeyJwt);
         }
 
         /// <summary>Saves the derived AES vault key to secure storage so the session can be restored after an app restart.</summary>
-        public static async Task SaveVaultKey(string vaultKey)
+        public static async Task SaveVaultKeyAsync(string vaultKey)
         {
             await SecureStorage.SetAsync(KeyVaultKey, vaultKey);
         }
 
         /// <summary>Retrieves the stored AES vault key, returning null if not present.</summary>
-        public static async Task<string> GetVaultKey()
+        public static async Task<string> GetVaultKeyAsync()
         {
             return await SecureStorage.GetAsync(KeyVaultKey);
         }
@@ -97,8 +87,8 @@ namespace SecurioClient.Helpers
 
             return new User
             {
-                Id = await GetUserId(),
-                Username = await GetUsername(),
+                Id = await GetUserIdAsync(),
+                Username = await GetUsernameAsync(),
                 Email = email,
                 PasswordCount = int.TryParse(await SecureStorage.GetAsync(KeyPasswordCount), out var cnt) ? cnt : 0,
                 CreatedAt = DateTime.TryParse(await SecureStorage.GetAsync(KeyCreatedAt), out var createdAt) ? createdAt : DateTime.MinValue,
@@ -108,7 +98,7 @@ namespace SecurioClient.Helpers
         }
 
         /// <summary>Clears session-sensitive data from secure storage while preserving user ID and username.</summary>
-        public static Task ClearSessionAsync()
+        public static void ClearSession()
         {
             SecureStorage.Remove(KeyJwt);
             SecureStorage.Remove(KeyVaultKey);
@@ -117,7 +107,6 @@ namespace SecurioClient.Helpers
             SecureStorage.Remove(KeyPasswordCount);
             SecureStorage.Remove(KeyLastLogin);
             SecureStorage.Remove(KeyLastPasswordChange);
-            return Task.CompletedTask;
         }
 
         /// <summary>Clears ALL data from secure storage including user ID and username; use only when deleting the account.</summary>
