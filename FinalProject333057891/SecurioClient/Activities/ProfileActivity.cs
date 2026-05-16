@@ -243,7 +243,7 @@ namespace SecurioClient.Activities
             if (date == DateTime.MinValue)
                 return "—";
 
-            return DateTime.SpecifyKind(date, DateTimeKind.Utc)
+            return (date.Kind == DateTimeKind.Local ? date : DateTime.SpecifyKind(date, DateTimeKind.Utc))
                 .ToLocalTime()
                 .ToString("MMM dd, yyyy h:mm tt");
         }
