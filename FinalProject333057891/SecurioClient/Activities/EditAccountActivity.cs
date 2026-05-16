@@ -213,11 +213,12 @@ namespace SecurioClient.Activities
 
                     // Verify the current password by deriving the auth key and comparing locally.
                     // We fetch the user's salts from the server to derive the current key.
-                    var saltResult = await new BaseServiceProxy().GetSaltsAsync(email);
+                    var authService = new AuthService();
+                    var saltResult = await authService.GetSaltsAsync(email);
 
                     // If salts aren't available for the current email (e.g., email changed), use original email.
                     if (!saltResult.Success)
-                        saltResult = await new BaseServiceProxy().GetSaltsAsync(originalEmail);
+                        saltResult = await authService.GetSaltsAsync(originalEmail);
 
                     if (!saltResult.Success)
                     {
@@ -225,7 +226,7 @@ namespace SecurioClient.Activities
                         return;
                     }
 
-                    var (currentAuthKey, currentVaultKey) = await Task.Run(() => (
+                    var (currentAuthKey,  currentVaultKey) = await Task.Run(() => (
                         EncryptionHelper.DeriveKey(currentPassword, saltResult.Data.AuthSalt),
                         EncryptionHelper.DeriveKey(currentPassword, saltResult.Data.EncryptionSalt)
                     ));
@@ -433,16 +434,6 @@ namespace SecurioClient.Activities
             editTextCurrentPassword.Enabled   = !isLoading;
             editTextNewPassword.Enabled       = !isLoading;
             editTextConfirmNewPassword.Enabled = !isLoading;
-        }
-    }
-
-    /// <summary>Lightweight proxy that exposes salt retrieval from BaseService for use in EditAccountActivity.</summary>
-    internal class BaseServiceProxy : BaseService
-    {
-        /// <summary>Fetches the auth and encryption salts for the given email address.</summary>
-        public async Task<ServerResponse<SaltData>> GetSaltsAsync(string email)
-        {
-            return await PostAsync<SaltData>("GetSalts", new { Email = email });
         }
     }
 }

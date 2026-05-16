@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using SecurioModels.DataTransferObjects;
+using SecurioModels;
 
 namespace SecurioClient.Helpers.ServerHelpers
 {
@@ -25,11 +26,17 @@ namespace SecurioClient.Helpers.ServerHelpers
             return (result.Success, result.Message);
         }
 
+        /// <summary>Fetches the auth and encryption salts for the given email address.</summary>
+        public async Task<ServerResponse<SaltData>> GetSaltsAsync(string email)
+        {
+            return await PostAsync<SaltData>("GetSalts", new { Email = email });
+        }
+
         /// <summary>Validates credentials by first fetching user salts to derive keys locally.</summary>
         public async Task<(bool Success, string Message)> LoginAsync(string email, string password)
         {
             // 1. Get Salts (Server sends AuthSalt and EncryptionSalt)
-            var saltResult = await PostAsync<SaltData>("GetSalts", new { Email = email });
+            var saltResult = await GetSaltsAsync(email);
 
             if (!saltResult.Success)
                 return (false, saltResult.Message);
