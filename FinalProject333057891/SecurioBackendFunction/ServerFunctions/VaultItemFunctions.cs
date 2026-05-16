@@ -113,6 +113,30 @@ namespace SecurioBackendFunction.ServerFunctions
                 var body = await new StreamReader(req.Body).ReadToEndAsync();
                 var request = JsonConvert.DeserializeObject<UpdateVaultItemRequest>(body);
 
+                // Backward-compatible fallback: older clients sent a flat VaultItem body
+                // (with Id at the top level) instead of wrapping it in UpdateVaultItemRequest.
+                // If Item is still null after trying the new format, try parsing the old format.
+                if (request?.Item == null)
+                {
+                    var legacyItem = JsonConvert.DeserializeObject<VaultItem>(body);
+                    if (legacyItem?.Id > 0)
+                    {
+                        bool passwordChanged = false;
+                        try
+                        {
+                            var jObj = Newtonsoft.Json.Linq.JObject.Parse(body);
+                            passwordChanged = jObj.Value<bool?>("PasswordChanged") ?? false;
+                        }
+                        catch { /* body was not a valid JObject; leave passwordChanged as false */ }
+
+                        request = new UpdateVaultItemRequest
+                        {
+                            Item            = legacyItem,
+                            PasswordChanged = passwordChanged
+                        };
+                    }
+                }
+
                 if (request?.Item == null)
                 {
                     return new BadRequestObjectResult(

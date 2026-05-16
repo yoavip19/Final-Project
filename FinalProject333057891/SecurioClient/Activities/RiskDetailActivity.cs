@@ -202,7 +202,7 @@ namespace SecurioClient.Activities
                 default:              riskCategory = RiskCategory.Leaked;  break;
             }
 
-            riskEntries = await WarningsHelper.GetItemsAtRiskAsync(
+            riskEntries = await WarningsHelper.GetItemsAtRisk(
                 SessionHelper.CachedVault,
                 SessionHelper.SessionVaultKey,
                 riskCategory);
