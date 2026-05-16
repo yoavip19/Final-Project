@@ -12,7 +12,9 @@ namespace SecurioClient.Helpers
 
         // A single Handler + Runnable pair ensures RemoveCallbacks always targets
         // the correct pending callback and avoids orphaned runnable instances.
+        /// <summary>Handler bound to the main looper used to schedule the auto-lock callback.</summary>
         private static readonly Handler _handler = new Handler(Looper.MainLooper);
+        /// <summary>Reusable runnable that invokes the Lock method.</summary>
         private static readonly Java.Lang.Runnable _lockRunnable = new Java.Lang.Runnable(Lock);
 
         /// <summary>Gets a value indicating whether the app is currently locked.</summary>

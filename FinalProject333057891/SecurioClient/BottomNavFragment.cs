@@ -25,11 +25,13 @@ namespace SecurioClient
             return fragment;
         }
 
+        /// <summary>Inflates the bottom navigation bar layout.</summary>
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             return inflater.Inflate(Resource.Layout.fragment_bottom_nav, container, false);
         }
 
+        /// <summary>Binds tab click listeners and applies the initial active tab state.</summary>
         public override void OnViewCreated(View view, Bundle savedInstanceState)
         {
             base.OnViewCreated(view, savedInstanceState);
@@ -48,6 +50,7 @@ namespace SecurioClient
             SelectTab(view, currentTab);
         }
 
+        /// <summary>Updates the visual state of all tabs to reflect the selected one.</summary>
         private void SelectTab(View root, string tab)
         {
             currentTab = tab;

@@ -55,6 +55,7 @@ namespace SecurioClient.Helpers
             sheet.Show(activity.SupportFragmentManager, PasswordOptionsBottomSheet.TagName);
         }
 
+        /// <summary>Shows a confirmation dialog before permanently deleting a vault entry.</summary>
         private static void ConfirmDelete(AppCompatActivity activity, VaultItem entry, Action<VaultItem> onDeleted)
         {
             string message = string.Format(
@@ -72,6 +73,7 @@ namespace SecurioClient.Helpers
                 .Show();
         }
 
+        /// <summary>Calls the server to delete the vault entry and removes it from the local cache.</summary>
         private static async Task DeleteEntryAsync(AppCompatActivity activity, VaultItem entry, Action<VaultItem> onDeleted)
         {
             try

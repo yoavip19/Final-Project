@@ -18,13 +18,16 @@ namespace SecurioClient
         /// <summary>Raised when the user taps the edit icon on a banner.</summary>
         public event EventHandler<int> EditClick;
 
+        /// <summary>Initializes a new instance of PasswordBannerAdapter with the given vault items.</summary>
         public PasswordBannerAdapter(List<VaultItem> items)
         {
             this.items = items ?? new List<VaultItem>();
         }
 
+        /// <summary>Returns the total number of items in the adapter.</summary>
         public override int ItemCount => items.Count;
 
+        /// <summary>Inflates the password banner item layout and returns a new PasswordBannerViewHolder.</summary>
         public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
         {
             View view = LayoutInflater.From(parent.Context)
@@ -32,6 +35,7 @@ namespace SecurioClient
             return new PasswordBannerViewHolder(view);
         }
 
+        /// <summary>Binds the vault item at the given position to the view holder.</summary>
         public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
         {
             var vh = (PasswordBannerViewHolder)holder;
@@ -63,6 +67,7 @@ namespace SecurioClient
         // --------------------------------------------------------
         //  ViewHolder
         // --------------------------------------------------------
+        /// <summary>ViewHolder that holds references to the views inside a single password banner item.</summary>
         private class PasswordBannerViewHolder : RecyclerView.ViewHolder
         {
             public TextView TextViewIcon { get; }
@@ -73,6 +78,7 @@ namespace SecurioClient
             public Action<int> ItemClickAction { get; set; }
             public Action<int> EditClickAction { get; set; }
 
+            /// <summary>Initializes a new instance of PasswordBannerViewHolder and binds view references.</summary>
             public PasswordBannerViewHolder(View itemView) : base(itemView)
             {
                 TextViewIcon = itemView.FindViewById<TextView>(Resource.Id.textViewBannerIcon);
@@ -81,11 +87,13 @@ namespace SecurioClient
                 ImageViewEdit = itemView.FindViewById<ImageView>(Resource.Id.imageViewBannerEdit);
             }
 
+            /// <summary>Forwards the item click event to ItemClickAction with the current adapter position.</summary>
             public void OnItemClick(object sender, EventArgs e)
             {
                 ItemClickAction?.Invoke(AdapterPosition);
             }
 
+            /// <summary>Forwards the edit icon click event to EditClickAction with the current adapter position.</summary>
             public void OnEditClick(object sender, EventArgs e)
             {
                 EditClickAction?.Invoke(AdapterPosition);

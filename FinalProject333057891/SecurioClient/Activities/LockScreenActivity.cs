@@ -26,6 +26,7 @@ namespace SecurioClient.Activities
         // Guards against launching a second concurrent biometric prompt.
         private bool _promptShowing;
 
+        /// <summary>Inflates the layout, applies FLAG_SECURE, and wires up the biometric prompt.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -38,6 +39,7 @@ namespace SecurioClient.Activities
             buttonLogout.Click += (s, e) => LogoutHelper.ShowLogoutConfirmation(this);
         }
 
+        /// <summary>Triggers the biometric prompt automatically when the screen is shown.</summary>
         protected override void OnResume()
         {
             base.OnResume();
@@ -80,6 +82,7 @@ namespace SecurioClient.Activities
                 .Authenticate(cancellationSignal, executor, callback);
         }
 
+        /// <summary>Suppresses the back button to prevent bypassing the lock screen.</summary>
         public override void OnBackPressed()
         {
             // Security: block back navigation. The only exit is successful authentication.
@@ -95,9 +98,11 @@ namespace SecurioClient.Activities
             public HandlerExecutor(Handler handler) { _handler = handler; }
 
             // Required by the Xamarin.Android Java binding infrastructure.
+            /// <summary>JNI constructor for Android runtime use.</summary>
             protected HandlerExecutor(IntPtr handle, JniHandleOwnership transfer)
                 : base(handle, transfer) { }
 
+            /// <summary>Posts the given runnable to the handler's thread.</summary>
             public void Execute(Java.Lang.IRunnable command) => _handler.Post(command);
         }
 
@@ -114,15 +119,19 @@ namespace SecurioClient.Activities
             }
 
             // Required by the Xamarin.Android Java binding infrastructure.
+            /// <summary>JNI constructor for Android runtime use.</summary>
             protected AuthCallback(IntPtr handle, JniHandleOwnership transfer)
                 : base(handle, transfer) { }
 
+            /// <summary>Handles successful biometric authentication.</summary>
             public override void OnAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result)
                 => _onSuccess?.Invoke();
 
+            /// <summary>Handles a non-recoverable biometric authentication error.</summary>
             public override void OnAuthenticationError(BiometricErrorCode errorCode, Java.Lang.ICharSequence errString)
                 => _onError?.Invoke((int)errorCode, errString?.ToString());
 
+            /// <summary>Called when biometric authentication fails but can be retried.</summary>
             public override void OnAuthenticationFailed()
             {
                 // Biometric scan failed for this attempt (e.g., unrecognised fingerprint).

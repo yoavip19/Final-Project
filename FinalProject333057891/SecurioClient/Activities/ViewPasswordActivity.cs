@@ -66,9 +66,8 @@ namespace SecurioClient.Activities
             buttonCopyPassword = FindViewById<ImageView>(Resource.Id.buttonCopyPassword);
         }
 
+        /// <summary>Reads the extras from the launching intent and populates all view fields.</summary>
         private void PopulateFields()
-        {
-            string siteName = Intent.GetStringExtra(ExtraSiteName) ?? string.Empty;
             string username = Intent.GetStringExtra(ExtraUsername) ?? string.Empty;
             string notes = Intent.GetStringExtra(ExtraNotes) ?? string.Empty;
 
@@ -118,9 +117,8 @@ namespace SecurioClient.Activities
             UpdatePasswordDisplay();
         }
 
+        /// <summary>Wires up click event handlers for the back, copy, and toggle-visibility buttons.</summary>
         private void SetupEventHandlers()
-        {
-            imageViewBack.Click += (s, e) => Finish();
 
             buttonCopyUsername.Click += (s, e) =>
             {
@@ -146,9 +144,8 @@ namespace SecurioClient.Activities
             };
         }
 
+        /// <summary>Updates the password text view to show plain text or masked bullets based on the current visibility state.</summary>
         private void UpdatePasswordDisplay()
-        {
-            if (string.IsNullOrEmpty(decryptedPassword))
             {
                 textViewPassword.Text = "••••••••";
                 return;

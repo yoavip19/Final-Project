@@ -11,6 +11,7 @@ namespace SecurioClient.Helpers
 
         // Single shared HttpClient — Xamarin.Android.Net.AndroidClientHandler (set via
         // AndroidHttpClientHandlerType in the .csproj) is used automatically on Android.
+        /// <summary>Shared HTTP client for communicating with the HIBP Pwned Passwords API.</summary>
         private static readonly HttpClient _http = new HttpClient();
 
         /// <summary>Returns true if the given 40-character uppercase SHA-1 hex hash appears in the HIBP Pwned Passwords dataset; returns false on any error (fail-open).</summary>

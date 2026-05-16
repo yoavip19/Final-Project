@@ -9,11 +9,15 @@ namespace SecurioModels.DataTransferObjects
         public int UserId { get; set; }
         public string AccountName { get; set; }
         public string AccountUsername { get; set; }
-        public string IV { get; set; }           // AES-GCM initialisation vector
-        public string Tag { get; set; }          // AES-GCM authentication tag
-        public string CipherText { get; set; }   // AES-GCM encrypted password
+        /// <summary>AES-GCM initialization vector.</summary>
+        public string IV { get; set; }
+        /// <summary>AES-GCM authentication tag.</summary>
+        public string Tag { get; set; }
+        /// <summary>AES-GCM encrypted ciphertext.</summary>
+        public string CipherText { get; set; }
         public string Notes { get; set; }
-        public string Sha1Hash { get; set; }     // Unsalted SHA-1 hash for HIBP breach lookup
+        /// <summary>Unsalted SHA-1 hash used for HIBP breach lookup.</summary>
+        public string Sha1Hash { get; set; }
         public bool IsLeaked { get; set; }
         public DateTime LastUpdate { get; set; }
     }
