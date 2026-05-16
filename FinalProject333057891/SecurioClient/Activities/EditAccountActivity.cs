@@ -226,7 +226,7 @@ namespace SecurioClient.Activities
                         return;
                     }
 
-                    var (currentAuthKey, currentVaultKey) = await Task.Run(() => (
+                    var (currentAuthKey,  currentVaultKey) = await Task.Run(() => (
                         EncryptionHelper.DeriveKey(currentPassword, saltResult.Data.AuthSalt),
                         EncryptionHelper.DeriveKey(currentPassword, saltResult.Data.EncryptionSalt)
                     ));

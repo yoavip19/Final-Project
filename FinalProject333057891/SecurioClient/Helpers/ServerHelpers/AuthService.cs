@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using SecurioModels.DataTransferObjects;
+using SecurioModels;
 
 namespace SecurioClient.Helpers.ServerHelpers
 {
