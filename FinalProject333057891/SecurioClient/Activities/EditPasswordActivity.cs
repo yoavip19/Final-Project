@@ -51,6 +51,7 @@ namespace SecurioClient.Activities
         private int entryId;
 
         // O(1) duplicate-check set built from the live vault cache in PopulateExistingEntries.
+        /// <summary>Set of existing site/username pairs used for duplicate detection.</summary>
         private HashSet<string> _existingEntryKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         // Placeholder shown in the password field to indicate an existing password is stored.

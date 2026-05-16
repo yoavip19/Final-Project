@@ -10,9 +10,12 @@ namespace SecurioModels.DataTransferObjects
         public int Id { get; set; }
         public string Username { get; set; }
         public string Email { get; set; }
-        public string MasterPasswordKey { get; set; } // The key derivation result
-        public string AuthSalt { get; set; }          // The salt for deriving the master password key
-        public string EncryptionSalt { get; set; }    // The salt for the AES vault
+        /// <summary>The PBKDF2-derived master password key.</summary>
+        public string MasterPasswordKey { get; set; }
+        /// <summary>The salt used to derive the master password key.</summary>
+        public string AuthSalt { get; set; }
+        /// <summary>The salt used for AES vault key derivation.</summary>
+        public string EncryptionSalt { get; set; }
         public DateTime LastLogin { get; set; }
         public DateTime LastPasswordUpdate { get; set; }
         public DateTime CreatedAt { get; set; }

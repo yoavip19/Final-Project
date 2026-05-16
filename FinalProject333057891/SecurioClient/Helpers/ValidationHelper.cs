@@ -52,8 +52,11 @@ namespace SecurioClient.Helpers
                       RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // Password component detectors
+        /// <summary>Compiled regex that matches at least one uppercase letter.</summary>
         private static readonly Regex HasUppercase = new Regex(@"[A-Z]", RegexOptions.Compiled);
+        /// <summary>Compiled regex that matches at least one lowercase letter.</summary>
         private static readonly Regex HasLowercase = new Regex(@"[a-z]", RegexOptions.Compiled);
+        /// <summary>Compiled regex that matches at least one digit.</summary>
         private static readonly Regex HasDigit = new Regex(@"\d", RegexOptions.Compiled);
 
         // Accepted special characters: ! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
@@ -65,6 +68,7 @@ namespace SecurioClient.Helpers
         private const string UpperPool   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const string LowerPool   = "abcdefghijklmnopqrstuvwxyz";
         private const string DigitPool   = "0123456789";
+        /// <summary>Character pool of special characters used by the password generator.</summary>
         private const string SpecialPool = "!@#$%^&*()-_=+[]{}|;:,.<>?";
 
         // -----------------------------------------------------------------

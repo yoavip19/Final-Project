@@ -21,6 +21,7 @@ namespace SecurioClient.Activities
         private TextView buttonViewAllReused;
         private TextView buttonViewAllOld;
 
+        /// <summary>Initializes the activity, inflates the layout, and populates warning counters.</summary>
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -33,12 +34,14 @@ namespace SecurioClient.Activities
             DisplayWarnings();
         }
 
+        /// <summary>Refreshes the displayed warning counts when the activity regains focus.</summary>
         protected override void OnResume()
         {
             base.OnResume();
             DisplayWarnings();
         }
 
+        /// <summary>Finds and assigns view references from the layout.</summary>
         private void InitializeViews()
         {
             textViewLeakedCount = FindViewById<TextView>(Resource.Id.textViewLeakedCount);
@@ -52,6 +55,7 @@ namespace SecurioClient.Activities
             buttonViewAllOld    = FindViewById<TextView>(Resource.Id.buttonViewAllOld);
         }
 
+        /// <summary>Attaches the BottomNavFragment and subscribes to tab selection events.</summary>
         private void SetupBottomNavFragment(Bundle savedInstanceState)
         {
             var fragment = SupportFragmentManager.FindFragmentById(Resource.Id.frameBottomNav) as BottomNavFragment;
@@ -70,6 +74,7 @@ namespace SecurioClient.Activities
             fragment.TabSelected += OnBottomNavTabSelected;
         }
 
+        /// <summary>Wires up the View All buttons for each risk category.</summary>
         private void SetupViewAllButtons()
         {
             buttonViewAllLeaked.Click += (s, e) => OpenRiskDetail(RiskDetailActivity.CategoryLeaked);
@@ -78,6 +83,7 @@ namespace SecurioClient.Activities
             buttonViewAllOld.Click    += (s, e) => OpenRiskDetail(RiskDetailActivity.CategoryOld);
         }
 
+        /// <summary>Launches RiskDetailActivity for the specified risk category.</summary>
         private void OpenRiskDetail(string category)
         {
             var intent = new Intent(this, typeof(RiskDetailActivity));
@@ -85,8 +91,10 @@ namespace SecurioClient.Activities
             StartActivity(intent);
         }
 
+        /// <summary>Delegates bottom-navigation tab selection to BottomNavHelper.</summary>
         private void OnBottomNavTabSelected(object sender, string tab)
             => BottomNavHelper.Navigate(this, tab, "warnings");
+
 
         /// <summary>
         /// Reads the cached warnings or recomputes them synchronously (using stored

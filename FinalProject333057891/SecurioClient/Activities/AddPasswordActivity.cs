@@ -30,6 +30,7 @@ namespace SecurioClient.Activities
         public const int RequestCodeAdd = 1001;
 
         // O(1) duplicate-check set built from the live vault cache in PopulateExistingEntries.
+        /// <summary>Set of existing site/username pairs used for duplicate detection.</summary>
         private HashSet<string> _existingEntryKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         // -- Lifecycle ------------------------------------------

@@ -28,6 +28,7 @@ namespace SecurioClient.Activities
         private LinearLayout layoutVaultEmpty;
 
         private PasswordBannerAdapter adapter;
+        /// <summary>The full list of vault items loaded for the current user.</summary>
         private List<VaultItem> allEntries = new List<VaultItem>();
 
         /// <summary>Initializes the activity, inflates the layout, and loads vault entries from the session cache.</summary>
