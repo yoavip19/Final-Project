@@ -130,7 +130,7 @@ namespace SecurioClient.Activities
                 PasswordEntryActionsHelper.ShowOptionsSheet(
                     this,
                     displayed[position],
-                    SyncEntryCache,
+                    null,
                     OnEntryDeleted);
         }
 
@@ -248,15 +248,5 @@ namespace SecurioClient.Activities
             layoutEmpty.Visibility  = isEmpty ? ViewStates.Visible : ViewStates.Gone;
             recyclerView.Visibility = isEmpty ? ViewStates.Gone : ViewStates.Visible;
         }
-
-        /// <summary>
-        /// Pushes the full vault cache into <see cref="VaultEntryCache"/> so that
-        /// <see cref="EditPasswordActivity"/> can perform duplicate checking.
-        /// </summary>
-        private void SyncEntryCache()
-        {
-            VaultEntryCache.SetEntries(new List<VaultItem>(SessionHelper.CachedVault ?? new List<VaultItem>()));
-        }
     }
 }
-

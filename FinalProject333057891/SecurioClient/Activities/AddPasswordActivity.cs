@@ -29,9 +29,7 @@ namespace SecurioClient.Activities
 
         public const int RequestCodeAdd = 1001;
 
-        // Holds existing entries for duplicate checking.
-        private List<VaultItem> existingEntries = new List<VaultItem>();
-        // O(1) duplicate-check set built from existingEntries in PopulateExistingEntries.
+        // O(1) duplicate-check set built from the live vault cache in PopulateExistingEntries.
         private HashSet<string> _existingEntryKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         // ── Lifecycle ──────────────────────────────────────────
@@ -59,12 +57,12 @@ namespace SecurioClient.Activities
             buttonSave.Text = GetString(Resource.String.entry_button_save);
         }
 
-        /// <summary>Loads existing vault entries from the cache for duplicate checking.</summary>
+        /// <summary>Builds the duplicate-check set from the live vault cache for O(1) lookups.</summary>
         private void PopulateExistingEntries()
         {
-            existingEntries = VaultEntryCache.Entries ?? new List<VaultItem>();
             _existingEntryKeys = new HashSet<string>(
-                existingEntries.Select(e => $"{e.AccountName}\0{e.AccountUsername}"),
+                (SessionHelper.CachedVault ?? new List<VaultItem>())
+                    .Select(e => $"{e.AccountName}\0{e.AccountUsername}"),
                 StringComparer.OrdinalIgnoreCase);
         }
 

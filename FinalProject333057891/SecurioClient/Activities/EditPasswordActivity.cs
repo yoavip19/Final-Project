@@ -50,9 +50,7 @@ namespace SecurioClient.Activities
         // The ID of the vault item being edited.
         private int entryId;
 
-        // Holds existing entries for duplicate checking (excludes the item being edited).
-        private List<VaultItem> existingEntries = new List<VaultItem>();
-        // O(1) duplicate-check set built from existingEntries in PopulateExistingEntries.
+        // O(1) duplicate-check set built from the live vault cache in PopulateExistingEntries.
         private HashSet<string> _existingEntryKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         // Placeholder shown in the password field to indicate an existing password is stored.
@@ -99,15 +97,14 @@ namespace SecurioClient.Activities
             textInputLayoutConfirmPassword.Hint = GetString(Resource.String.entry_confirm_password_edit_hint);
         }
 
-        /// <summary>Loads existing vault entries excluding the current item for duplicate checking.</summary>
+        /// <summary>Builds the duplicate-check set from the live vault cache, excluding the item being edited, for O(1) lookups.</summary>
         private void PopulateExistingEntries()
         {
             entryId = Intent.GetIntExtra(ExtraEntryId, 0);
-            existingEntries = (VaultEntryCache.Entries ?? new List<VaultItem>())
-                .Where(e => e.Id != entryId)
-                .ToList();
             _existingEntryKeys = new HashSet<string>(
-                existingEntries.Select(e => $"{e.AccountName}\0{e.AccountUsername}"),
+                (SessionHelper.CachedVault ?? new List<VaultItem>())
+                    .Where(e => e.Id != entryId)
+                    .Select(e => $"{e.AccountName}\0{e.AccountUsername}"),
                 StringComparer.OrdinalIgnoreCase);
         }
 
