@@ -259,7 +259,7 @@ namespace SecurioClient
         /// <param name="context">Application/service context.</param>
         internal static async Task PerformCheckAsync(Context context)
         {
-            int userId = await StorageHelper.GetUserId();
+            int userId = await StorageHelper.GetUserIdAsync();
             if (userId <= 0) return;
 
             var result = await PasswordCheckService.FetchAsync(userId);

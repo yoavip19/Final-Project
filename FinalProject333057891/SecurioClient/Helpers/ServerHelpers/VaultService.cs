@@ -23,10 +23,10 @@ namespace SecurioClient.Helpers.ServerHelpers
             return (result.Success, result.Message, result.Data);
         }
 
-        /// <summary>Sends an updated vault item to the server for persistence.</summary>
-        public async Task<(bool Success, string Message, VaultItem Data)> UpdateVaultItemAsync(VaultItem item)
+        /// <summary>Sends an updated vault item request to the server for persistence.</summary>
+        public async Task<(bool Success, string Message, VaultItem Data)> UpdateVaultItemAsync(UpdateVaultItemRequest request)
         {
-            var result = await PostAsync<VaultItem>("UpdateVaultItem", item);
+            var result = await PostAsync<VaultItem>("UpdateVaultItem", request);
             return (result.Success, result.Message, result.Data);
         }
 

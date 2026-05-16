@@ -36,7 +36,7 @@ namespace SecurioBackendFunction.Repositories
         }
 
         /// <summary>Updates an existing vault item, enforcing ownership via UserId.</summary>
-        public async Task<bool> UpdateVaultItemAsync(VaultItem item)
+        public async Task<bool> UpdateVaultItemAsync(VaultItem item, bool passwordChanged)
         {
             using var conn = new SqlConnection(_connectionString);
             await conn.OpenAsync();
@@ -62,7 +62,7 @@ namespace SecurioBackendFunction.Repositories
             cmd.Parameters.Add("@notes",  SqlDbType.NVarChar).Value = (object)item.Notes ?? DBNull.Value;
             cmd.Parameters.Add("@hash",   SqlDbType.NVarChar).Value = item.Sha1Hash;
             cmd.Parameters.Add("@leaked", SqlDbType.Bit).Value      = item.IsLeaked;
-            cmd.Parameters.Add("@passwordChanged", SqlDbType.Bit).Value = item.PasswordChanged;
+            cmd.Parameters.Add("@passwordChanged", SqlDbType.Bit).Value = passwordChanged;
             int rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
         }

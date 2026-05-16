@@ -111,18 +111,18 @@ namespace SecurioBackendFunction.ServerFunctions
                 }
 
                 var body = await new StreamReader(req.Body).ReadToEndAsync();
-                var item = JsonConvert.DeserializeObject<VaultItem>(body);
+                var request = JsonConvert.DeserializeObject<UpdateVaultItemRequest>(body);
 
-                if (item == null)
+                if (request?.Item == null)
                 {
                     return new BadRequestObjectResult(
                         new ServerResponse<VaultItem> { Success = false, Message = "Invalid request body." });
                 }
 
                 // Bind the authenticated user's ID so the client cannot spoof ownership.
-                item.UserId = userId;
+                request.Item.UserId = userId;
 
-                var result = await _vaultItemManager.UpdateVaultItemAsync(item);
+                var result = await _vaultItemManager.UpdateVaultItemAsync(request);
                 return result.Success
                     ? new OkObjectResult(result)
                     : new BadRequestObjectResult(result);

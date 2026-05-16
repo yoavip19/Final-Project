@@ -6,6 +6,15 @@ using System.Threading.Tasks;
 
 namespace SecurioClient.Helpers
 {
+    /// <summary>Risk categories used to classify password-health warnings.</summary>
+    public enum RiskCategory
+    {
+        Leaked,
+        Weak,
+        Reused,
+        Old
+    }
+
     /// <summary>
     /// Holds the four password-risk counters computed from the vault.
     /// </summary>
@@ -70,11 +79,6 @@ namespace SecurioClient.Helpers
                 return new WarningsData();
 
             int leaked = 0;
-            int weak = 0;
-            int reused = 0;
-            int old = 0;
-
-            DateTime oldThreshold = DateTime.UtcNow.AddDays(-OldPasswordDays);
 
             // ── Leaked ────────────────────────────────────────
             // Query HIBP for each password's SHA-1 hash using the k-anonymity
@@ -91,92 +95,45 @@ namespace SecurioClient.Helpers
                 if (pwned) leaked++;
             }
 
-            // ── Weak ──────────────────────────────────────────
-            // Decrypt each password and run it through the same
-            // validation rules enforced on the signup page.
-            foreach (var item in vault)
-            {
-                try
-                {
-                    if (string.IsNullOrEmpty(item.IV) ||
-                        string.IsNullOrEmpty(item.Tag) ||
-                        string.IsNullOrEmpty(item.CipherText))
-                        continue;
-
-                    string plaintext = EncryptionHelper.DecryptAesGcm(
-                        item.IV, item.Tag, item.CipherText, vaultKey);
-
-                    var result = ValidationHelper.ValidatePassword(plaintext);
-                    if (!result.IsValid)
-                        weak++;
-                }
-                catch
-                {
-                    // If decryption fails for any reason, skip the item.
-                }
-            }
-
-            // ── Reused ────────────────────────────────────────
-            // Two or more items that share the same SHA-1 hash are
-            // reusing the same password.  Every member of such a
-            // group is counted (not just the duplicates).
-            var hashGroups = vault
-                .Where(v => !string.IsNullOrEmpty(v.Sha1Hash))
-                .GroupBy(v => v.Sha1Hash, StringComparer.OrdinalIgnoreCase)
-                .Where(g => g.Count() > 1);
-
-            foreach (var group in hashGroups)
-                reused += group.Count();
-
-            // ── Old ───────────────────────────────────────────
-            // Only passwords with a known LastUpdate that is older than
-            // the threshold are flagged.  Items whose LastUpdate has never
-            // been set (DateTime.MinValue / default) are skipped — they
-            // are typically newly created entries whose server-assigned
-            // timestamp has not yet been propagated to the local cache.
-            foreach (var item in vault)
-            {
-                if (item.LastUpdate != default && item.LastUpdate < oldThreshold)
-                    old++;
-            }
-
             return new WarningsData
             {
                 LeakedCount = leaked,
-                WeakCount = weak,
-                ReusedCount = reused,
-                OldCount = old
+                WeakCount   = GetWeakItems(vault, vaultKey).Count,
+                ReusedCount = GetReusedItems(vault).Count,
+                OldCount    = GetOldItems(vault).Count
             };
         }
 
         /// <summary>
         /// Returns the subset of <paramref name="vault"/> items that fall under
         /// the specified <paramref name="category"/> risk.
-        /// Categories: "leaked", "weak", "reused", "old".
         /// </summary>
-        public static async Task<List<VaultItem>> GetItemsAtRiskAsync(
-            IList<VaultItem> vault, string vaultKey, string category)
+        public static Task<List<VaultItem>> GetItemsAtRiskAsync(
+            IList<VaultItem> vault, string vaultKey, RiskCategory category)
         {
             if (vault == null || vault.Count == 0)
-                return new List<VaultItem>();
+                return System.Threading.Tasks.Task.FromResult(new List<VaultItem>());
 
+            List<VaultItem> result;
             switch (category)
             {
-                case "leaked":
-                    return GetLeakedItems(vault);
-
-                case "weak":
-                    return GetWeakItems(vault, vaultKey);
-
-                case "reused":
-                    return GetReusedItems(vault);
-
-                case "old":
-                    return GetOldItems(vault);
-
+                case RiskCategory.Leaked:
+                    result = GetLeakedItems(vault);
+                    break;
+                case RiskCategory.Weak:
+                    result = GetWeakItems(vault, vaultKey);
+                    break;
+                case RiskCategory.Reused:
+                    result = GetReusedItems(vault);
+                    break;
+                case RiskCategory.Old:
+                    result = GetOldItems(vault);
+                    break;
                 default:
-                    return new List<VaultItem>();
+                    throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown risk category.");
             }
+
+            return System.Threading.Tasks.Task.FromResult(result);
         }
 
         /// <summary>

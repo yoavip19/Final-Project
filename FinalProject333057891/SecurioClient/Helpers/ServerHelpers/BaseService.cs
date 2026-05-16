@@ -33,7 +33,7 @@ namespace SecurioClient.Helpers
                 var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
                 request.Content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
-                var jwt = await StorageHelper.GetJwt();
+                var jwt = await StorageHelper.GetJwtAsync();
                 if (!string.IsNullOrEmpty(jwt))
                     request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {jwt}");
 
@@ -64,7 +64,7 @@ namespace SecurioClient.Helpers
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
 
-                var jwt = await StorageHelper.GetJwt();
+                var jwt = await StorageHelper.GetJwtAsync();
                 if (!string.IsNullOrEmpty(jwt))
                     request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {jwt}");
 

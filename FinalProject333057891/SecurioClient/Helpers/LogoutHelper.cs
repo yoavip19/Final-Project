@@ -29,7 +29,7 @@ namespace SecurioClient.Helpers
             AppLockManager.CancelAutoLockTimer();
             AppLockManager.Unlock();
             SessionHelper.EndSession();
-            await StorageHelper.ClearSessionAsync();
+            StorageHelper.ClearSession();
 
             var intent = new Intent(activity, typeof(LoginActivity));
             intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);

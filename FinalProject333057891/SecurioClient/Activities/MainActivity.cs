@@ -24,7 +24,7 @@ namespace SecurioClient.Activities
 
             // Check whether the user already has a stored JWT and validate it with the server.
             // A valid token means the user is already authenticated and can go straight to the Vault.
-            string jwt = await StorageHelper.GetJwt();
+            string jwt = await StorageHelper.GetJwtAsync();
 
             if (!string.IsNullOrEmpty(jwt))
             {
@@ -34,7 +34,7 @@ namespace SecurioClient.Activities
                 if (tokenValid)
                 {
                     // Restore the vault key from secure storage so in-memory encryption is ready.
-                    string vaultKey = await StorageHelper.GetVaultKey();
+                    string vaultKey = await StorageHelper.GetVaultKeyAsync();
                     if (!string.IsNullOrEmpty(vaultKey))
                         SessionHelper.StartSession(vaultKey);
 

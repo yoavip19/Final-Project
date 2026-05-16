@@ -253,7 +253,7 @@ namespace SecurioClient.Activities
         /// <summary>Pushes the current entry list into the static cache so that entry activities can perform duplicate checking.</summary>
         private void SyncEntryCache()
         {
-            VaultEntryCache.Entries = new List<VaultItem>(allEntries);
+            VaultEntryCache.SetEntries(new List<VaultItem>(allEntries));
         }
 
         /// <summary>Requests the POST_NOTIFICATIONS runtime permission on Android 13+ if not already granted.</summary>

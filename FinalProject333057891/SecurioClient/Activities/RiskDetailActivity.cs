@@ -193,10 +193,19 @@ namespace SecurioClient.Activities
         /// </summary>
         private async System.Threading.Tasks.Task LoadRiskEntriesAsync()
         {
+            RiskCategory riskCategory;
+            switch (category)
+            {
+                case CategoryWeak:    riskCategory = RiskCategory.Weak;    break;
+                case CategoryReused:  riskCategory = RiskCategory.Reused;  break;
+                case CategoryOld:     riskCategory = RiskCategory.Old;     break;
+                default:              riskCategory = RiskCategory.Leaked;  break;
+            }
+
             riskEntries = await WarningsHelper.GetItemsAtRiskAsync(
                 SessionHelper.CachedVault,
                 SessionHelper.SessionVaultKey,
-                category);
+                riskCategory);
 
             RefreshList();
         }
@@ -246,7 +255,7 @@ namespace SecurioClient.Activities
         /// </summary>
         private void SyncEntryCache()
         {
-            VaultEntryCache.Entries = new List<VaultItem>(SessionHelper.CachedVault ?? new List<VaultItem>());
+            VaultEntryCache.SetEntries(new List<VaultItem>(SessionHelper.CachedVault ?? new List<VaultItem>()));
         }
     }
 }

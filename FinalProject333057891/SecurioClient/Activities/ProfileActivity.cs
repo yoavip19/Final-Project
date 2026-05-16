@@ -195,8 +195,8 @@ namespace SecurioClient.Activities
             if (SessionHelper.IsAuthenticated)
                 return;
 
-            string jwt = await StorageHelper.GetJwt();
-            string vaultKey = await StorageHelper.GetVaultKey();
+            string jwt = await StorageHelper.GetJwtAsync();
+            string vaultKey = await StorageHelper.GetVaultKeyAsync();
             if (string.IsNullOrEmpty(jwt) || string.IsNullOrEmpty(vaultKey))
                 return;
 
