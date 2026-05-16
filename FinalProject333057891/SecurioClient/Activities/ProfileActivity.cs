@@ -245,7 +245,7 @@ namespace SecurioClient.Activities
 
             return DateTime.SpecifyKind(date, DateTimeKind.Utc)
                 .ToLocalTime()
-                .ToString("MMM dd, yyyy  h:mm tt");
+                .ToString("MMM dd, yyyy h:mm tt");
         }
 
         /// <summary>Updates the notification button text to reflect the app's current system notification state.</summary>
