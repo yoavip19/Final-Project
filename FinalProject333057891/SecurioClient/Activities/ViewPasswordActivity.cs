@@ -81,8 +81,9 @@ namespace SecurioClient.Activities
             long lastUpdateTicks = Intent.GetLongExtra(ExtraLastUpdate, 0L);
             if (lastUpdateTicks > 0)
             {
-                var lastUpdateUtc = new DateTime(lastUpdateTicks, DateTimeKind.Utc);
-                textViewLastChanged.Text = FormatLastChanged(lastUpdateUtc);
+                textViewLastChanged.Text = new DateTime(lastUpdateTicks, DateTimeKind.Utc)
+                    .ToLocalTime()
+                    .ToString("MMM d, yyyy 'at' h:mm tt");
             }
             else
             {
@@ -156,12 +157,6 @@ namespace SecurioClient.Activities
             textViewPassword.Text = passwordVisible
                 ? decryptedPassword
                 : new string('•', decryptedPassword.Length);
-        }
-
-        /// <summary>Formats a UTC timestamp using the device's local timezone for display.</summary>
-        private string FormatLastChanged(DateTime utcDate)
-        {
-            return utcDate.ToLocalTime().ToString("MMM d, yyyy 'at' h:mm tt");
         }
 
         /// <summary>Displays an on-page security notice after password copy so that long warnings are fully readable.</summary>

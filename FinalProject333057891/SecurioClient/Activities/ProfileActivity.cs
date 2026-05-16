@@ -243,21 +243,9 @@ namespace SecurioClient.Activities
             if (date == DateTime.MinValue)
                 return "—";
 
-            return NormalizeUtc(date).ToLocalTime().ToString("MMM dd, yyyy  h:mm tt");
-        }
-
-        /// <summary>Normalizes stored/profile timestamps to UTC before local-time display conversion.</summary>
-        private DateTime NormalizeUtc(DateTime date)
-        {
-            switch (date.Kind)
-            {
-                case DateTimeKind.Utc:
-                    return date;
-                case DateTimeKind.Local:
-                    return date.ToUniversalTime();
-                default:
-                    return DateTime.SpecifyKind(date, DateTimeKind.Utc);
-            }
+            return DateTime.SpecifyKind(date, DateTimeKind.Utc)
+                .ToLocalTime()
+                .ToString("MMM dd, yyyy  h:mm tt");
         }
 
         /// <summary>Updates the notification button text to reflect the app's current system notification state.</summary>
