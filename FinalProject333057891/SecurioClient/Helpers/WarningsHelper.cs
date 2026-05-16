@@ -108,7 +108,7 @@ namespace SecurioClient.Helpers
         /// Returns the subset of <paramref name="vault"/> items that fall under
         /// the specified <paramref name="category"/> risk.
         /// </summary>
-        public static Task<List<VaultItem>> GetItemsAtRiskAsync(
+        public static Task<List<VaultItem>> GetItemsAtRisk(
             IList<VaultItem> vault, string vaultKey, RiskCategory category)
         {
             if (vault == null || vault.Count == 0)
@@ -149,7 +149,6 @@ namespace SecurioClient.Helpers
         private static List<VaultItem> GetWeakItems(IList<VaultItem> vault, string vaultKey)
         {
             var result = new List<VaultItem>();
-            string plaintext;
             foreach (var item in vault)
             {
                 try
@@ -159,7 +158,7 @@ namespace SecurioClient.Helpers
                         string.IsNullOrEmpty(item.CipherText))
                         continue;
 
-                    plaintext = EncryptionHelper.DecryptAesGcm(
+                    string plaintext = EncryptionHelper.DecryptAesGcm(
                         item.IV, item.Tag, item.CipherText, vaultKey);
 
                     var validationResult = ValidationHelper.ValidatePassword(plaintext);
@@ -169,12 +168,6 @@ namespace SecurioClient.Helpers
                 catch
                 {
                     // Skip items that cannot be decrypted.
-                }
-                finally
-                {
-                    //Remove the plaintext password from memory
-                    plaintext = null;
-                    GC.Collect();
                 }
             }
             return result;
