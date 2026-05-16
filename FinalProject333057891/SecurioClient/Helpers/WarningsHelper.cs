@@ -130,7 +130,7 @@ namespace SecurioClient.Helpers
                     result = GetOldItems(vault);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown risk category.");
+                    throw new ArgumentOutOfRangeException(nameof(category), category, $"Unknown risk category: {category}.");
             }
 
             return System.Threading.Tasks.Task.FromResult(result);
