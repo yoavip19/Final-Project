@@ -140,39 +140,20 @@ namespace SecurioBackendFunction.Repositories
             return null;
         }
 
-        /// <summary>Updates the user's profile fields, including password fields when passwordChanged is true.</summary>
-        public async Task<bool> UpdateUserAsync(User user, bool passwordChanged)
+        /// <summary>Updates the user's profile fields (username and email).</summary>
+        public async Task<bool> UpdateUserAsync(User user)
         {
             using var conn = new SqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            string sql;
-            if (passwordChanged)
-            {
-                sql = @"UPDATE Users 
-                        SET Username = @name, Email = @email,
-                            MasterPasswordKey = @key, AuthSalt = @asalt, EncryptionSalt = @esalt,
-                            LastPasswordUpdate = GETDATE()
-                        WHERE Id = @uid";
-            }
-            else
-            {
-                sql = @"UPDATE Users 
+            var sql = @"UPDATE Users 
                         SET Username = @name, Email = @email
                         WHERE Id = @uid";
-            }
 
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.Add("@uid", SqlDbType.Int).Value = user.Id;
             cmd.Parameters.Add("@name", SqlDbType.NVarChar).Value = user.Username;
             cmd.Parameters.Add("@email", SqlDbType.NVarChar).Value = user.Email;
-
-            if (passwordChanged)
-            {
-                cmd.Parameters.Add("@key", SqlDbType.NVarChar).Value = user.MasterPasswordKey;
-                cmd.Parameters.Add("@asalt", SqlDbType.NVarChar).Value = user.AuthSalt;
-                cmd.Parameters.Add("@esalt", SqlDbType.NVarChar).Value = user.EncryptionSalt;
-            }
 
             int rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;

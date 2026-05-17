@@ -50,7 +50,7 @@ namespace SecurioBackendFunction.ServerFunctions
                         Success = false,
                         Message = "User not found."
                     });
-            }
+                }
 
                 return new OkObjectResult(new ServerResponse<PasswordCheckResult>
                 {

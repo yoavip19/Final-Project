@@ -1,17 +1,13 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SecurioBackendFunction.Helpers;
 using SecurioBackendFunction.Logic;
-using SecurioBackendFunction.Repositories;
 using SecurioModels;
 using SecurioModels.DataTransferObjects;
-using System.Collections.Generic;
 using System.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SecurioBackendFunction.ServerFunctions;
 

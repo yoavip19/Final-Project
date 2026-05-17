@@ -19,8 +19,8 @@ namespace SecurioBackendFunction.Repositories
         Task<User> GetUserProfileAsync(int userId);
         /// <summary>Atomically verifies credentials and stamps LastLogin, returning the full user record on success or null if not found or key is wrong.</summary>
         Task<User> VerifyLoginAndUpdateLastLoginAsync(string email, string key);
-        /// <summary>Updates the user's profile fields.</summary>
-        Task<bool> UpdateUserAsync(User user, bool passwordChanged);
+        /// <summary>Updates the user's profile fields (username and email).</summary>
+        Task<bool> UpdateUserAsync(User user);
         /// <summary>Deletes the user account.</summary>
         Task<bool> DeleteUserAsync(int userId);
         /// <summary>Returns the most-recent password history entries for the given user.</summary>

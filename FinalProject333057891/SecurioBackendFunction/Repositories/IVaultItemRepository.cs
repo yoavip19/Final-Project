@@ -15,8 +15,6 @@ namespace SecurioBackendFunction.Repositories
         Task<List<VaultItem>> GetVaultItemsByUserIdAsync(int userId);
         /// <summary>Deletes a vault item by ID.</summary>
         Task<bool> DeleteVaultItemAsync(int itemId, int userId);
-        /// <summary>Bulk-updates the encryption fields for all vault items belonging to the given user.</summary>
-        Task<bool> BulkUpdateVaultItemsAsync(List<VaultItem> items, int userId);
         /// <summary>Updates the IsLeaked flag for a single vault item by its ID.</summary>
         Task UpdateIsLeakedAsync(int itemId, bool isLeaked);
     }
