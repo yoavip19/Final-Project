@@ -114,40 +114,6 @@ namespace SecurioBackendFunction.Repositories
             return rows > 0;
         }
 
-        /// <summary>Bulk-updates the encryption fields for all vault items belonging to the given user.</summary>
-        public async Task<bool> BulkUpdateVaultItemsAsync(List<VaultItem> items, int userId)
-        {
-            if (items == null || items.Count == 0) return true;
-
-            using var conn = new SqlConnection(_connectionString);
-            await conn.OpenAsync();
-            using var transaction = conn.BeginTransaction();
-
-            try
-            {
-                foreach (var item in items)
-                {
-                    var sql = @"UPDATE VaultItems
-                                SET IV = @iv, Tag = @tag, CipherText = @cipher
-                                WHERE Id = @id AND UserId = @uid";
-                    using var cmd = new SqlCommand(sql, conn, transaction);
-                    cmd.Parameters.Add("@id", SqlDbType.Int).Value = item.Id;
-                    cmd.Parameters.Add("@uid", SqlDbType.Int).Value = userId;
-                    cmd.Parameters.Add("@iv", SqlDbType.NVarChar).Value = item.IV;
-                    cmd.Parameters.Add("@tag", SqlDbType.NVarChar).Value = item.Tag;
-                    cmd.Parameters.Add("@cipher", SqlDbType.NVarChar).Value = item.CipherText;
-                    await cmd.ExecuteNonQueryAsync();
-                }
-
-                transaction.Commit();
-                return true;
-            }
-            catch
-            {
-                transaction.Rollback();
-                return false;
-            }
-        }
         /// <summary>Updates the IsLeaked flag for a single vault item by its ID.</summary>
         public async Task UpdateIsLeakedAsync(int itemId, bool isLeaked)
         {

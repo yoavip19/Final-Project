@@ -77,7 +77,7 @@ namespace SecurioBackendFunction.Logic
                 // unit so the database is never left with new credentials but old vault ciphertext.
                 DateTime archivedAt = oldUser.LastPasswordUpdate != DateTime.MinValue
                     ? oldUser.LastPasswordUpdate
-                    : DateTime.UtcNow;
+                    : (oldUser.CreatedAt != DateTime.MinValue ? oldUser.CreatedAt : DateTime.UtcNow);
 
                 var items = reEncryptedItems ?? new List<VaultItem>();
                 bool success = await _repo.UpdateUserAndVaultAsync(
@@ -88,7 +88,7 @@ namespace SecurioBackendFunction.Logic
             }
             else
             {
-                bool success = await _repo.UpdateUserAsync(updated, passwordChanged: false);
+                bool success = await _repo.UpdateUserAsync(updated);
                 if (!success)
                     return new ServerResponse<object> { Success = false, Message = "Account not found." };
             }
